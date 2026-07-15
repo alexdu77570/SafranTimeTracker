@@ -6,8 +6,10 @@ using SafranTimeTracker.Application.Applications.Services;
 using SafranTimeTracker.Application.Capacity.Services;
 using SafranTimeTracker.Application.Companies.Services;
 using SafranTimeTracker.Application.Financial.Services;
+using SafranTimeTracker.Application.Milestones.Services;
 using SafranTimeTracker.Application.Organisation.Services;
 using SafranTimeTracker.Application.Orders.Services;
+using SafranTimeTracker.Application.Projects.Services;
 using SafranTimeTracker.Application.Resources.Services;
 using SafranTimeTracker.Application.Settings.Services;
 using SafranTimeTracker.Application.TimeTracking.Services;
@@ -45,6 +47,11 @@ public static class DependencyInjection
         services.AddScoped<ResourceCapacityPeriodService>();
         services.AddScoped<HolidayCalendarService>();
         services.AddScoped<AvailabilityService>();
+        services.AddScoped<ProjectService>();
+        services.AddScoped<ProjectParticipantService>();
+        services.AddScoped<ProjectPlanningService>();
+        services.AddScoped<MilestoneTypeService>();
+        services.AddScoped<MilestoneService>();
 
         return services;
     }

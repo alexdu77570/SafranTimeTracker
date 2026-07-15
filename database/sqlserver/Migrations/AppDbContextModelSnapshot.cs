@@ -851,6 +851,298 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Milestones.Milestone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ApplicationId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("application_id");
+
+                    b.Property<string>("Commentaire")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("commentaire");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("Criticite")
+                        .HasColumnType("int")
+                        .HasColumnName("criticite");
+
+                    b.Property<DateOnly>("DatePrevue")
+                        .HasColumnType("date")
+                        .HasColumnName("date_prevue");
+
+                    b.Property<DateOnly?>("DateReelle")
+                        .HasColumnType("date")
+                        .HasColumnName("date_reelle");
+
+                    b.Property<Guid?>("DependsOnMilestoneId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("depends_on_milestone_id");
+
+                    b.Property<Guid>("MilestoneTypeId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("milestone_type_id");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("nom");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("project_id");
+
+                    b.Property<Guid>("ResponsableId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("responsable_id");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_milestones");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_milestones_application_id");
+
+                    b.HasIndex("DependsOnMilestoneId")
+                        .HasDatabaseName("ix_milestones_depends_on_milestone_id");
+
+                    b.HasIndex("MilestoneTypeId")
+                        .HasDatabaseName("ix_milestones_milestone_type_id");
+
+                    b.HasIndex("ResponsableId")
+                        .HasDatabaseName("ix_milestones_responsable_id");
+
+                    b.HasIndex("ProjectId", "DatePrevue")
+                        .HasDatabaseName("ix_milestones_project_id_date_prevue");
+
+                    b.ToTable("milestones", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0056-000000000001"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 1,
+                            DatePrevue = new DateOnly(2024, 1, 15),
+                            DateReelle = new DateOnly(2024, 1, 15),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Nom = "Kick-off Migration ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0056-000000000002"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 3,
+                            DatePrevue = new DateOnly(2025, 6, 1),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000009"),
+                            Nom = "GO PROD Migration ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0056-000000000003"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 2,
+                            DatePrevue = new DateOnly(2027, 1, 1),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000010"),
+                            Nom = "CAB Migration ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Milestones.MilestoneType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_milestone_types");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_milestone_types_code");
+
+                    b.ToTable("milestone_types", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Code = "KICKOFF",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Kick-off",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000002"),
+                            Code = "ARCHITECTURE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Architecture",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000003"),
+                            Code = "VABE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "VABE",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000004"),
+                            Code = "VSR",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "VSR",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000005"),
+                            Code = "GO_DEV",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "GO DEV",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000006"),
+                            Code = "GO_QUAL",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "GO QUAL",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000007"),
+                            Code = "GO_VAL",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "GO VAL",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000008"),
+                            Code = "GO_PPROD",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "GO PPROD",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000009"),
+                            Code = "GO_PROD",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "GO PROD",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000010"),
+                            Code = "CAB",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "CAB",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0051-000000000011"),
+                            Code = "HYPERCARE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Hypercare",
+                            Statut = 0
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1335,6 +1627,508 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             Nom = "Équipe Projets A",
                             ServiceId = new Guid("00000000-0000-0000-0011-000000000004"),
                             Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("application_id");
+
+                    b.Property<decimal?>("BudgetInitial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("budget_initial");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Commentaire")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("commentaire");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("DateDebut")
+                        .HasColumnType("date")
+                        .HasColumnName("date_debut");
+
+                    b.Property<DateOnly?>("DateFinAjustee")
+                        .HasColumnType("date")
+                        .HasColumnName("date_fin_ajustee");
+
+                    b.Property<DateOnly>("DateFinPrevueInitiale")
+                        .HasColumnType("date")
+                        .HasColumnName("date_fin_prevue_initiale");
+
+                    b.Property<DateOnly?>("DateFinReelle")
+                        .HasColumnType("date")
+                        .HasColumnName("date_fin_reelle");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("department_id");
+
+                    b.Property<string>("DescriptionCourte")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("description_courte");
+
+                    b.Property<int>("NiveauRisque")
+                        .HasColumnType("int")
+                        .HasColumnName("niveau_risque");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("nom");
+
+                    b.Property<Guid>("PiloteId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("pilote_id");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid>("StatusId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("status_id");
+
+                    b.Property<Guid?>("TeamId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("team_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_projects");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_projects_application_id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_projects_code");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_projects_department_id");
+
+                    b.HasIndex("PiloteId")
+                        .HasDatabaseName("ix_projects_pilote_id");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_projects_service_id");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("ix_projects_status_id");
+
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("ix_projects_team_id");
+
+                    b.ToTable("projects", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0052-000000000001"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            BudgetInitial = 150000.00m,
+                            Code = "PRJ-ELM-2026",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            DateFinAjustee = new DateOnly(2025, 3, 31),
+                            DateFinPrevueInitiale = new DateOnly(2024, 12, 31),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Migration de la plateforme IBM ELM.",
+                            NiveauRisque = 1,
+                            Nom = "Migration ELM",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000004"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000001"),
+                            TeamId = new Guid("00000000-0000-0000-0012-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0052-000000000002"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            BudgetInitial = 80000.00m,
+                            Code = "PRJ-VTOM-2026",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 2, 1),
+                            DateFinPrevueInitiale = new DateOnly(2024, 11, 30),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Refonte de l'ordonnanceur VTOM.",
+                            NiveauRisque = 0,
+                            Nom = "Refonte VTOM",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000002"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000001"),
+                            TeamId = new Guid("00000000-0000-0000-0012-000000000001")
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("CapacitePrevue")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)")
+                        .HasColumnName("capacite_prevue");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("DateDebut")
+                        .HasColumnType("date")
+                        .HasColumnName("date_debut");
+
+                    b.Property<DateOnly?>("DateFin")
+                        .HasColumnType("date")
+                        .HasColumnName("date_fin");
+
+                    b.Property<Guid?>("DefaultOrderId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("default_order_id");
+
+                    b.Property<Guid?>("OperationalRoleId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("operational_role_id");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("project_id");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("resource_id");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_participants");
+
+                    b.HasIndex("DefaultOrderId")
+                        .HasDatabaseName("ix_project_participants_default_order_id");
+
+                    b.HasIndex("OperationalRoleId")
+                        .HasDatabaseName("ix_project_participants_operational_role_id");
+
+                    b.HasIndex("ResourceId")
+                        .HasDatabaseName("ix_project_participants_resource_id");
+
+                    b.HasIndex("ProjectId", "ResourceId")
+                        .HasDatabaseName("ix_project_participants_project_id_resource_id");
+
+                    b.ToTable("project_participants", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0053-000000000001"),
+                            CapacitePrevue = 100.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000004"),
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0053-000000000002"),
+                            CapacitePrevue = 50.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectPlanVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Motif")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("motif");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("project_id");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_plan_versions");
+
+                    b.HasIndex("ProjectId", "Type", "Statut")
+                        .HasDatabaseName("ix_project_plan_versions_project_id_type_statut");
+
+                    b.ToTable("project_plan_versions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0054-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            Statut = 0,
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0054-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Motif = "Report de la fin de projet, charge revue à la hausse (démonstration).",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            Statut = 0,
+                            Type = 1
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<int>("Ordre")
+                        .HasColumnType("int")
+                        .HasColumnName("ordre");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_statuses");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_project_statuses_code");
+
+                    b.ToTable("project_statuses", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0050-000000000001"),
+                            Code = "ACTIF",
+                            Libelle = "Actif",
+                            Ordre = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0050-000000000002"),
+                            Code = "SUSPENDU",
+                            Libelle = "Suspendu",
+                            Ordre = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0050-000000000003"),
+                            Code = "TERMINE",
+                            Libelle = "Terminé",
+                            Ordre = 3
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0050-000000000004"),
+                            Code = "ARCHIVE",
+                            Libelle = "Archivé",
+                            Ordre = 4
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectWeeklyPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("ChargePlanifieeHeures")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)")
+                        .HasColumnName("charge_planifiee_heures");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("ProjectPlanVersionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("project_plan_version_id");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("resource_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateOnly>("WeekStartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("week_start_date");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_weekly_plans");
+
+                    b.HasIndex("ResourceId")
+                        .HasDatabaseName("ix_project_weekly_plans_resource_id");
+
+                    b.HasIndex("ProjectPlanVersionId", "ResourceId", "WeekStartDate")
+                        .IsUnique()
+                        .HasDatabaseName("ix_project_weekly_plans_project_plan_version_id_resource_id_week_start_date");
+
+                    b.ToTable("project_weekly_plans", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0055-000000000001"),
+                            ChargePlanifieeHeures = 20.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0054-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0055-000000000002"),
+                            ChargePlanifieeHeures = 10.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0054-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0055-000000000003"),
+                            ChargePlanifieeHeures = 24.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0054-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0055-000000000004"),
+                            ChargePlanifieeHeures = 8.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0054-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
                         });
                 });
 
@@ -2201,6 +2995,10 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("order_id");
 
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("project_id");
+
                     b.Property<string>("Reference")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -2231,6 +3029,9 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
 
                     b.HasIndex("OrderId")
                         .HasDatabaseName("ix_time_entries_order_id");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_time_entries_project_id");
 
                     b.HasIndex("ResourceId", "Date")
                         .HasDatabaseName("ix_time_entries_resource_id_date");
@@ -2270,6 +3071,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             CreatedBy = "system-seed",
                             Date = new DateOnly(2024, 6, 10),
                             DureeHeures = 7.75m,
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
                             Statut = 0
                         },
@@ -3037,6 +3839,52 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("Resource");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Milestones.Milestone", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Applications.ApplicationReference", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_milestones_application_references_application_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Milestones.Milestone", "DependsOnMilestone")
+                        .WithMany()
+                        .HasForeignKey("DependsOnMilestoneId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_milestones_milestones_depends_on_milestone_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Milestones.MilestoneType", "MilestoneType")
+                        .WithMany()
+                        .HasForeignKey("MilestoneTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_milestones_milestone_types_milestone_type_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_milestones_projects_project_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Responsable")
+                        .WithMany()
+                        .HasForeignKey("ResponsableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_milestones_resources_responsable_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("DependsOnMilestone");
+
+                    b.Navigation("MilestoneType");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Responsable");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.Order", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Companies.Company", "Company")
@@ -3128,6 +3976,132 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("ResponsableFonctionnel");
 
                     b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.Project", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Applications.ApplicationReference", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_application_references_application_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Organisation.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_departments_department_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Pilote")
+                        .WithMany()
+                        .HasForeignKey("PiloteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_resources_pilote_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Organisation.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_services_service_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Projects.ProjectStatus", "Status")
+                        .WithMany("Projects")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_project_statuses_status_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Organisation.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_projects_teams_team_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Pilote");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectParticipant", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Orders.Order", "DefaultOrder")
+                        .WithMany()
+                        .HasForeignKey("DefaultOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_project_participants_orders_default_order_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.OperationalRole", "OperationalRole")
+                        .WithMany()
+                        .HasForeignKey("OperationalRoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_project_participants_operational_roles_operational_role_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Projects.Project", "Project")
+                        .WithMany("Participants")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_participants_projects_project_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_participants_resources_resource_id");
+
+                    b.Navigation("DefaultOrder");
+
+                    b.Navigation("OperationalRole");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectPlanVersion", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Projects.Project", "Project")
+                        .WithMany("PlanVersions")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_plan_versions_projects_project_id");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectWeeklyPlan", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Projects.ProjectPlanVersion", "ProjectPlanVersion")
+                        .WithMany("WeeklyPlans")
+                        .HasForeignKey("ProjectPlanVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_weekly_plans_project_plan_versions_project_plan_version_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_weekly_plans_resources_resource_id");
+
+                    b.Navigation("ProjectPlanVersion");
+
+                    b.Navigation("Resource");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Resources.Resource", b =>
@@ -3243,6 +4217,12 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_time_entries_orders_order_id");
 
+                    b.HasOne("SafranTimeTracker.Domain.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_time_entries_projects_project_id");
+
                     b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
                         .WithMany()
                         .HasForeignKey("ResourceId")
@@ -3253,6 +4233,8 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("ActivityType");
 
                     b.Navigation("Order");
+
+                    b.Navigation("Project");
 
                     b.Navigation("Resource");
                 });
@@ -3333,6 +4315,23 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
             modelBuilder.Entity("SafranTimeTracker.Domain.Organisation.Service", b =>
                 {
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.Project", b =>
+                {
+                    b.Navigation("Participants");
+
+                    b.Navigation("PlanVersions");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectPlanVersion", b =>
+                {
+                    b.Navigation("WeeklyPlans");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectStatus", b =>
+                {
+                    b.Navigation("Projects");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Resources.OperationalRole", b =>

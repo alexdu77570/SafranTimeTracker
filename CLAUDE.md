@@ -175,6 +175,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Un DTO de lecture ne contient que les champs autorisés pour le rôle/permission de l'appelant : la projection se fait côté service applicatif, pas par filtrage a posteriori.
 - Les DTO financiers (montants, TJM, coûts, différentiels) sont isolés dans des DTO ou des sous-objets dédiés, pour permettre de les omettre facilement selon la permission `FINANCIAL_DATA_VIEW`.
 - Mapping entité ↔ DTO explicite et testé, via **Mapster** (pas de mapping « magique » non vérifié).
+- Quand deux actions sur une même ressource ont des règles de validation différentes mais une requête de forme identique (ex. création d'une version « Initiale » à motif optionnel vs version « Ajustée » à motif obligatoire, Lot 4), on définit **deux types de DTO distincts** plutôt qu'un DTO unique : `FluentValidation.DependencyInjectionExtensions` enregistre un seul `IValidator<T>` par type en DI, donc deux règles concurrentes sur le même type de requête créent une ambiguïté de résolution.
 
 ## 14. Conventions de tests
 

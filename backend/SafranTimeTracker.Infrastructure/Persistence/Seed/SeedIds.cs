@@ -150,4 +150,46 @@ internal static class SeedIds
 
     // Lot 3 — Ressource inactive de démonstration (test de blocage de saisie, §19.4)
     public static readonly Guid ResourceInactiveDemo = new("00000000-0000-0000-0046-000000000001");
+
+    // Lot 4 — Statuts de projet (§16.2, §30)
+    public static readonly Guid ProjectStatusActif = new("00000000-0000-0000-0050-000000000001");
+    public static readonly Guid ProjectStatusSuspendu = new("00000000-0000-0000-0050-000000000002");
+    public static readonly Guid ProjectStatusTermine = new("00000000-0000-0000-0050-000000000003");
+    public static readonly Guid ProjectStatusArchive = new("00000000-0000-0000-0050-000000000004");
+
+    // Lot 4 — Types de jalon (§24.1)
+    public static readonly Guid MilestoneTypeKickOff = new("00000000-0000-0000-0051-000000000001");
+    public static readonly Guid MilestoneTypeArchitecture = new("00000000-0000-0000-0051-000000000002");
+    public static readonly Guid MilestoneTypeVabe = new("00000000-0000-0000-0051-000000000003");
+    public static readonly Guid MilestoneTypeVsr = new("00000000-0000-0000-0051-000000000004");
+    public static readonly Guid MilestoneTypeGoDev = new("00000000-0000-0000-0051-000000000005");
+    public static readonly Guid MilestoneTypeGoQual = new("00000000-0000-0000-0051-000000000006");
+    public static readonly Guid MilestoneTypeGoVal = new("00000000-0000-0000-0051-000000000007");
+    public static readonly Guid MilestoneTypeGoPprod = new("00000000-0000-0000-0051-000000000008");
+    public static readonly Guid MilestoneTypeGoProd = new("00000000-0000-0000-0051-000000000009");
+    public static readonly Guid MilestoneTypeCab = new("00000000-0000-0000-0051-000000000010");
+    public static readonly Guid MilestoneTypeHypercare = new("00000000-0000-0000-0051-000000000011");
+
+    // Lot 4 — Projets de démonstration (§16.2)
+    public static readonly Guid ProjectMigrationElm = new("00000000-0000-0000-0052-000000000001");
+    public static readonly Guid ProjectRefonteVtom = new("00000000-0000-0000-0052-000000000002");
+
+    // Lot 4 — Participants (§17.2)
+    public static readonly Guid ParticipantGeorgesOnElm = new("00000000-0000-0000-0053-000000000001");
+    public static readonly Guid ParticipantLegrandOnElm = new("00000000-0000-0000-0053-000000000002");
+
+    // Lot 4 — Versions de planning (§18.3)
+    public static readonly Guid PlanVersionElmInitial = new("00000000-0000-0000-0054-000000000001");
+    public static readonly Guid PlanVersionElmAjuste = new("00000000-0000-0000-0054-000000000002");
+
+    // Lot 4 — Lignes hebdomadaires (§17.3)
+    public static readonly Guid WeeklyPlanElmInitialGeorgesW1 = new("00000000-0000-0000-0055-000000000001");
+    public static readonly Guid WeeklyPlanElmInitialLegrandW1 = new("00000000-0000-0000-0055-000000000002");
+    public static readonly Guid WeeklyPlanElmAjusteGeorgesW1 = new("00000000-0000-0000-0055-000000000003");
+    public static readonly Guid WeeklyPlanElmAjusteLegrandW1 = new("00000000-0000-0000-0055-000000000004");
+
+    // Lot 4 — Jalons de démonstration (§24)
+    public static readonly Guid MilestoneElmKickoff = new("00000000-0000-0000-0056-000000000001");
+    public static readonly Guid MilestoneElmGoProd = new("00000000-0000-0000-0056-000000000002");
+    public static readonly Guid MilestoneElmCab = new("00000000-0000-0000-0056-000000000003");
 }

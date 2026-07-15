@@ -41,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "SAFRAN TIME TRACKER API",
         Version = "v1",
-        Description = "Lot 3 - Référentiels + modèle financier + temps et capacité (saisie des temps valorisée, absences, disponibilités, charges RUN/hors RUN). " +
+        Description = "Lot 4 - Référentiels + modèle financier + temps et capacité + projets (participants, planning initial/ajusté/réalisé, jalons, écarts). " +
             $"Les endpoints financiers exigent la permission FINANCIAL_DATA_VIEW, résolue via l'en-tête de démonstration '{DemoCurrentUserProvider.DemoUserHeaderName}' (ex. 's636140')."
     });
 });

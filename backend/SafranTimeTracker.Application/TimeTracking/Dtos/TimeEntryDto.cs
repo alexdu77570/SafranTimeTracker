@@ -7,6 +7,7 @@ public class TimeEntryDto
     public Guid Id { get; set; }
     public Guid ResourceId { get; set; }
     public Guid ActivityTypeId { get; set; }
+    public Guid? ProjectId { get; set; }
     public Guid? OrderId { get; set; }
     public DateOnly Date { get; set; }
     public decimal DureeHeures { get; set; }
@@ -27,6 +28,7 @@ public class TimeEntryCreateRequest
 {
     public Guid ResourceId { get; set; }
     public Guid ActivityTypeId { get; set; }
+    public Guid? ProjectId { get; set; }
     public Guid? OrderId { get; set; }
     public DateOnly Date { get; set; }
     public decimal DureeHeures { get; set; }
@@ -40,6 +42,7 @@ public class TimeEntryCreateRequest
 public class TimeEntryUpdateRequest
 {
     public Guid ActivityTypeId { get; set; }
+    public Guid? ProjectId { get; set; }
     public Guid? OrderId { get; set; }
     public DateOnly Date { get; set; }
     public decimal DureeHeures { get; set; }

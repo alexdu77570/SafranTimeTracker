@@ -31,6 +31,11 @@ public class TimeEntryConfiguration : IEntityTypeConfiguration<TimeEntry>
             .HasForeignKey(t => t.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(t => t.Project)
+            .WithMany()
+            .HasForeignKey(t => t.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(t => t.FinancialSnapshot)
             .WithOne(s => s.TimeEntry)
             .HasForeignKey<TimeEntryFinancialSnapshot>(s => s.TimeEntryId)

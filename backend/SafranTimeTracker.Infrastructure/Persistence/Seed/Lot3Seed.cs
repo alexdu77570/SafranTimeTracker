@@ -138,8 +138,10 @@ internal static class Lot3Seed
                 new DateOnly(2024, 6, 10), orderId: null, reference: null),
             TimeEntry(SeedIds.TimeEntryBernardIncident, SeedIds.ResourceBernard, SeedIds.ActivityTypeIncident,
                 new DateOnly(2024, 6, 11), orderId: SeedIds.OrderDemo, reference: "INC0001234"),
+            // Rattachée à ProjectMigrationElm (Lot 4) : démontre l'agrégation charge/coût consommés
+            // d'un projet à partir des saisies réelles (§17.5, §18.1, §20.6).
             TimeEntry(SeedIds.TimeEntryLegrandProjet, SeedIds.ResourceLegrand, SeedIds.ActivityTypeProjet,
-                new DateOnly(2024, 6, 10), orderId: null, reference: null),
+                new DateOnly(2024, 6, 10), orderId: null, reference: null, projectId: SeedIds.ProjectMigrationElm),
             TimeEntry(SeedIds.TimeEntryGeorgesChange2024, SeedIds.ResourceGeorges, SeedIds.ActivityTypeChange,
                 new DateOnly(2024, 3, 15), orderId: null, reference: "CHG0001234"),
             TimeEntry(SeedIds.TimeEntryGeorgesChange2025, SeedIds.ResourceGeorges, SeedIds.ActivityTypeChange,
@@ -175,12 +177,14 @@ internal static class Lot3Seed
                 tjmContrat: null, contractHistoryId: null, companyId: null,
                 coutReel: null, coutContrat: null, differentiel: null, FinancialValuationStatus.Incomplete));
 
-        TimeEntry TimeEntry(Guid id, Guid resourceId, Guid activityTypeId, DateOnly date, Guid? orderId, string? reference) => new()
+        TimeEntry TimeEntry(
+            Guid id, Guid resourceId, Guid activityTypeId, DateOnly date, Guid? orderId, string? reference, Guid? projectId = null) => new()
         {
             Id = id,
             ResourceId = resourceId,
             ActivityTypeId = activityTypeId,
             OrderId = orderId,
+            ProjectId = projectId,
             Date = date,
             DureeHeures = UneJourneeHeures,
             Reference = reference,

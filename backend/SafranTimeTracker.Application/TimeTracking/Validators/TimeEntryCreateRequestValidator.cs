@@ -5,6 +5,7 @@ using SafranTimeTracker.Application.Common.Persistence;
 using SafranTimeTracker.Application.TimeTracking.Dtos;
 using SafranTimeTracker.Domain.Activities;
 using SafranTimeTracker.Domain.Orders;
+using SafranTimeTracker.Domain.Projects;
 using SafranTimeTracker.Domain.Resources;
 
 namespace SafranTimeTracker.Application.TimeTracking.Validators;
@@ -14,7 +15,8 @@ public class TimeEntryCreateRequestValidator : AbstractValidator<TimeEntryCreate
     public TimeEntryCreateRequestValidator(
         IReadRepository<Resource> resourceRepository,
         IReadRepository<ActivityType> activityTypeRepository,
-        IReadRepository<Order> orderRepository)
+        IReadRepository<Order> orderRepository,
+        IReadRepository<Project> projectRepository)
     {
         RuleFor(x => x.ResourceId)
             .MustAsync(async (id, ct) => await resourceRepository.Query().AnyAsync(r => r.Id == id, ct))
@@ -28,6 +30,10 @@ public class TimeEntryCreateRequestValidator : AbstractValidator<TimeEntryCreate
             .MustAsync(async (id, ct) => id is null || await orderRepository.Query().AnyAsync(o => o.Id == id, ct))
             .WithMessage("La commande indiquée n'existe pas.");
 
+        RuleFor(x => x.ProjectId)
+            .MustAsync(async (id, ct) => id is null || await projectRepository.Query().AnyAsync(p => p.Id == id, ct))
+            .WithMessage("Le projet indiqué n'existe pas.");
+
         RuleFor(x => x.DureeHeures).GreaterThan(0).LessThanOrEqualTo(24)
             .WithMessage("La durée doit être strictement positive et ne peut excéder 24 heures.");
         RuleFor(x => x.Commentaire).MaximumLength(1000);
@@ -40,7 +46,8 @@ public class TimeEntryCreateRequestValidator : AbstractValidator<TimeEntryCreate
 
 public class TimeEntryUpdateRequestValidator : AbstractValidator<TimeEntryUpdateRequest>
 {
-    public TimeEntryUpdateRequestValidator(IReadRepository<ActivityType> activityTypeRepository, IReadRepository<Order> orderRepository)
+    public TimeEntryUpdateRequestValidator(
+        IReadRepository<ActivityType> activityTypeRepository, IReadRepository<Order> orderRepository, IReadRepository<Project> projectRepository)
     {
         RuleFor(x => x.ActivityTypeId)
             .MustAsync(async (id, ct) => await activityTypeRepository.Query().AnyAsync(a => a.Id == id, ct))
@@ -49,6 +56,10 @@ public class TimeEntryUpdateRequestValidator : AbstractValidator<TimeEntryUpdate
         RuleFor(x => x.OrderId)
             .MustAsync(async (id, ct) => id is null || await orderRepository.Query().AnyAsync(o => o.Id == id, ct))
             .WithMessage("La commande indiquée n'existe pas.");
+
+        RuleFor(x => x.ProjectId)
+            .MustAsync(async (id, ct) => id is null || await projectRepository.Query().AnyAsync(p => p.Id == id, ct))
+            .WithMessage("Le projet indiqué n'existe pas.");
 
         RuleFor(x => x.DureeHeures).GreaterThan(0).LessThanOrEqualTo(24)
             .WithMessage("La durée doit être strictement positive et ne peut excéder 24 heures.");
