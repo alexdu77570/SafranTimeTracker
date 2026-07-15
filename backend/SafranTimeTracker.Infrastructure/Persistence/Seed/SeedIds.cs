@@ -105,4 +105,49 @@ internal static class SeedIds
     public static readonly Guid AssignmentBernard = new("00000000-0000-0000-0032-000000000001");
     public static readonly Guid AssignmentLegrand = new("00000000-0000-0000-0032-000000000002");
     public static readonly Guid AssignmentGeorges = new("00000000-0000-0000-0032-000000000003");
+
+    // Lot 3 — Types d'activité (§19.2, §29.4)
+    public static readonly Guid ActivityTypeRun = new("00000000-0000-0000-0040-000000000001");
+    public static readonly Guid ActivityTypeIncident = new("00000000-0000-0000-0040-000000000002");
+    public static readonly Guid ActivityTypeChange = new("00000000-0000-0000-0040-000000000003");
+    public static readonly Guid ActivityTypeProblem = new("00000000-0000-0000-0040-000000000004");
+    public static readonly Guid ActivityTypeRitm = new("00000000-0000-0000-0040-000000000005");
+    public static readonly Guid ActivityTypeProjet = new("00000000-0000-0000-0040-000000000006");
+    public static readonly Guid ActivityTypeAmeliorationContinue = new("00000000-0000-0000-0040-000000000007");
+    public static readonly Guid ActivityTypeSupport = new("00000000-0000-0000-0040-000000000008");
+    public static readonly Guid ActivityTypeAstreinte = new("00000000-0000-0000-0040-000000000009");
+    public static readonly Guid ActivityTypeReunion = new("00000000-0000-0000-0040-000000000010");
+    public static readonly Guid ActivityTypeFormation = new("00000000-0000-0000-0040-000000000011");
+    public static readonly Guid ActivityTypeVabe = new("00000000-0000-0000-0040-000000000012");
+    public static readonly Guid ActivityTypeVsr = new("00000000-0000-0000-0040-000000000013");
+
+    // Lot 3 — Jours fériés de démonstration (§22.2, §29.2)
+    public static readonly Guid HolidayNouvelAn2024 = new("00000000-0000-0000-0041-000000000001");
+    public static readonly Guid HolidayFeteTravail2024 = new("00000000-0000-0000-0041-000000000002");
+    public static readonly Guid HolidayFeteNationale2024 = new("00000000-0000-0000-0041-000000000003");
+    public static readonly Guid HolidayNoel2024 = new("00000000-0000-0000-0041-000000000004");
+    public static readonly Guid HolidayNouvelAn2025 = new("00000000-0000-0000-0041-000000000005");
+
+    // Lot 3 — Variation de capacité de démonstration (§10.5)
+    public static readonly Guid CapacityPeriodPatel = new("00000000-0000-0000-0042-000000000001");
+
+    // Lot 3 — Saisies de temps de démonstration (§19.1)
+    public static readonly Guid TimeEntryBernardRun = new("00000000-0000-0000-0043-000000000001");
+    public static readonly Guid TimeEntryBernardIncident = new("00000000-0000-0000-0043-000000000002");
+    public static readonly Guid TimeEntryLegrandProjet = new("00000000-0000-0000-0043-000000000003");
+    public static readonly Guid TimeEntryGeorgesChange2024 = new("00000000-0000-0000-0043-000000000004");
+    public static readonly Guid TimeEntryGeorgesChange2025 = new("00000000-0000-0000-0043-000000000005");
+    public static readonly Guid TimeEntryMishraFormation = new("00000000-0000-0000-0043-000000000006");
+
+    // TimeEntryFinancialSnapshot réutilise l'Id de sa TimeEntry (clé partagée, cf.
+    // TimeEntryService.ValorizeAsync) : pas de Guid de seed distinct.
+
+    // Lot 3 — Absences de démonstration (§23)
+    public static readonly Guid AbsenceBernardConge = new("00000000-0000-0000-0045-000000000001");
+    public static readonly Guid AbsenceLegrandMaladie = new("00000000-0000-0000-0045-000000000002");
+    public static readonly Guid AbsenceGeorgesRtt = new("00000000-0000-0000-0045-000000000003");
+    public static readonly Guid AbsenceMishraFormationRefusee = new("00000000-0000-0000-0045-000000000004");
+
+    // Lot 3 — Ressource inactive de démonstration (test de blocage de saisie, §19.4)
+    public static readonly Guid ResourceInactiveDemo = new("00000000-0000-0000-0046-000000000001");
 }

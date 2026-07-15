@@ -22,6 +22,361 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Absences.Absence", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Commentaire")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("commentaire");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("DateDebut")
+                        .HasColumnType("date")
+                        .HasColumnName("date_debut");
+
+                    b.Property<DateTime?>("DateDecision")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_decision");
+
+                    b.Property<DateOnly>("DateFin")
+                        .HasColumnType("date")
+                        .HasColumnName("date_fin");
+
+                    b.Property<bool>("DemiJournee")
+                        .HasColumnType("boolean")
+                        .HasColumnName("demi_journee");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resource_id");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer")
+                        .HasColumnName("statut");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("ValideParIdentifiant")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("valide_par_identifiant");
+
+                    b.HasKey("Id")
+                        .HasName("pk_absences");
+
+                    b.HasIndex("ResourceId", "DateDebut")
+                        .HasDatabaseName("ix_absences_resource_id_date_debut");
+
+                    b.ToTable("absences", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0045-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 7, 1),
+                            DateDecision = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DateFin = new DateOnly(2024, 7, 5),
+                            DemiJournee = false,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000001"),
+                            Statut = 2,
+                            Type = 0,
+                            ValideParIdentifiant = "flegrand"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0045-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 8, 12),
+                            DateFin = new DateOnly(2024, 8, 12),
+                            DemiJournee = true,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            Statut = 1,
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0045-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 9, 2),
+                            DateFin = new DateOnly(2024, 9, 2),
+                            DemiJournee = false,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 0,
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0045-000000000004"),
+                            Commentaire = "Formation déjà suivie récemment.",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 5, 10),
+                            DateDecision = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DateFin = new DateOnly(2024, 5, 10),
+                            DemiJournee = false,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000007"),
+                            Statut = 3,
+                            Type = 3,
+                            ValideParIdentifiant = "tgeorges"
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Activities.ActivityType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsRun")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_run");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<string>("ReferenceExample")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("reference_example");
+
+                    b.Property<string>("ReferenceFormatRegex")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reference_format_regex");
+
+                    b.Property<bool>("ReferenceRequired")
+                        .HasColumnType("boolean")
+                        .HasColumnName("reference_required");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_activity_types");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_activity_types_code");
+
+                    b.ToTable("activity_types", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000001"),
+                            Code = "RUN",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "RUN",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000002"),
+                            Code = "INCIDENT",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "Incident",
+                            ReferenceExample = "INC0001234",
+                            ReferenceFormatRegex = "^INC\\d{7}$",
+                            ReferenceRequired = true,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000003"),
+                            Code = "CHANGE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "Change",
+                            ReferenceExample = "CHG0001234",
+                            ReferenceFormatRegex = "^CHG\\d{7}$",
+                            ReferenceRequired = true,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000004"),
+                            Code = "PROBLEM",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "Problem",
+                            ReferenceExample = "PRB0001234",
+                            ReferenceFormatRegex = "^PRB\\d{7}$",
+                            ReferenceRequired = true,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000005"),
+                            Code = "RITM",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "RITM",
+                            ReferenceExample = "RITM0001234",
+                            ReferenceFormatRegex = "^RITM\\d{7}$",
+                            ReferenceRequired = true,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000006"),
+                            Code = "PROJET",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = false,
+                            Libelle = "Projet",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000007"),
+                            Code = "AMELIORATION_CONTINUE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = false,
+                            Libelle = "Amélioration continue",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000008"),
+                            Code = "SUPPORT",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "Support",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000009"),
+                            Code = "ASTREINTE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = true,
+                            Libelle = "Astreinte",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000010"),
+                            Code = "REUNION",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = false,
+                            Libelle = "Réunion",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000011"),
+                            Code = "FORMATION",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = false,
+                            Libelle = "Formation",
+                            ReferenceRequired = false,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000012"),
+                            Code = "VABE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = false,
+                            Libelle = "VABE",
+                            ReferenceExample = "VABE-0012",
+                            ReferenceFormatRegex = "^VABE-\\d{4}$",
+                            ReferenceRequired = true,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0040-000000000013"),
+                            Code = "VSR",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            IsRun = false,
+                            Libelle = "VSR",
+                            ReferenceExample = "VSR-0012",
+                            ReferenceFormatRegex = "^VSR-\\d{4}$",
+                            ReferenceRequired = true,
+                            Statut = 0
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Applications.ApplicationReference", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1345,6 +1700,100 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             ServiceId = new Guid("00000000-0000-0000-0011-000000000001"),
                             Statut = 0,
                             WeeklyCapacity = 38.75m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0046-000000000001"),
+                            Commentaire = "Ressource désactivée de démonstration (test de blocage §19.4).",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DailyCapacity = 7.75m,
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            Nom = "RESSOURCE-INACTIVE",
+                            Prenom = "Démonstration",
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000001"),
+                            Statut = 1,
+                            WeeklyCapacity = 38.75m
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Resources.ResourceCapacityPeriod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("DailyCapacity")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("daily_capacity");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resource_id");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<decimal>("WeeklyCapacity")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("weekly_capacity");
+
+                    b.HasKey("Id")
+                        .HasName("pk_resource_capacity_periods");
+
+                    b.HasIndex("ResourceId", "StartDate")
+                        .HasDatabaseName("ix_resource_capacity_periods_resource_id_start_date");
+
+                    b.ToTable("resource_capacity_periods", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0042-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DailyCapacity = 4.00m,
+                            Reason = "Temps partiel (démonstration, cahier des charges §10.5).",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000010"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0,
+                            WeeklyCapacity = 20.00m
                         });
                 });
 
@@ -1511,6 +1960,114 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Settings.HolidayCalendar", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<string>("Pays")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("pays");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_holiday_calendar");
+
+                    b.HasIndex("Pays", "Date")
+                        .IsUnique()
+                        .HasDatabaseName("ix_holiday_calendar_pays_date");
+
+                    b.ToTable("holiday_calendar", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0041-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 1, 1),
+                            Libelle = "Jour de l'an",
+                            Pays = "France",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0041-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 5, 1),
+                            Libelle = "Fête du travail",
+                            Pays = "France",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0041-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 7, 14),
+                            Libelle = "Fête nationale",
+                            Pays = "France",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0041-000000000004"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 12, 25),
+                            Libelle = "Noël",
+                            Pays = "France",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0041-000000000005"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2025, 1, 1),
+                            Libelle = "Jour de l'an",
+                            Pays = "France",
+                            Statut = 0
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Settings.Settings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1602,6 +2159,335 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             SeuilSurcharge = 100m,
                             UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             UpdatedBy = "system-seed"
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActivityTypeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("activity_type_id");
+
+                    b.Property<string>("Commentaire")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("commentaire");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<decimal>("DureeHeures")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("duree_heures");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("reference");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resource_id");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_time_entries");
+
+                    b.HasIndex("ActivityTypeId")
+                        .HasDatabaseName("ix_time_entries_activity_type_id");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_time_entries_order_id");
+
+                    b.HasIndex("ResourceId", "Date")
+                        .HasDatabaseName("ix_time_entries_resource_id_date");
+
+                    b.ToTable("time_entries", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000001"),
+                            ActivityTypeId = new Guid("00000000-0000-0000-0040-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 6, 10),
+                            DureeHeures = 7.75m,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000001"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000002"),
+                            ActivityTypeId = new Guid("00000000-0000-0000-0040-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 6, 11),
+                            DureeHeures = 7.75m,
+                            OrderId = new Guid("00000000-0000-0000-0023-000000000001"),
+                            Reference = "INC0001234",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000001"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000003"),
+                            ActivityTypeId = new Guid("00000000-0000-0000-0040-000000000006"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 6, 10),
+                            DureeHeures = 7.75m,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000004"),
+                            ActivityTypeId = new Guid("00000000-0000-0000-0040-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 3, 15),
+                            DureeHeures = 7.75m,
+                            Reference = "CHG0001234",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000005"),
+                            ActivityTypeId = new Guid("00000000-0000-0000-0040-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2025, 3, 15),
+                            DureeHeures = 7.75m,
+                            Reference = "CHG0009999",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000006"),
+                            ActivityTypeId = new Guid("00000000-0000-0000-0040-000000000011"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Date = new DateOnly(2024, 6, 10),
+                            DureeHeures = 7.75m,
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000007"),
+                            Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntryFinancialSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CalculationDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("calculation_date");
+
+                    b.Property<int>("CalculationStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("calculation_status");
+
+                    b.Property<Guid?>("CompanyContractHistoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_contract_history_id");
+
+                    b.Property<Guid?>("CompanyIdSnapshot")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id_snapshot");
+
+                    b.Property<decimal?>("CoutContratCalcule")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cout_contrat_calcule");
+
+                    b.Property<decimal?>("CoutReelCalcule")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cout_reel_calcule");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal?>("DifferentielCalcule")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("differentiel_calcule");
+
+                    b.Property<Guid?>("ResourceTjmHistoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resource_tjm_history_id");
+
+                    b.Property<string>("SourceContrat")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("source_contrat");
+
+                    b.Property<string>("SourceTjmPersonne")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("source_tjm_personne");
+
+                    b.Property<Guid>("TimeEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("time_entry_id");
+
+                    b.Property<decimal?>("TjmContratSnapshot")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("tjm_contrat_snapshot");
+
+                    b.Property<decimal?>("TjmPersonneSnapshot")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("tjm_personne_snapshot");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_time_entry_financial_snapshots");
+
+                    b.HasIndex("TimeEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_time_entry_financial_snapshots_time_entry_id");
+
+                    b.ToTable("time_entry_financial_snapshots", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000001"),
+                            CalculationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CalculationStatus = 0,
+                            CompanyIdSnapshot = new Guid("00000000-0000-0000-0013-000000000001"),
+                            CoutReelCalcule = 650.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceTjmHistoryId = new Guid("00000000-0000-0000-0030-000000000001"),
+                            SourceTjmPersonne = "ResourceTjmHistory",
+                            TimeEntryId = new Guid("00000000-0000-0000-0043-000000000001"),
+                            TjmPersonneSnapshot = 650.00m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000002"),
+                            CalculationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CalculationStatus = 0,
+                            CompanyIdSnapshot = new Guid("00000000-0000-0000-0013-000000000001"),
+                            CoutReelCalcule = 650.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceTjmHistoryId = new Guid("00000000-0000-0000-0030-000000000001"),
+                            SourceTjmPersonne = "ResourceTjmHistory",
+                            TimeEntryId = new Guid("00000000-0000-0000-0043-000000000002"),
+                            TjmPersonneSnapshot = 650.00m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000003"),
+                            CalculationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CalculationStatus = 0,
+                            CompanyContractHistoryId = new Guid("00000000-0000-0000-0031-000000000001"),
+                            CompanyIdSnapshot = new Guid("00000000-0000-0000-0013-000000000002"),
+                            CoutContratCalcule = 750.00m,
+                            CoutReelCalcule = 700.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DifferentielCalcule = 50.00m,
+                            ResourceTjmHistoryId = new Guid("00000000-0000-0000-0030-000000000002"),
+                            SourceContrat = "CompanyContractHistory",
+                            SourceTjmPersonne = "ResourceTjmHistory",
+                            TimeEntryId = new Guid("00000000-0000-0000-0043-000000000003"),
+                            TjmContratSnapshot = 750.00m,
+                            TjmPersonneSnapshot = 700.00m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000004"),
+                            CalculationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CalculationStatus = 0,
+                            CompanyIdSnapshot = new Guid("00000000-0000-0000-0013-000000000001"),
+                            CoutReelCalcule = 600.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceTjmHistoryId = new Guid("00000000-0000-0000-0030-000000000003"),
+                            SourceTjmPersonne = "ResourceTjmHistory",
+                            TimeEntryId = new Guid("00000000-0000-0000-0043-000000000004"),
+                            TjmPersonneSnapshot = 600.00m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000005"),
+                            CalculationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CalculationStatus = 0,
+                            CompanyIdSnapshot = new Guid("00000000-0000-0000-0013-000000000001"),
+                            CoutReelCalcule = 620.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceTjmHistoryId = new Guid("00000000-0000-0000-0030-000000000004"),
+                            SourceTjmPersonne = "ResourceTjmHistory",
+                            TimeEntryId = new Guid("00000000-0000-0000-0043-000000000005"),
+                            TjmPersonneSnapshot = 620.00m
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0043-000000000006"),
+                            CalculationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CalculationStatus = 1,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            TimeEntryId = new Guid("00000000-0000-0000-0043-000000000006")
                         });
                 });
 
@@ -2066,6 +2952,18 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Absences.Absence", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_absences_resources_resource_id");
+
+                    b.Navigation("Resource");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Applications.ApplicationReference", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Responsable")
@@ -2285,6 +3183,18 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Resources.ResourceCapacityPeriod", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_resource_capacity_periods_resources_resource_id");
+
+                    b.Navigation("Resource");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Resources.ResourceOperationalRole", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Resources.OperationalRole", "OperationalRole")
@@ -2316,6 +3226,47 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_resource_tjm_histories_resources_resource_id");
 
                     b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntry", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Activities.ActivityType", "ActivityType")
+                        .WithMany()
+                        .HasForeignKey("ActivityTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entries_activity_types_activity_type_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Orders.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_time_entries_orders_order_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entries_resources_resource_id");
+
+                    b.Navigation("ActivityType");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntryFinancialSnapshot", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Time.TimeEntry", "TimeEntry")
+                        .WithOne("FinancialSnapshot")
+                        .HasForeignKey("SafranTimeTracker.Domain.Time.TimeEntryFinancialSnapshot", "TimeEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entry_financial_snapshots_time_entries_time_entry_id");
+
+                    b.Navigation("TimeEntry");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.User", b =>
@@ -2392,6 +3343,11 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("SafranTimeTracker.Domain.Resources.Resource", b =>
                 {
                     b.Navigation("OperationalRoles");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntry", b =>
+                {
+                    b.Navigation("FinancialSnapshot");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.Permission", b =>

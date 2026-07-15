@@ -157,6 +157,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Index explicites sur les clés de recherche fréquentes : dates, ressource, projet, commande, société.
 - Jeu de données initial (seed) **idempotent**, rejouable sans erreur ni duplication.
 - Le provider actif est résolu uniquement via la configuration (`appsettings` / variables d'environnement), jamais codé en dur.
+- `IReadRepository<T>.Query()` (`EfRepository<T>`) est **non suivi** (`AsNoTracking`) : pour corriger une entité déjà persistée, toujours la récupérer via `GetByIdAsync` (suivi) avant de la muter et d'appeler `SaveChangesAsync` — une mutation sur un résultat de `Query()` n'est jamais persistée. Pour une entité satellite en relation 1-1 (ex. un instantané figé), faire porter le même `Id` que l'entité propriétaire (clé partagée) plutôt qu'un `Guid` indépendant : `GetByIdAsync` sur le dépôt satellite retrouve alors directement la ligne suivie sans requête de recherche intermédiaire.
 
 ## 12. Conventions API REST
 

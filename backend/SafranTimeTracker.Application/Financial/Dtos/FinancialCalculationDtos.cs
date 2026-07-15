@@ -12,10 +12,9 @@ public class FinancialCalculationRequest
 }
 
 /// <summary>
-/// Résultat du calcul financier unique (FinancialCalculationService). Ce n'est pas l'entité
-/// persistée TimeEntryFinancialSnapshot (docs/DATABASE.md §5) : celle-ci référence TimeEntry, qui
-/// n'existe qu'au Lot 3 — la persistance du snapshot est différée à ce lot. Ce DTO couvre le
-/// sous-ensemble testable indépendamment d'une saisie (§20.2-20.4).
+/// Résultat du calcul financier unique (FinancialCalculationService), mappé par TimeEntryService
+/// (Lot 3) dans l'entité persistée TimeEntryFinancialSnapshot (docs/DATABASE.md §5). Reste
+/// indépendamment testable sans saisie (§20.2-20.4).
 /// </summary>
 public class FinancialCalculationResultDto
 {
@@ -26,11 +25,17 @@ public class FinancialCalculationResultDto
     public decimal TempsJours { get; set; }
 
     public Guid? ResourceTjmHistoryId { get; set; }
+    /// <summary>Toujours "ResourceTjmHistory" quand ResourceTjmHistoryId est renseigné (§20.5) —
+    /// une seule source existe à ce jour, ce champ existe pour la traçabilité future.</summary>
+    public string? SourceTjmPersonne { get; set; }
     public decimal? DailyRatePersonne { get; set; }
     public decimal? CoutReel { get; set; }
 
     public Guid? CompanyId { get; set; }
     public Guid? CompanyContractHistoryId { get; set; }
+    /// <summary>Toujours "CompanyContractHistory" quand CompanyContractHistoryId est renseigné
+    /// (§20.5) — une seule source existe à ce jour.</summary>
+    public string? SourceContrat { get; set; }
     public decimal? DailyRateContrat { get; set; }
     public decimal? CoutContractuel { get; set; }
 

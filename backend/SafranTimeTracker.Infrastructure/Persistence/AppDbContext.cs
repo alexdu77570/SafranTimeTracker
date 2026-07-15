@@ -1,20 +1,25 @@
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Domain.Absences;
+using SafranTimeTracker.Domain.Activities;
 using SafranTimeTracker.Domain.Applications;
 using SafranTimeTracker.Domain.Companies;
 using SafranTimeTracker.Domain.Organisation;
 using SafranTimeTracker.Domain.Orders;
 using SafranTimeTracker.Domain.Resources;
+using SafranTimeTracker.Domain.Time;
 using SafranTimeTracker.Domain.Users;
 using SafranTimeTracker.Infrastructure.Persistence.Seed;
+using HolidayCalendarEntity = SafranTimeTracker.Domain.Settings.HolidayCalendar;
 using SettingsEntity = SafranTimeTracker.Domain.Settings.Settings;
 
 namespace SafranTimeTracker.Infrastructure.Persistence;
 
 /// <summary>
-/// Contexte EF Core unique de l'application. Porte les référentiels du Lot 1 et le modèle
-/// financier du Lot 2 (docs/ROADMAP.md) : aucune entité de temps, de projet ou de budget n'est
-/// encore présente (Lots 3 à 5). Les configurations d'entités (IEntityTypeConfiguration&lt;T&gt;)
-/// sont appliquées automatiquement via ApplyConfigurationsFromAssembly.
+/// Contexte EF Core unique de l'application. Porte les référentiels du Lot 1, le modèle financier
+/// du Lot 2 et le temps/capacité du Lot 3 (docs/ROADMAP.md) : aucune entité de projet ou de budget
+/// n'est encore présente (Lots 4 à 5). Les configurations d'entités
+/// (IEntityTypeConfiguration&lt;T&gt;) sont appliquées automatiquement via
+/// ApplyConfigurationsFromAssembly.
 /// </summary>
 public class AppDbContext : DbContext
 {
@@ -58,11 +63,20 @@ public class AppDbContext : DbContext
     public DbSet<CompanyContractHistory> CompanyContractHistories => Set<CompanyContractHistory>();
     public DbSet<ResourceCompanyAssignment> ResourceCompanyAssignments => Set<ResourceCompanyAssignment>();
 
+    // Temps et capacité (Lot 3)
+    public DbSet<ActivityType> ActivityTypes => Set<ActivityType>();
+    public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
+    public DbSet<TimeEntryFinancialSnapshot> TimeEntryFinancialSnapshots => Set<TimeEntryFinancialSnapshot>();
+    public DbSet<Absence> Absences => Set<Absence>();
+    public DbSet<ResourceCapacityPeriod> ResourceCapacityPeriods => Set<ResourceCapacityPeriod>();
+    public DbSet<HolidayCalendarEntity> HolidayCalendar => Set<HolidayCalendarEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         Lot1Seed.Apply(modelBuilder);
         Lot2Seed.Apply(modelBuilder);
+        Lot3Seed.Apply(modelBuilder);
     }
 }

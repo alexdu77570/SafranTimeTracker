@@ -11,9 +11,8 @@ namespace SafranTimeTracker.Application.Financial.Services;
 /// <summary>
 /// Seul point de calcul du coût réel, du coût contractuel et du différentiel
 /// (docs/ARCHITECTURE.md §2, cahier des charges §20) : aucun autre service ne doit dupliquer
-/// cette logique. Ne persiste rien — le Lot 2 ne crée pas l'entité TimeEntryFinancialSnapshot,
-/// qui référence TimeEntry (Lot 3) ; ce service reste réutilisable tel quel par le
-/// TimeEntryService du Lot 3 pour produire ce snapshot.
+/// cette logique. Ne persiste rien : TimeEntryService (Lot 3) mappe le résultat dans l'entité
+/// TimeEntryFinancialSnapshot.
 /// </summary>
 public class FinancialCalculationService(
     IReadRepository<ResourceTjmHistory> tjmHistoryRepository,
@@ -23,6 +22,20 @@ public class FinancialCalculationService(
     IReadRepository<SettingsEntity> settingsRepository)
 {
     private const string CompanyTypeInterneCode = "INTERNE";
+    private const string SourceResourceTjmHistory = "ResourceTjmHistory";
+    private const string SourceCompanyContractHistory = "CompanyContractHistory";
+
+    /// <summary>Société applicable à une ressource à une date donnée (§12.2), via
+    /// ResourceCompanyAssignment — jamais Resource.CompanyId (pointeur non historisé, Lot 1).
+    /// Public pour être réutilisée par TimeEntryService (§13.4 : compatibilité commande/société)
+    /// sans dupliquer cette recherche.</summary>
+    public async Task<Guid?> GetApplicableCompanyIdAsync(Guid resourceId, DateOnly date, CancellationToken cancellationToken = default) =>
+        await assignmentRepository.Query()
+            .Where(a => a.ResourceId == resourceId && a.Status == ReferentialStatus.Actif
+                && a.StartDate <= date && (a.EndDate == null || a.EndDate >= date))
+            .OrderByDescending(a => a.StartDate)
+            .Select(a => (Guid?)a.CompanyId)
+            .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<FinancialCalculationResultDto> CalculateAsync(
         FinancialCalculationRequest request, CancellationToken cancellationToken = default)
@@ -53,25 +66,22 @@ public class FinancialCalculationService(
 
         result.ValuationStatus = FinancialValuationStatus.Complete;
         result.ResourceTjmHistoryId = applicableTjm.Id;
+        result.SourceTjmPersonne = SourceResourceTjmHistory;
         result.DailyRatePersonne = applicableTjm.DailyRate;
         result.CoutReel = result.TempsJours * applicableTjm.DailyRate; // §20.2
 
-        var applicableAssignment = await assignmentRepository.Query()
-            .Where(a => a.ResourceId == request.ResourceId && a.Status == ReferentialStatus.Actif
-                && a.StartDate <= request.Date && (a.EndDate == null || a.EndDate >= request.Date))
-            .OrderByDescending(a => a.StartDate)
-            .FirstOrDefaultAsync(cancellationToken);
+        var applicableCompanyId = await GetApplicableCompanyIdAsync(request.ResourceId, request.Date, cancellationToken);
 
-        if (applicableAssignment is null)
+        if (applicableCompanyId is null)
         {
             // Société non déterminée à la date : coût contractuel et différentiel non applicables.
             return result;
         }
 
-        result.CompanyId = applicableAssignment.CompanyId;
+        result.CompanyId = applicableCompanyId;
 
         var companyType = await companyRepository.Query()
-            .Where(c => c.Id == applicableAssignment.CompanyId)
+            .Where(c => c.Id == applicableCompanyId)
             .Select(c => c.CompanyType.Code)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -82,7 +92,7 @@ public class FinancialCalculationService(
         }
 
         var applicableContract = await contractHistoryRepository.Query()
-            .Where(h => h.CompanyId == applicableAssignment.CompanyId && h.Status == ReferentialStatus.Actif
+            .Where(h => h.CompanyId == applicableCompanyId && h.Status == ReferentialStatus.Actif
                 && h.StartDate <= request.Date && (h.EndDate == null || h.EndDate >= request.Date))
             .OrderByDescending(h => h.StartDate)
             .FirstOrDefaultAsync(cancellationToken);
@@ -94,6 +104,7 @@ public class FinancialCalculationService(
         }
 
         result.CompanyContractHistoryId = applicableContract.Id;
+        result.SourceContrat = SourceCompanyContractHistory;
         result.DailyRateContrat = applicableContract.ContractDailyRate;
         result.CoutContractuel = result.TempsJours * applicableContract.ContractDailyRate; // §20.3
         result.Differentiel = result.CoutContractuel - result.CoutReel; // §20.4
