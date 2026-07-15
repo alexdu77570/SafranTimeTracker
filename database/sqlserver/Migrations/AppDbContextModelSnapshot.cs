@@ -241,6 +241,111 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             EmailContact = "contact@safrantimetracker.local",
                             Nom = "SAFRAN",
                             Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0013-000000000002"),
+                            Code = "EXTCONSEIL",
+                            Commentaire = "Société externe de démonstration (données de démonstration, Lot 2).",
+                            CompanyTypeId = new Guid("00000000-0000-0000-0004-000000000002"),
+                            ContactPrincipal = "Direction Commerciale",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            EmailContact = "contact@externeconseil.local",
+                            Nom = "Externe Conseil",
+                            Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Companies.CompanyContractHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("company_id");
+
+                    b.Property<Guid>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<decimal>("ContractDailyRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("contract_daily_rate");
+
+                    b.Property<string>("ContractNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("contract_number");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_contract_histories");
+
+                    b.HasIndex("CompanyId", "StartDate")
+                        .HasDatabaseName("ix_company_contract_histories_company_id_start_date");
+
+                    b.ToTable("company_contract_histories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0031-000000000001"),
+                            CompanyId = new Guid("00000000-0000-0000-0013-000000000002"),
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
+                            ContractDailyRate = 750.00m,
+                            ContractNumber = "CTR-2024-001",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Currency = "EUR",
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
                         });
                 });
 
@@ -284,6 +389,110 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             Id = new Guid("00000000-0000-0000-0004-000000000002"),
                             Code = "EXTERNE",
                             Libelle = "Externe"
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Companies.ResourceCompanyAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AssignmentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("assignment_type");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("resource_id");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_resource_company_assignments");
+
+                    b.HasIndex("CompanyId")
+                        .HasDatabaseName("ix_resource_company_assignments_company_id");
+
+                    b.HasIndex("ResourceId", "StartDate")
+                        .HasDatabaseName("ix_resource_company_assignments_resource_id_start_date");
+
+                    b.ToTable("resource_company_assignments", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0032-000000000001"),
+                            AssignmentType = "Principale",
+                            CompanyId = new Guid("00000000-0000-0000-0013-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000001"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0032-000000000002"),
+                            AssignmentType = "Principale",
+                            CompanyId = new Guid("00000000-0000-0000-0013-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0032-000000000003"),
+                            AssignmentType = "Principale",
+                            CompanyId = new Guid("00000000-0000-0000-0013-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
                         });
                 });
 
@@ -1180,6 +1389,128 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Resources.ResourceTjmHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<Guid>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("DailyRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("daily_rate");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("resource_id");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_resource_tjm_histories");
+
+                    b.HasIndex("ResourceId", "StartDate")
+                        .HasDatabaseName("ix_resource_tjm_histories_resource_id_start_date");
+
+                    b.ToTable("resource_tjm_histories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0030-000000000001"),
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DailyRate = 650.00m,
+                            Reason = "TJM initial",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000001"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0030-000000000002"),
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DailyRate = 700.00m,
+                            Reason = "TJM initial",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0030-000000000003"),
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DailyRate = 600.00m,
+                            EndDate = new DateOnly(2024, 12, 31),
+                            Reason = "TJM initial",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0030-000000000004"),
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DailyRate = 620.00m,
+                            Reason = "Revalorisation annuelle",
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            StartDate = new DateOnly(2025, 1, 1),
+                            Status = 0
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Settings.Settings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1775,6 +2106,39 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("CompanyType");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Companies.CompanyContractHistory", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Companies.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_contract_histories_companies_company_id");
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Companies.ResourceCompanyAssignment", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Companies.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_resource_company_assignments_companies_company_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_resource_company_assignments_resources_resource_id");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Resource");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.Order", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Companies.Company", "Company")
@@ -1938,6 +2302,18 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .HasConstraintName("fk_resource_operational_roles_resources_resource_id");
 
                     b.Navigation("OperationalRole");
+
+                    b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Resources.ResourceTjmHistory", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_resource_tjm_histories_resources_resource_id");
 
                     b.Navigation("Resource");
                 });

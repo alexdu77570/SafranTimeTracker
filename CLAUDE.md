@@ -145,7 +145,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Configuration via le pattern `IOptions<T>`, déclinée au minimum pour `Development`, `Qualification`, `Production`.
 - Endpoint de santé (`/health`) exposé pour les scripts de déploiement et de supervision.
 - Documentation OpenAPI générée et tenue à jour à chaque endpoint ajouté.
-- Autorisation basée sur des policies combinant rôle, permissions complémentaires et périmètre organisationnel (département/service/équipe/propriété de la donnée).
+- Autorisation basée sur des policies combinant rôle, permissions complémentaires et périmètre organisationnel (département/service/équipe/propriété de la donnée). Implémentation actuelle : un filtre de permission dédié (`RequirePermissionAttribute`) qui ne dépend que de l'abstraction `ICurrentUser` (§17), plutôt que le système `Authorization`/`ClaimsPrincipal` natif d'ASP.NET Core — volontairement découplé de tout mécanisme d'authentification concret. Seul l'axe permission est appliqué à ce jour (ex. `FINANCIAL_DATA_VIEW`) ; la combinaison avec rôle et périmètre organisationnel reste à construire au fil des lots.
 
 ## 11. Conventions Entity Framework Core
 
@@ -208,7 +208,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Seul un Administrateur peut attribuer/retirer le rôle Administrateur ou les permissions financières. Un utilisateur ne peut pas retirer son propre dernier accès administrateur si cela laisse l'application sans administrateur actif.
 - Validation systématique de toutes les entrées (FluentValidation côté API), protection contre les injections, absence de SQL natif non paramétré.
 - Origines CORS explicitement configurées par environnement, jamais en `*` hors développement local.
-- Authentification de démonstration acceptée pour le MVP, mais l'architecture doit permettre une intégration future avec Active Directory, LDAP, OpenID Connect ou un SSO d'entreprise, sans refonte du modèle d'autorisation.
+- Authentification de démonstration acceptée pour le MVP, mais l'architecture doit permettre une intégration future avec Active Directory, LDAP, OpenID Connect ou un SSO d'entreprise, sans refonte du modèle d'autorisation. L'identité de l'appelant est portée par l'abstraction `ICurrentUser` (couche `Application`) ; son implémentation actuelle est un provider de démonstration qui résout l'appelant depuis un en-tête HTTP vérifié en base — explicitement pas un login, un JWT, une session, un cookie ni ASP.NET Identity. Contrôleurs, services applicatifs et règles de sécurité ne dépendent que de `ICurrentUser` : remplacer ce provider par un futur provider LDAP/OIDC ne les modifie pas.
 - Aucun secret, certificat ou mot de passe réel dans le dépôt Git (voir `.gitignore`) ; HTTPS obligatoire hors environnement de développement ; certificats stockés sous `E:\certificats\SafranTimeTracker`, jamais dans Git.
 - Principe du moindre privilège appliqué systématiquement.
 

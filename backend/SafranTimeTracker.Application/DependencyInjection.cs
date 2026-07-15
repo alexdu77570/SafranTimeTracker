@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using SafranTimeTracker.Application.Applications.Services;
 using SafranTimeTracker.Application.Companies.Services;
+using SafranTimeTracker.Application.Financial.Services;
 using SafranTimeTracker.Application.Organisation.Services;
 using SafranTimeTracker.Application.Orders.Services;
 using SafranTimeTracker.Application.Resources.Services;
@@ -30,6 +31,10 @@ public static class DependencyInjection
         services.AddScoped<UserService>();
         services.AddScoped<ApplicationReferenceService>();
         services.AddScoped<SettingsService>();
+        services.AddScoped<ResourceTjmHistoryService>();
+        services.AddScoped<CompanyContractHistoryService>();
+        services.AddScoped<ResourceCompanyAssignmentService>();
+        services.AddScoped<FinancialCalculationService>();
 
         return services;
     }

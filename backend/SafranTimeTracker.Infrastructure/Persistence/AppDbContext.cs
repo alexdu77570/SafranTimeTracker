@@ -11,9 +11,9 @@ using SettingsEntity = SafranTimeTracker.Domain.Settings.Settings;
 namespace SafranTimeTracker.Infrastructure.Persistence;
 
 /// <summary>
-/// Contexte EF Core unique de l'application. Porte les référentiels du Lot 1 (docs/ROADMAP.md) :
-/// aucune entité financière historisée (TJM, contrats), de temps, de projet ou de budget n'est
-/// encore présente (Lots 2 à 5). Les configurations d'entités (IEntityTypeConfiguration&lt;T&gt;)
+/// Contexte EF Core unique de l'application. Porte les référentiels du Lot 1 et le modèle
+/// financier du Lot 2 (docs/ROADMAP.md) : aucune entité de temps, de projet ou de budget n'est
+/// encore présente (Lots 3 à 5). Les configurations d'entités (IEntityTypeConfiguration&lt;T&gt;)
 /// sont appliquées automatiquement via ApplyConfigurationsFromAssembly.
 /// </summary>
 public class AppDbContext : DbContext
@@ -53,10 +53,16 @@ public class AppDbContext : DbContext
     // Paramètres
     public DbSet<SettingsEntity> Settings => Set<SettingsEntity>();
 
+    // Modèle financier (Lot 2)
+    public DbSet<ResourceTjmHistory> ResourceTjmHistories => Set<ResourceTjmHistory>();
+    public DbSet<CompanyContractHistory> CompanyContractHistories => Set<CompanyContractHistory>();
+    public DbSet<ResourceCompanyAssignment> ResourceCompanyAssignments => Set<ResourceCompanyAssignment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         Lot1Seed.Apply(modelBuilder);
+        Lot2Seed.Apply(modelBuilder);
     }
 }

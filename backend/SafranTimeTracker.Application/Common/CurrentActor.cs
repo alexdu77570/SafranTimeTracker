@@ -1,10 +1,11 @@
 namespace SafranTimeTracker.Application.Common;
 
 /// <summary>
-/// Espace réservé tant qu'aucune authentification n'existe (différée après le Lot 0, voir
-/// docs/IMPLEMENTATION_STATUS.md). Utilisé comme valeur CreatedBy/UpdatedBy le temps qu'un
-/// contexte utilisateur réel soit disponible. À remplacer par l'identité authentifiée dès que
-/// l'authentification sera implémentée — ne pas construire de mécanisme d'identité anticipé ici.
+/// Valeur de repli pour CreatedBy/UpdatedBy quand aucun appelant identifié n'est disponible
+/// (Lot 1, avant l'introduction de <see cref="Security.ICurrentUser"/> au Lot 2 ; ou appel Lot 2+
+/// sans en-tête de démonstration). Les services qui dépendent de <see cref="Security.ICurrentUser"/>
+/// utilisent <c>ICurrentUser.Identifier</c>, qui retombe lui-même sur cette constante quand
+/// <c>IsAuthenticated</c> est faux.
 /// </summary>
 public static class CurrentActor
 {

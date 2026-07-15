@@ -88,4 +88,21 @@ internal static class SeedIds
 
     // Paramètres (ligne singleton)
     public static readonly Guid SettingsSingleton = new("00000000-0000-0000-0024-000000000001");
+
+    // Lot 2 — Société externe de démonstration (§12.1)
+    public static readonly Guid CompanyExterneConseil = new("00000000-0000-0000-0013-000000000002");
+
+    // Lot 2 — Historique TJM (§11.2)
+    public static readonly Guid TjmBernard = new("00000000-0000-0000-0030-000000000001");
+    public static readonly Guid TjmLegrand = new("00000000-0000-0000-0030-000000000002");
+    public static readonly Guid TjmGeorges1 = new("00000000-0000-0000-0030-000000000003");
+    public static readonly Guid TjmGeorges2 = new("00000000-0000-0000-0030-000000000004");
+
+    // Lot 2 — Historique contrats (§12.3)
+    public static readonly Guid ContractExterneConseil = new("00000000-0000-0000-0031-000000000001");
+
+    // Lot 2 — Rattachements ressource/société (§12.2)
+    public static readonly Guid AssignmentBernard = new("00000000-0000-0000-0032-000000000001");
+    public static readonly Guid AssignmentLegrand = new("00000000-0000-0000-0032-000000000002");
+    public static readonly Guid AssignmentGeorges = new("00000000-0000-0000-0032-000000000003");
 }
