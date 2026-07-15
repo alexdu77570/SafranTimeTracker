@@ -5,6 +5,7 @@ using SafranTimeTracker.Application.Common.Exceptions;
 using SafranTimeTracker.Application.Common.Persistence;
 using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Application.Projects.Dtos;
+using SafranTimeTracker.Domain.Budgets;
 using SafranTimeTracker.Domain.Common;
 using SafranTimeTracker.Domain.Projects;
 using SafranTimeTracker.Domain.Time;
@@ -23,6 +24,7 @@ public class ProjectPlanningService(
     IRepository<ProjectWeeklyPlan> weeklyPlanRepository,
     IReadRepository<Project> projectRepository,
     IReadRepository<TimeEntry> timeEntryRepository,
+    IReadRepository<Budget> budgetRepository,
     ProjectService projectService,
     ICurrentUser currentUser)
 {
@@ -180,11 +182,24 @@ public class ProjectPlanningService(
         var chargeMetrics = ProjectPlanningCalculator.CalculateChargeMetrics(chargeInitiale, chargeAjustee, chargeConsommee);
         var planningRisk = ProjectPlanningCalculator.CalculatePlanningRisk(project.DateFinPrevueInitiale, project.DateFinAjustee);
 
+        decimal? atterrissageFinancier = null;
         bool? risqueBudget = null;
-        if (currentUser.HasPermission(PermissionCodes.FinancialDataView) && project.BudgetInitial is not null)
+        if (currentUser.HasPermission(PermissionCodes.FinancialDataView))
         {
-            var coutReelConsomme = await projectService.GetCoutReelConsommeAsync(projectId, cancellationToken);
-            risqueBudget = ProjectPlanningCalculator.CalculateBudgetRisk(coutReelConsomme, project.BudgetInitial.Value);
+            // Le Budget lié au projet (Lot 5) porte le budget ajusté faisant foi (§14.2, après
+            // rallonges/ajustements éventuels) ; à défaut, repli documenté sur Project.BudgetInitial
+            // (écart Lot 4 : aucun Budget n'est nécessairement créé pour chaque projet).
+            var budgetAjuste = await budgetRepository.Query()
+                .Where(b => b.ProjectId == projectId)
+                .Select(b => (decimal?)b.AdjustedAmount)
+                .FirstOrDefaultAsync(cancellationToken) ?? project.BudgetInitial;
+
+            if (budgetAjuste is not null)
+            {
+                var coutReelConsomme = await projectService.GetCoutReelConsommeAsync(projectId, cancellationToken);
+                atterrissageFinancier = ProjectPlanningCalculator.CalculateAtterrissageFinancier(coutReelConsomme, chargeConsommee, chargeMetrics.AtterrissageCharge);
+                risqueBudget = ProjectPlanningCalculator.CalculateBudgetRisk(atterrissageFinancier.Value, budgetAjuste.Value);
+            }
         }
 
         return new ProjectPlanningSynthesisDto
@@ -199,6 +214,7 @@ public class ProjectPlanningService(
             AtterrissageCharge = chargeMetrics.AtterrissageCharge,
             DerivePlanningJours = planningRisk.DerivePlanningJours,
             RisquePlanning = planningRisk.RisquePlanning,
+            AtterrissageFinancier = atterrissageFinancier,
             RisqueBudget = risqueBudget
         };
     }

@@ -33,8 +33,16 @@ public static class ProjectPlanningCalculator
         return new PlanningRisk(derivePlanningJours, risquePlanning);
     }
 
-    /// <summary>Simplification documentée (Lot 4) : pas de "budget ajusté"/rallonge avant le Lot 5,
-    /// donc pas d'atterrissage financier au sens strict du cahier — le risque se lit ici sur le
-    /// coût réel déjà consommé face au budget initial.</summary>
-    public static bool CalculateBudgetRisk(decimal coutReelConsomme, decimal budgetInitial) => coutReelConsomme > budgetInitial;
+    /// <summary>§29.5/§14.3, formule MVP validée (Lot 5) : reprend le facteur d'extrapolation de la
+    /// charge (atterrissageCharge / chargeConsommée, cf. <see cref="CalculateChargeMetrics"/>) pour
+    /// projeter le coût réel déjà consommé — pas de modèle prédictif indépendant. Sans charge
+    /// consommée (chargeConsommee &lt;= 0), aucune extrapolation n'est possible : l'atterrissage
+    /// vaut alors simplement le coût réel déjà consommé.</summary>
+    public static decimal CalculateAtterrissageFinancier(decimal coutReelConsomme, decimal chargeConsommee, decimal atterrissageCharge) =>
+        chargeConsommee <= 0 ? coutReelConsomme : atterrissageCharge / chargeConsommee * coutReelConsomme;
+
+    /// <summary>§29.5 : "risque budget si l'atterrissage financier dépasse le budget ajusté" (formule
+    /// littérale) — réutilisée telle quelle par <c>BudgetService</c> (§14.3) pour éviter de dupliquer
+    /// la règle entre projet et budget générique.</summary>
+    public static bool CalculateBudgetRisk(decimal atterrissageFinancier, decimal budgetAjuste) => atterrissageFinancier > budgetAjuste;
 }

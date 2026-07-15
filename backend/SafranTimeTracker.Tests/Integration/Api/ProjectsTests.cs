@@ -104,7 +104,7 @@ public class ProjectsTests(SafranTimeTrackerApiFactory factory) : IClassFixture<
         synthesis.ChargeRestante.Should().Be(32.00m - 7.75m);
         synthesis.DeriveCharge.Should().Be(2.00m); // 32 - 30
         synthesis.RisquePlanning.Should().BeTrue(); // date de fin ajustée (2025-03-31) > initiale (2024-12-31)
-        synthesis.RisqueBudget.Should().BeFalse(); // 700 consommé << 150000 de budget initial
+        synthesis.RisqueBudget.Should().BeFalse(); // atterrissage financier extrapolé (~2890) << budget ajusté (180000, Lot 5)
     }
 
     [Fact]

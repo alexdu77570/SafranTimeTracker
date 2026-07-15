@@ -26,6 +26,7 @@ public class TimeEntryService(
     IRepository<TimeEntryFinancialSnapshot> snapshotRepository,
     IReadRepository<Resource> resourceRepository,
     IReadRepository<Order> orderRepository,
+    IReadRepository<OrderStatus> orderStatusRepository,
     IReadRepository<SettingsEntity> settingsRepository,
     FinancialCalculationService financialCalculationService,
     ICurrentUser currentUser)
@@ -135,6 +136,18 @@ public class TimeEntryService(
             {
                 throw new BusinessConflictException(
                     "La commande n'est pas compatible avec la société de la ressource à la date de la saisie (cahier des charges §13.4).");
+            }
+
+            // §13.4 : "une saisie liée à une commande clôturée doit être bloquée, sauf droit de
+            // correction" — TIME_ENTRY_CORRECTION (Lot 5) est ce droit explicite.
+            if (order is not null && !currentUser.HasPermission(PermissionCodes.TimeEntryCorrection))
+            {
+                var status = await orderStatusRepository.GetByIdAsync(order.StatusId, cancellationToken);
+                if (status?.Code == "CLOTUREE")
+                {
+                    throw new BusinessConflictException(
+                        "La commande est clôturée : la saisie est bloquée, sauf droit de correction (cahier des charges §13.4).");
+                }
             }
         }
     }

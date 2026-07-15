@@ -121,9 +121,14 @@ internal static class Lot1Seed
             Libelle = "Prestation cadre SAFRAN TIME TRACKER 2026",
             CompanyId = SeedIds.CompanySafran,
             BudgetFinancierInitial = 150000.00m,
+            // Budget/jours/date "ajusté" reflètent la rallonge de démonstration du Lot 5
+            // (Lot5Seed.OrderExtensionDemo, §13.3) : +20 000 €, +30 jours, échéance repoussée.
+            BudgetFinancierAjuste = 170000.00m,
             BudgetJoursInitial = 200m,
+            BudgetJoursAjuste = 230m,
             DateDebut = new DateOnly(2026, 1, 1),
             DateFinInitiale = new DateOnly(2026, 12, 31),
+            DateFinAjustee = new DateOnly(2027, 3, 31),
             StatusId = SeedIds.OrderStatusActive,
             SeuilAlerte = 80m,
             Commentaire = "Commande de démonstration (Lot 1).",

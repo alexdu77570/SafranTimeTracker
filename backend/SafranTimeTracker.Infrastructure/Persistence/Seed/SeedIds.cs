@@ -192,4 +192,24 @@ internal static class SeedIds
     public static readonly Guid MilestoneElmKickoff = new("00000000-0000-0000-0056-000000000001");
     public static readonly Guid MilestoneElmGoProd = new("00000000-0000-0000-0056-000000000002");
     public static readonly Guid MilestoneElmCab = new("00000000-0000-0000-0056-000000000003");
+
+    // Lot 5 — Permission (§6.2)
+    public static readonly Guid PermissionTimeEntryCorrection = new("00000000-0000-0000-0002-000000000002");
+
+    // Lot 5 — Rallonge de commande de démonstration (§13.3)
+    public static readonly Guid OrderExtensionDemo = new("00000000-0000-0000-0060-000000000001");
+
+    // Lot 5 — Budget et version de démonstration (§14)
+    public static readonly Guid BudgetMigrationElm = new("00000000-0000-0000-0061-000000000001");
+    public static readonly Guid BudgetVersionMigrationElm = new("00000000-0000-0000-0062-000000000001");
+
+    // Lot 5 — KPI de tableau de bord (§25.1, §25.2)
+    public static readonly Guid DashboardKpiTempsSaisis = new("00000000-0000-0000-0063-000000000001");
+    public static readonly Guid DashboardKpiCapaciteReelle = new("00000000-0000-0000-0063-000000000002");
+    public static readonly Guid DashboardKpiTauxDisponibilite = new("00000000-0000-0000-0063-000000000003");
+    public static readonly Guid DashboardKpiChargeRunHorsRun = new("00000000-0000-0000-0063-000000000004");
+    public static readonly Guid DashboardKpiProjetsActifs = new("00000000-0000-0000-0063-000000000005");
+    public static readonly Guid DashboardKpiJalonsEnRetard = new("00000000-0000-0000-0063-000000000006");
+    public static readonly Guid DashboardKpiBudgetRestant = new("00000000-0000-0000-0063-000000000007");
+    public static readonly Guid DashboardKpiDifferentielGlobal = new("00000000-0000-0000-0063-000000000008");
 }

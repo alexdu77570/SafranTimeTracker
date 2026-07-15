@@ -4,8 +4,9 @@ namespace SafranTimeTracker.Application.Projects.Dtos;
 /// Synthèse planning/écarts d'un projet (cahier des charges §18.1, §29.5). "Reste à faire" n'est
 /// pas ré-estimé indépendamment (pas de champ dédié à ce lot) : simplification documentée,
 /// resteAFaire = chargeRestante, de sorte qu'atterrissageCharge = chargeAjustée (ou chargeInitiale
-/// si aucune version ajustée). RisqueBudget est null sans FINANCIAL_DATA_VIEW (CLAUDE.md §13) —
-/// seul champ financier de cette synthèse, le reste porte sur la charge (heures), pas l'argent.
+/// si aucune version ajustée). AtterrissageFinancier/RisqueBudget sont null sans
+/// FINANCIAL_DATA_VIEW (CLAUDE.md §13) — seuls champs financiers de cette synthèse, le reste porte
+/// sur la charge (heures), pas l'argent.
 /// </summary>
 public class ProjectPlanningSynthesisDto
 {
@@ -33,8 +34,14 @@ public class ProjectPlanningSynthesisDto
     /// <summary>§29.5 : vrai si une date de fin ajustée dépasse la date de fin prévue initiale.</summary>
     public bool RisquePlanning { get; set; }
 
-    /// <summary>§29.5 : vrai si le coût réel déjà consommé dépasse le budget initial — simplification
-    /// documentée (pas de "budget ajusté"/rallonge avant le Lot 5, donc pas d'atterrissage financier
-    /// au sens strict du cahier). Null sans FINANCIAL_DATA_VIEW.</summary>
+    /// <summary>§29.5/§14.3, formule MVP validée (Lot 5) : coûtRéelConsommé si aucune charge
+    /// consommée, sinon extrapolation proportionnelle atterrissageCharge/chargeConsommée ×
+    /// coûtRéelConsommé — pas de modèle prédictif avancé. Null sans FINANCIAL_DATA_VIEW.</summary>
+    public decimal? AtterrissageFinancier { get; set; }
+
+    /// <summary>§29.5 : vrai si AtterrissageFinancier dépasse le budget ajusté — recherché via le
+    /// <c>Budget</c> lié au projet (Lot 5), avec repli documenté sur Project.BudgetInitial si aucun
+    /// Budget n'est créé pour ce projet. Null sans FINANCIAL_DATA_VIEW ou si aucun budget
+    /// (ajusté ou initial) n'est disponible.</summary>
     public bool? RisqueBudget { get; set; }
 }

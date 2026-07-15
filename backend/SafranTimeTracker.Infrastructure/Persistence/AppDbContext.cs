@@ -2,11 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using SafranTimeTracker.Domain.Absences;
 using SafranTimeTracker.Domain.Activities;
 using SafranTimeTracker.Domain.Applications;
+using SafranTimeTracker.Domain.Budgets;
 using SafranTimeTracker.Domain.Companies;
 using SafranTimeTracker.Domain.Milestones;
 using SafranTimeTracker.Domain.Organisation;
 using SafranTimeTracker.Domain.Orders;
 using SafranTimeTracker.Domain.Projects;
+using SafranTimeTracker.Domain.Reporting;
 using SafranTimeTracker.Domain.Resources;
 using SafranTimeTracker.Domain.Time;
 using SafranTimeTracker.Domain.Users;
@@ -18,10 +20,9 @@ namespace SafranTimeTracker.Infrastructure.Persistence;
 
 /// <summary>
 /// Contexte EF Core unique de l'application. Porte les référentiels du Lot 1, le modèle financier
-/// du Lot 2, le temps/capacité du Lot 3 et les projets du Lot 4 (docs/ROADMAP.md) : aucune entité
-/// de budget n'est encore présente (Lot 5). Les configurations d'entités
-/// (IEntityTypeConfiguration&lt;T&gt;) sont appliquées automatiquement via
-/// ApplyConfigurationsFromAssembly.
+/// du Lot 2, le temps/capacité du Lot 3, les projets du Lot 4 et les budgets/reporting du Lot 5
+/// (docs/ROADMAP.md). Les configurations d'entités (IEntityTypeConfiguration&lt;T&gt;) sont
+/// appliquées automatiquement via ApplyConfigurationsFromAssembly.
 /// </summary>
 public class AppDbContext : DbContext
 {
@@ -82,6 +83,13 @@ public class AppDbContext : DbContext
     public DbSet<MilestoneType> MilestoneTypes => Set<MilestoneType>();
     public DbSet<Milestone> Milestones => Set<Milestone>();
 
+    // Budgets et reporting (Lot 5)
+    public DbSet<OrderExtension> OrderExtensions => Set<OrderExtension>();
+    public DbSet<Budget> Budgets => Set<Budget>();
+    public DbSet<BudgetVersion> BudgetVersions => Set<BudgetVersion>();
+    public DbSet<DashboardKpi> DashboardKpis => Set<DashboardKpi>();
+    public DbSet<ExportLog> ExportLogs => Set<ExportLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -90,5 +98,6 @@ public class AppDbContext : DbContext
         Lot2Seed.Apply(modelBuilder);
         Lot3Seed.Apply(modelBuilder);
         Lot4Seed.Apply(modelBuilder);
+        Lot5Seed.Apply(modelBuilder);
     }
 }

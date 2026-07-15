@@ -17,7 +17,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.UpdatedBy).HasMaxLength(100);
 
         builder.Property(o => o.BudgetFinancierInitial).HasPrecision(18, 2);
+        builder.Property(o => o.BudgetFinancierAjuste).HasPrecision(18, 2);
         builder.Property(o => o.BudgetJoursInitial).HasPrecision(9, 2);
+        builder.Property(o => o.BudgetJoursAjuste).HasPrecision(9, 2);
         builder.Property(o => o.SeuilAlerte).HasPrecision(5, 2);
 
         builder.HasIndex(o => o.Reference).IsUnique();
@@ -25,6 +27,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasOne(o => o.Company)
             .WithMany()
             .HasForeignKey(o => o.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(o => o.Project)
+            .WithMany()
+            .HasForeignKey(o => o.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(o => o.Status)

@@ -1,15 +1,16 @@
 using SafranTimeTracker.Domain.Common;
 using SafranTimeTracker.Domain.Companies;
+using SafranTimeTracker.Domain.Projects;
 
 namespace SafranTimeTracker.Domain.Orders;
 
 /// <summary>
-/// Enveloppe contractuelle ou budgétaire consommable (cahier des charges §13). Ne porte en
-/// Lot 1 que les champs administratifs :
-/// - le lien vers Project est différé au Lot 4 (Project n'existe pas encore) ;
-/// - budget ajusté, dates ajustées et rallonges (OrderExtension) sont différés au Lot 5 (§13.3) ;
-/// - consommation en jours, coût réel/contractuel consommé, différentiel et restes sont des
-///   valeurs calculées à partir des saisies de temps valorisées (Lot 2/3), donc absentes ici.
+/// Enveloppe contractuelle ou budgétaire consommable (cahier des charges §13). Budget ajusté,
+/// date de fin ajustée et rallonges (<see cref="OrderExtension"/>) portés depuis le Lot 5 (§13.3) ;
+/// le lien vers <see cref="Project"/> (§13.2 "projet lié facultatif") est également raccordé ce
+/// lot. Consommation en jours, coût réel/contractuel consommé, différentiel et restes restent des
+/// valeurs calculées à la demande à partir des saisies de temps valorisées (Lot 2/3/5), jamais des
+/// colonnes stockées.
 /// </summary>
 public class Order : AuditableEntity
 {
@@ -19,11 +20,17 @@ public class Order : AuditableEntity
     public Guid CompanyId { get; set; }
     public Company Company { get; set; } = null!;
 
+    public Guid? ProjectId { get; set; }
+    public Project? Project { get; set; }
+
     public decimal BudgetFinancierInitial { get; set; }
+    public decimal BudgetFinancierAjuste { get; set; }
     public decimal? BudgetJoursInitial { get; set; }
+    public decimal? BudgetJoursAjuste { get; set; }
 
     public DateOnly DateDebut { get; set; }
     public DateOnly DateFinInitiale { get; set; }
+    public DateOnly? DateFinAjustee { get; set; }
 
     public Guid StatusId { get; set; }
     public OrderStatus Status { get; set; } = null!;
@@ -32,4 +39,5 @@ public class Order : AuditableEntity
     public string? Commentaire { get; set; }
 
     public ICollection<OrderAuthorizedResource> AuthorizedResources { get; set; } = new List<OrderAuthorizedResource>();
+    public ICollection<OrderExtension> Extensions { get; set; } = new List<OrderExtension>();
 }

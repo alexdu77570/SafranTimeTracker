@@ -185,6 +185,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Nommage des tests : `NomMethode_Scenario_ResultatAttendu`. Structure **Arrange / Act / Assert**.
 - Les tests d'intégration s'exécutent sur un provider réel (SQLite en priorité, PostgreSQL en CI si disponible), jamais sur une base mockée pour la logique financière.
 - Un lot n'est considéré terminé que si sa logique critique est couverte par des tests qui passent réellement (voir section 20).
+- Tous les tests d'une même classe de tests d'intégration partagent la **même** base SQLite (une instance de fixture par classe, `IClassFixture`, réutilisée par chaque `[Fact]`/`[Theory]`). Un test qui fait évoluer le statut ou un montant d'une entité **seedée et réutilisée par d'autres tests** de la même classe (ex. une commande ou un budget de démonstration) crée sa propre entité via l'API plutôt que de muter celle du seed, pour ne pas rendre un test de lecture dépendant de l'ordre d'exécution (Lots 4-5, précédent : `PRJ-VTOM-2026` pour l'archivage/réactivation d'un projet).
 
 ## 15. Conventions de logging
 

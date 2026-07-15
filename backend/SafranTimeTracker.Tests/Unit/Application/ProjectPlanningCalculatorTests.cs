@@ -70,10 +70,27 @@ public class ProjectPlanningCalculatorTests
     [InlineData(150, 100, true)]
     [InlineData(100, 100, false)]
     [InlineData(50, 100, false)]
-    public void CalculateBudgetRisk_ComparesConsumedCostToInitialBudget(decimal coutReel, decimal budget, bool expectedRisk)
+    public void CalculateBudgetRisk_ComparesAtterrissageFinancierToBudgetAjuste(decimal atterrissageFinancier, decimal budgetAjuste, bool expectedRisk)
     {
-        var result = ProjectPlanningCalculator.CalculateBudgetRisk(coutReel, budget);
+        var result = ProjectPlanningCalculator.CalculateBudgetRisk(atterrissageFinancier, budgetAjuste);
 
         result.Should().Be(expectedRisk);
+    }
+
+    [Fact]
+    public void CalculateAtterrissageFinancier_WithoutChargeConsumed_ReturnsCoutReelConsomme()
+    {
+        var result = ProjectPlanningCalculator.CalculateAtterrissageFinancier(coutReelConsomme: 500m, chargeConsommee: 0m, atterrissageCharge: 100m);
+
+        result.Should().Be(500m);
+    }
+
+    [Fact]
+    public void CalculateAtterrissageFinancier_WithChargeConsumed_ExtrapolatesProportionally()
+    {
+        // Facteur d'extrapolation identique à celui de la charge (§29.5) : 32/7.75 * 700.
+        var result = ProjectPlanningCalculator.CalculateAtterrissageFinancier(coutReelConsomme: 700m, chargeConsommee: 7.75m, atterrissageCharge: 32m);
+
+        result.Should().BeApproximately(2890.32m, 0.01m);
     }
 }

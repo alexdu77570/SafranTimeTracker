@@ -12,6 +12,10 @@
     <InvariantGlobalization>false</InvariantGlobalization>
     <Company>SAFRAN</Company>
     <Product>SAFRAN TIME TRACKER</Product>
+    <!-- Reflétée dans les exports (cahier des charges §26.3 "date et auteur de l'export"), lue via
+         Assembly.GetName().Version plutôt qu'une constante en dur dans le code (Lot 5). À faire
+         évoluer en cohérence avec les tags Git (v0.5.0, ...). -->
+    <Version>0.5.0</Version>
   </PropertyGroup>
 
 </Project>

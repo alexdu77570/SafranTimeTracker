@@ -498,6 +498,168 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Budgets.Budget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AdjustedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("adjusted_amount");
+
+                    b.Property<decimal?>("AlertThreshold")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("alert_threshold");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<decimal>("InitialAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("initial_amount");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_budgets");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_budgets_order_id");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_budgets_project_id");
+
+                    b.ToTable("budgets", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0061-000000000001"),
+                            AdjustedAmount = 180000.00m,
+                            AlertThreshold = 90m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            InitialAmount = 150000.00m,
+                            Name = "Budget Migration ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
+                            StartDate = new DateOnly(2024, 1, 1),
+                            Status = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Budgets.BudgetVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BudgetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("budget_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("NewValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("new_value");
+
+                    b.Property<decimal>("OldValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("old_value");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("ReferencePiece")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reference_piece");
+
+                    b.HasKey("Id")
+                        .HasName("pk_budget_versions");
+
+                    b.HasIndex("BudgetId")
+                        .HasDatabaseName("ix_budget_versions_budget_id");
+
+                    b.ToTable("budget_versions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0062-000000000001"),
+                            BudgetId = new Guid("00000000-0000-0000-0061-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            NewValue = 180000.00m,
+                            OldValue = 150000.00m,
+                            Reason = "Dérive planning nécessitant un budget ajusté (démonstration, cf. Project.DateFinAjustee)."
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Companies.Company", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1150,10 +1312,20 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<decimal>("BudgetFinancierAjuste")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("budget_financier_ajuste");
+
                     b.Property<decimal>("BudgetFinancierInitial")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("budget_financier_initial");
+
+                    b.Property<decimal?>("BudgetJoursAjuste")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("numeric(9,2)")
+                        .HasColumnName("budget_jours_ajuste");
 
                     b.Property<decimal?>("BudgetJoursInitial")
                         .HasPrecision(9, 2)
@@ -1183,6 +1355,10 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasColumnType("date")
                         .HasColumnName("date_debut");
 
+                    b.Property<DateOnly?>("DateFinAjustee")
+                        .HasColumnType("date")
+                        .HasColumnName("date_fin_ajustee");
+
                     b.Property<DateOnly>("DateFinInitiale")
                         .HasColumnType("date")
                         .HasColumnName("date_fin_initiale");
@@ -1192,6 +1368,10 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("libelle");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
 
                     b.Property<string>("Reference")
                         .IsRequired()
@@ -1223,6 +1403,9 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_orders_company_id");
 
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_orders_project_id");
+
                     b.HasIndex("Reference")
                         .IsUnique()
                         .HasDatabaseName("ix_orders_reference");
@@ -1236,13 +1419,16 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0023-000000000001"),
+                            BudgetFinancierAjuste = 170000.00m,
                             BudgetFinancierInitial = 150000.00m,
+                            BudgetJoursAjuste = 230m,
                             BudgetJoursInitial = 200m,
                             Commentaire = "Commande de démonstration (Lot 1).",
                             CompanyId = new Guid("00000000-0000-0000-0013-000000000001"),
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
                             DateDebut = new DateOnly(2026, 1, 1),
+                            DateFinAjustee = new DateOnly(2027, 3, 31),
                             DateFinInitiale = new DateOnly(2026, 12, 31),
                             Libelle = "Prestation cadre SAFRAN TIME TRACKER 2026",
                             Reference = "CMD-2026-0001",
@@ -1279,6 +1465,84 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         {
                             OrderId = new Guid("00000000-0000-0000-0023-000000000001"),
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000007")
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Orders.OrderExtension", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AmountAdded")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount_added");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal?>("DaysAdded")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("numeric(9,2)")
+                        .HasColumnName("days_added");
+
+                    b.Property<DateOnly>("ExtensionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("extension_date");
+
+                    b.Property<DateOnly>("NewEndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("new_end_date");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<DateOnly>("PreviousEndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("previous_end_date");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_extensions");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_order_extensions_order_id");
+
+                    b.ToTable("order_extensions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0060-000000000001"),
+                            AmountAdded = 20000.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DaysAdded = 30m,
+                            ExtensionDate = new DateOnly(2026, 6, 1),
+                            NewEndDate = new DateOnly(2027, 3, 31),
+                            OrderId = new Guid("00000000-0000-0000-0023-000000000001"),
+                            PreviousEndDate = new DateOnly(2026, 12, 31),
+                            Reason = "Extension de périmètre validée par le comité de pilotage (démonstration)."
                         });
                 });
 
@@ -2130,6 +2394,207 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
                             WeekStartDate = new DateOnly(2024, 6, 10)
                         });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Reporting.DashboardKpi", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<int>("Ordre")
+                        .HasColumnType("integer")
+                        .HasColumnName("ordre");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("integer")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dashboard_kpis");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dashboard_kpis_code");
+
+                    b.ToTable("dashboard_kpis", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000001"),
+                            Category = 0,
+                            Code = "TEMPS_SAISIS",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Temps saisis sur la période",
+                            Ordre = 1,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000002"),
+                            Category = 0,
+                            Code = "CAPACITE_REELLE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Capacité réelle",
+                            Ordre = 2,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000003"),
+                            Category = 0,
+                            Code = "TAUX_DISPONIBILITE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Taux de disponibilité",
+                            Ordre = 3,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000004"),
+                            Category = 0,
+                            Code = "CHARGE_RUN_HORS_RUN",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Charge RUN / hors RUN",
+                            Ordre = 4,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000005"),
+                            Category = 0,
+                            Code = "PROJETS_ACTIFS",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Projets actifs",
+                            Ordre = 5,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000006"),
+                            Category = 0,
+                            Code = "JALONS_EN_RETARD",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Jalons en retard",
+                            Ordre = 6,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000007"),
+                            Category = 1,
+                            Code = "BUDGET_RESTANT",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Budget restant",
+                            Ordre = 7,
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0063-000000000008"),
+                            Category = 1,
+                            Code = "DIFFERENTIEL_GLOBAL",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Différentiel global",
+                            Ordre = 8,
+                            Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Reporting.ExportLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AppVersion")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("app_version");
+
+                    b.Property<bool>("ContainsFinancialData")
+                        .HasColumnType("boolean")
+                        .HasColumnName("contains_financial_data");
+
+                    b.Property<string>("FiltersJson")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("filters_json");
+
+                    b.Property<int>("Format")
+                        .HasColumnType("integer")
+                        .HasColumnName("format");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("generated_at");
+
+                    b.Property<string>("GeneratedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("generated_by");
+
+                    b.Property<string>("ReportType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("report_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_export_logs");
+
+                    b.HasIndex("GeneratedAt")
+                        .HasDatabaseName("ix_export_logs_generated_at");
+
+                    b.ToTable("export_logs", (string)null);
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Resources.OperationalRole", b =>
@@ -3333,6 +3798,13 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             Code = "FINANCIAL_DATA_VIEW",
                             Description = "Autorise l'accès aux TJM, contrats, budgets, commandes, coûts et différentiels (cahier des charges §6.2).",
                             Libelle = "Accès aux données financières"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0002-000000000002"),
+                            Code = "TIME_ENTRY_CORRECTION",
+                            Description = "Autorise une saisie de temps sur une commande clôturée, à titre de correction (cahier des charges §13.4).",
+                            Libelle = "Correction de saisie sur commande clôturée"
                         });
                 });
 
@@ -3751,6 +4223,13 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000001"),
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("00000000-0000-0000-0020-000000000001"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000002"),
+                            GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrantedBy = "system-seed"
                         });
                 });
 
@@ -3792,6 +4271,37 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                     b.Navigation("Service");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Budgets.Budget", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Orders.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_budgets_orders_order_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_budgets_projects_project_id");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Budgets.BudgetVersion", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Budgets.Budget", "Budget")
+                        .WithMany("Versions")
+                        .HasForeignKey("BudgetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_budget_versions_budgets_budget_id");
+
+                    b.Navigation("Budget");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Companies.Company", b =>
@@ -3894,6 +4404,12 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_orders_companies_company_id");
 
+                    b.HasOne("SafranTimeTracker.Domain.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_orders_projects_project_id");
+
                     b.HasOne("SafranTimeTracker.Domain.Orders.OrderStatus", "Status")
                         .WithMany("Orders")
                         .HasForeignKey("StatusId")
@@ -3902,6 +4418,8 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_orders_order_statuses_status_id");
 
                     b.Navigation("Company");
+
+                    b.Navigation("Project");
 
                     b.Navigation("Status");
                 });
@@ -3925,6 +4443,18 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Orders.OrderExtension", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Orders.Order", "Order")
+                        .WithMany("Extensions")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_extensions_orders_order_id");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Organisation.Department", b =>
@@ -4292,6 +4822,11 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Budgets.Budget", b =>
+                {
+                    b.Navigation("Versions");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Companies.CompanyType", b =>
                 {
                     b.Navigation("Companies");
@@ -4300,6 +4835,8 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.Order", b =>
                 {
                     b.Navigation("AuthorizedResources");
+
+                    b.Navigation("Extensions");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.OrderStatus", b =>
