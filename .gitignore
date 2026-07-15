@@ -1,0 +1,62 @@
+# ===== .NET / ASP.NET Core =====
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userosscache
+*.sln.docstates
+artifacts/
+
+# ===== Node / React / Vite =====
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+
+# ===== Variables d'environnement et secrets =====
+# Les modèles appsettings.{Development,Qualification,Production}.json sont commités
+# (configuration non sensible). Seules les surcharges locales/personnelles sont ignorées.
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+*.key
+*.pem
+secrets/
+
+# ===== Base de données locales (SQLite dev/tests) =====
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Claude Code (configuration locale, non partagée) =====
+.claude/settings.local.json
+
+# ===== Divers =====
+*.tmp
+*.bak
+coverage/
+playwright-report/
+test-results/
