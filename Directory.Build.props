@@ -1,0 +1,17 @@
+<Project>
+
+  <!-- Propriétés communes à tous les projets .NET du dépôt (backend/).
+       Voir CLAUDE.md §4 (technologies retenues) et §5 (conventions de code). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <Company>SAFRAN</Company>
+    <Product>SAFRAN TIME TRACKER</Product>
+  </PropertyGroup>
+
+</Project>

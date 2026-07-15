@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Projet dédié aux migrations SQLite (dev/tests), séparé par provider pour éviter
+       tout mélange de migrations dans un même assembly EF Core (docs/DATABASE.md §1).
+       Ne contient aucune entité métier : il référence uniquement le modèle défini
+       par SafranTimeTracker.Infrastructure. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\backend\SafranTimeTracker.Infrastructure\SafranTimeTracker.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+
+</Project>

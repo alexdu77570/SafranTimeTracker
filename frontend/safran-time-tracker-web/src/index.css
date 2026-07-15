@@ -1,0 +1,15 @@
+/* Réinitialisation minimale. Le design system (cahier des charges §8.1 : fond gris clair,
+   sidebar bleu marine, accent bleu Safran, typographie Inter/Segoe UI) est hors périmètre
+   du Lot 0 et sera mis en place avec les premiers écrans fonctionnels. */
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+}
+
+#root {
+  min-height: 100svh;
+}

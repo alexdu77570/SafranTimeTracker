@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Database/">
+    <Project Path="../database/postgresql/SafranTimeTracker.Migrations.PostgreSql.csproj" />
+    <Project Path="../database/sqlite/SafranTimeTracker.Migrations.Sqlite.csproj" />
+    <Project Path="../database/sqlserver/SafranTimeTracker.Migrations.SqlServer.csproj" />
+  </Folder>
+  <Project Path="SafranTimeTracker.Api/SafranTimeTracker.Api.csproj" />
+  <Project Path="SafranTimeTracker.Application/SafranTimeTracker.Application.csproj" />
+  <Project Path="SafranTimeTracker.Domain/SafranTimeTracker.Domain.csproj" />
+  <Project Path="SafranTimeTracker.Infrastructure/SafranTimeTracker.Infrastructure.csproj" />
+  <Project Path="SafranTimeTracker.Tests/SafranTimeTracker.Tests.csproj" />
+</Solution>
