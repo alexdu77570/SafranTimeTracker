@@ -23,6 +23,7 @@
     <ProjectReference Include="..\SafranTimeTracker.Application\SafranTimeTracker.Application.csproj" />
     <ProjectReference Include="..\SafranTimeTracker.Infrastructure\SafranTimeTracker.Infrastructure.csproj" />
     <ProjectReference Include="..\SafranTimeTracker.Api\SafranTimeTracker.Api.csproj" />
+    <ProjectReference Include="..\..\database\sqlite\SafranTimeTracker.Migrations.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>

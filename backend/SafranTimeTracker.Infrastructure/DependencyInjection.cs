@@ -2,6 +2,7 @@ using EFCore.NamingConventions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SafranTimeTracker.Application.Common.Persistence;
 using SafranTimeTracker.Infrastructure.Persistence;
 
 namespace SafranTimeTracker.Infrastructure;
@@ -46,6 +47,9 @@ public static class DependencyInjection
 
             options.UseSnakeCaseNamingConvention();
         });
+
+        services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
+        services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
         return services;
     }

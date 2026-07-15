@@ -1,17 +1,14 @@
 using Microsoft.OpenApi;
+using SafranTimeTracker.Application;
 using SafranTimeTracker.Infrastructure;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Journalisation structurée (CLAUDE.md §15) : configuration lue depuis appsettings (section "Serilog"),
-// avec repli console garanti même si la configuration est absente ou invalide au tout premier démarrage.
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
-
+// Journalisation structurée (CLAUDE.md §15) : configuration lue depuis appsettings (section "Serilog").
+// Pas de "bootstrap logger" à deux phases (Log.Logger statique) : ce motif entre en conflit avec
+// WebApplicationFactory, qui réexécute ce fichier pour chaque instance d'hôte de test
+// ("The logger is already frozen").
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
@@ -19,9 +16,10 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 builder.Services.AddHealthChecks();
 
-// Documentation API (CLAUDE.md §12) : OpenAPI/Swagger, aucun endpoint métier documenté en Lot 0.
+// Documentation API (CLAUDE.md §12) : OpenAPI/Swagger.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -29,7 +27,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "SAFRAN TIME TRACKER API",
         Version = "v1",
-        Description = "Lot 0 - Fondations techniques. Aucun endpoint métier n'est encore exposé."
+        Description = "Lot 1 - Référentiels (organisation, utilisateurs, ressources, applications, sociétés, commandes, paramètres)."
     });
 });
 
