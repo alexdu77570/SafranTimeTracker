@@ -72,6 +72,8 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - **React Router** pour le routage client.
 - **TanStack Query (React Query)** pour la gestion des appels API et du cache serveur.
 - **React Hook Form** + **Zod** pour la validation de formulaires.
+- Bibliothèque de composants UI : **MUI (Material UI)** — décision actée au Lot 7, thème dédié (`src/theme/theme.ts`) pour se conformer à l'identité visuelle du §8.1 plutôt que le rendu Material par défaut.
+- Bibliothèque d'icônes : **lucide-react**.
 - Bibliothèque de graphiques professionnelle : **Recharts**.
 
 ### Base de données
@@ -136,6 +138,8 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Organisation par fonctionnalité (feature folders), composants réutilisables regroupés dans un dossier `components/ui` partagé.
 - Formulaires validés avec React Hook Form + Zod, avec des schémas de validation partagés autant que possible avec les DTO backend (mêmes règles, exprimées deux fois par nécessité technique).
 - Accessibilité : navigation clavier, contraste suffisant, libellés explicites sur tous les champs et actions.
+- **MUI v9 (Lot 7)** : les props CSS raccourcies non déclarées explicitement dans les `OwnProps` d'un composant (ex. `alignItems`/`justifyContent`/`flexWrap` sur `Stack`, `fontWeight`/`fontSize` sur `Typography`/`ListItemText`) ne sont plus acceptées en pass-through depuis MUI v9 — toujours les passer via `sx`, jamais en prop directe.
+- **Identité de démonstration côté frontend (Lot 7)** : `DemoIdentityContext`/`DemoIdentityProvider` (`src/auth/`) pilotent l'en-tête `X-Demo-User` existant (§17) via un intercepteur unique sur `apiClient` (`src/api/client.ts`) — l'identifiant choisi est persisté en `localStorage` (préférence non sensible). `useCurrentUser` résout les codes de permission courants en joignant `UserDto.permissionIds` à `GET /api/v1/permissions`. `PermissionGuard` (`src/auth/PermissionGuard.tsx`) n'est jamais une barrière de sécurité : il masque uniquement des éléments d'interface déjà filtrés côté serveur (voir §17, `docs/ARCHITECTURE.md` §3) — une nouvelle entrée de sidebar n'est gardée par `PermissionGuard` que si le contrôleur associé porte réellement une garde de permission au niveau classe (`RequirePermissionAttribute`), jamais par anticipation.
 
 ## 10. Conventions ASP.NET Core
 
@@ -280,7 +284,7 @@ Chemins physiques IIS recommandés : frontend → `E:\appl\SafranTimeTracker\web
 
 Le projet est découpé en lots (voir `docs/ROADMAP.md`, détaillé à partir de la section 40 du cahier des charges) :
 
-`Lot 0` Fondations → `Lot 1` Référentiels → `Lot 2` Modèle financier → `Lot 3` Temps et capacité → `Lot 4` Projets → `Lot 5` Budgets et reporting → `Lot 6` Imports et audit → `Lot 7` Industrialisation.
+`Lot 0` Fondations → `Lot 1` Référentiels → `Lot 2` Modèle financier → `Lot 3` Temps et capacité → `Lot 4` Projets → `Lot 5` Budgets et reporting → `Lot 6` Imports et audit → `Lot 7` Frontend Foundation → `Lot 8` Référentiels et Administration → `Lot 9` Temps et Disponibilités → `Lot 10` Projets et Planning → `Lot 11` Commandes, Budgets et Jalons → `Lot 12` Charges, Tableau de bord, Reporting et Imports → `Lot 13` Industrialisation (voir « Révision de la roadmap » dans `docs/ROADMAP.md`, actée à la clôture du Lot 6 : l'ancien Lot 7 Industrialisation est devenu le Lot 13, six nouveaux lots frontend s'intercalent).
 
 Règles de méthode :
 
@@ -289,6 +293,7 @@ Règles de méthode :
 - Toute décision d'architecture ou de convention prise pendant un lot qui modifie ce document doit être répercutée dans `CLAUDE.md` **avant** de passer au lot suivant : ce fichier doit toujours refléter l'état réel des décisions techniques, pas seulement les intentions initiales.
 - Aucune fonctionnalité d'un lot ultérieur n'est anticipée dans un lot antérieur (pas de sur-ingénierie préventive).
 - Aucun lot ne doit réintroduire une des régressions interdites par la section 42 du cahier des charges (dépendance du TJM au projet/à la commande, recalcul rétroactif silencieux, terminologie « Squad Leader », gestion documentaire, fonctionnalité DS-EYE, protection financière uniquement visuelle, suppression physique de données historiques liées, dépendance à un moteur de base unique, chemins non conformes, secrets commités).
+- **Clôture d'un lot frontend (règle actée au Lot 7) :** en plus du critère général ci-dessus, un lot touchant le frontend (Lots 7 à 12) n'est considéré terminé que si, dans l'ordre : (1) l'application complète est démarrée (API + frontend, provider SQLite de développement, migrations appliquées) ; (2) des smoke tests navigateur sont exécutés (Playwright/Chromium préinstallé) sur les écrans livrés ; (3) des captures représentatives sont générées ; (4) ces captures sont stockées dans `docs/screenshots/lot-X/` avec des noms explicites (ex. `01-layout-sans-identite.png`) ; (5) elles sont référencées dans une section « Validation visuelle — Lot X » de `docs/IMPLEMENTATION_STATUS.md`. Le lot n'est jamais déclaré terminé tant que build, tests, lint **et** validation visuelle ne sont pas tous au vert — une suite de tests verte ne suffit pas à elle seule pour un lot frontend (`CLAUDE.md` §9 : accessibilité et rendu réel restent à vérifier visuellement).
 
 ## 21. Conventions d'import (Lot 6)
 

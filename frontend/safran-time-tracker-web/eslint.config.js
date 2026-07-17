@@ -23,4 +23,12 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+  {
+    // Utilitaires de test (src/test/**, *.test.tsx) : jamais servis par le dev server Vite, donc
+    // jamais concernés par le fast refresh que cette règle protège.
+    files: ['**/*.test.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 )
