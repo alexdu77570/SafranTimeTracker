@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >
 > Le **cahier des charges** (`docs/Cahier_des_charges_SAFRAN_TIME_TRACKER_v2.1_Windows_Server.md`) reste la **référence fonctionnelle unique**. En cas de doute sur une règle métier, c'est ce document qui prévaut. `CLAUDE.md` ne redéfinit jamais une règle métier : il définit **comment on construit** ce que le cahier des charges **demande**.
 >
-> Documents associés : `README.md` (présentation), `docs/ARCHITECTURE.md` (architecture détaillée), `docs/DATABASE.md` (modèle de données), `docs/CONVENTIONS.md` (conventions détaillées avec exemples), `docs/ROADMAP.md` (découpage en lots), `docs/IMPLEMENTATION_STATUS.md` (avancement réel).
+> Documents associés : `README.md` (présentation), `docs/ARCHITECTURE.md` (architecture détaillée), `docs/DATABASE.md` (modèle de données), `docs/CONVENTIONS.md` (conventions détaillées avec exemples), `docs/ROADMAP.md` (découpage en lots), `docs/IMPLEMENTATION_STATUS.md` (avancement réel), `docs/BACKLOG_METIER.md` (référence fonctionnelle : décisions métier, workflows et règles validées avec le Product Owner/Squad Leader).
 
 ---
 
@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Il n'existe donc aucune commande de build, de lint ou de test à ce jour.** Ne pas supposer l'existence d'un `dotnet build`, `npm run dev`, `npm test` ou équivalent, ni inventer une commande plausible : vérifier d'abord l'arborescence réelle (`backend/`, `frontend/`, `database/`, `deploy/`, `scripts/` sont actuellement vides). Ces commandes seront définies au Lot 0 (voir `docs/ROADMAP.md`) et documentées ici et dans `README.md` dès qu'elles existeront.
 
-Avant toute génération de code, se référer à `docs/ROADMAP.md` (Lot 0 - Fondations) et à `docs/IMPLEMENTATION_STATUS.md` pour connaître l'état réel d'avancement. Ne jamais supposer qu'une couche existe sans l'avoir vérifiée dans l'arborescence.
+Avant toute génération de code, se référer à `docs/ROADMAP.md` (Lot 0 - Fondations), à `docs/IMPLEMENTATION_STATUS.md` pour connaître l'état réel d'avancement, et à `docs/BACKLOG_METIER.md` pour les règles métier déjà validées. Ne jamais supposer qu'une couche existe sans l'avoir vérifiée dans l'arborescence.
 
 ---
 
@@ -96,6 +96,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Pas de duplication des règles métier : une règle = un seul endroit dans le code.
 - Pas d'abstraction anticipée : on code ce que le lot demande, pas ce qu'un lot futur pourrait demander.
 - Le détail complet (style, imports, organisation de fichiers) est dans `docs/CONVENTIONS.md`.
+- **Toute nouvelle règle métier validée avec le Product Owner, le Squad Leader ou les experts métier doit être documentée dans `docs/BACKLOG_METIER.md` avant son implémentation.** `docs/BACKLOG_METIER.md` est la référence fonctionnelle des décisions métier, workflows et règles validées (distincte de l'architecture technique) ; il est relu avant chaque nouveau lot, au même titre que `docs/ROADMAP.md`, `CLAUDE.md` et `docs/IMPLEMENTATION_STATUS.md`.
 
 ## 6. Conventions de nommage
 
@@ -313,3 +314,4 @@ Règles de méthode :
 - Conventions détaillées (exemples) : `docs/CONVENTIONS.md`
 - Découpage en lots : `docs/ROADMAP.md`
 - Avancement réel : `docs/IMPLEMENTATION_STATUS.md`
+- Référence fonctionnelle (décisions métier, workflows, règles validées) : `docs/BACKLOG_METIER.md`
