@@ -4,6 +4,7 @@ using SafranTimeTracker.Application.Financial.Dtos;
 using SafranTimeTracker.Domain.Common;
 using SafranTimeTracker.Domain.Companies;
 using SafranTimeTracker.Domain.Resources;
+using SafranTimeTracker.Domain.Time;
 using SettingsEntity = SafranTimeTracker.Domain.Settings.Settings;
 
 namespace SafranTimeTracker.Application.Financial.Services;
@@ -110,5 +111,27 @@ public class FinancialCalculationService(
         result.Differentiel = result.CoutContractuel - result.CoutReel; // §20.4
 
         return result;
+    }
+
+    /// <summary>
+    /// Projette un résultat de calcul dans un instantané financier persistable (§19.5). Statique et
+    /// partagée par <c>TimeEntryService</c> (valorisation initiale) et
+    /// <c>TimeEntryRevaluationService</c> (Lot 6, recalcul explicite, §19.6) pour ne jamais dupliquer
+    /// cette projection entre les deux appelants.
+    /// </summary>
+    public static void ApplyToSnapshot(TimeEntryFinancialSnapshot snapshot, FinancialCalculationResultDto result, DateTime calculationDate)
+    {
+        snapshot.TjmPersonneSnapshot = result.DailyRatePersonne;
+        snapshot.SourceTjmPersonne = result.SourceTjmPersonne;
+        snapshot.ResourceTjmHistoryId = result.ResourceTjmHistoryId;
+        snapshot.TjmContratSnapshot = result.DailyRateContrat;
+        snapshot.SourceContrat = result.SourceContrat;
+        snapshot.CompanyContractHistoryId = result.CompanyContractHistoryId;
+        snapshot.CompanyIdSnapshot = result.CompanyId;
+        snapshot.CoutReelCalcule = result.CoutReel;
+        snapshot.CoutContratCalcule = result.CoutContractuel;
+        snapshot.DifferentielCalcule = result.Differentiel;
+        snapshot.CalculationDate = calculationDate;
+        snapshot.CalculationStatus = result.ValuationStatus;
     }
 }

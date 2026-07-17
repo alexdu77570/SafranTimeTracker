@@ -2,6 +2,7 @@ using Microsoft.OpenApi;
 using SafranTimeTracker.Api.Middleware;
 using SafranTimeTracker.Api.Security;
 using SafranTimeTracker.Application;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Infrastructure;
 using Serilog;
@@ -28,6 +29,11 @@ builder.Services.AddHealthChecks();
 // dépendent que de l'interface ICurrentUser.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, DemoCurrentUserProvider>();
+
+// Contexte technique d'audit (CLAUDE.md §17, même principe que ICurrentUser) : seul ce point
+// d'enregistrement connaît HttpAuditContextAccessor ; AuditService (Application) ne dépend que de
+// l'abstraction IAuditContextAccessor.
+builder.Services.AddScoped<IAuditContextAccessor, HttpAuditContextAccessor>();
 
 // Conflits métier (chevauchement de périodes, concurrence optimiste) -> 409 (CLAUDE.md §10, §12).
 builder.Services.AddExceptionHandler<BusinessConflictExceptionHandler>();

@@ -4,6 +4,8 @@ using ClosedXML.Excel;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Persistence;
 using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Application.Reporting.Dtos;
@@ -17,8 +19,11 @@ namespace SafranTimeTracker.Application.Reporting.Services;
 /// est entièrement produit par ReportingService en amont — ExportService ne fait que restituer
 /// dans le format demandé et journaliser (métadonnées minimales : date de génération, auteur,
 /// version de l'application, filtres appliqués — demande explicite de l'utilisateur, Lot 5).
+/// Un export financier (<paramref name="containsFinancialData"/> vrai) est en plus consigné dans
+/// AuditLog (§28.3 "export financier") — un export opérationnel ne l'est pas, cette liste
+/// n'attendant que l'export financier.
 /// </summary>
-public class ExportService(IRepository<ExportLog> exportLogRepository, ICurrentUser currentUser)
+public class ExportService(IRepository<ExportLog> exportLogRepository, AuditService auditService, ICurrentUser currentUser)
 {
     private static readonly string AppVersion = typeof(ExportService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -56,6 +61,11 @@ public class ExportService(IRepository<ExportLog> exportLogRepository, ICurrentU
             ContainsFinancialData = containsFinancialData
         };
         await exportLogRepository.AddAsync(log, cancellationToken);
+        if (containsFinancialData)
+        {
+            await auditService.RecordAsync(
+                AuditActions.ExportFinancial, reportType, null, null, new { format, filtersJson }, cancellationToken: cancellationToken);
+        }
         await exportLogRepository.SaveChangesAsync(cancellationToken);
 
         return new ExportResultDto

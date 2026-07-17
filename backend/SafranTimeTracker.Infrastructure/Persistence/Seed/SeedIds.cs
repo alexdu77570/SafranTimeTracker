@@ -212,4 +212,23 @@ internal static class SeedIds
     public static readonly Guid DashboardKpiJalonsEnRetard = new("00000000-0000-0000-0063-000000000006");
     public static readonly Guid DashboardKpiBudgetRestant = new("00000000-0000-0000-0063-000000000007");
     public static readonly Guid DashboardKpiDifferentielGlobal = new("00000000-0000-0000-0063-000000000008");
+
+    // Lot 6 — Permissions (§6.2, §28.3)
+    public static readonly Guid PermissionUserAdministration = new("00000000-0000-0000-0002-000000000003");
+    public static readonly Guid PermissionTimeEntryRecalculation = new("00000000-0000-0000-0002-000000000004");
+    public static readonly Guid PermissionImportExecute = new("00000000-0000-0000-0002-000000000005");
+    public static readonly Guid PermissionAuditView = new("00000000-0000-0000-0002-000000000006");
+    public static readonly Guid PermissionOrderReceiptOverride = new("00000000-0000-0000-0002-000000000007");
+
+    // Lot 6 — Réception partielle de démonstration (§13, règle métier validée)
+    public static readonly Guid OrderReceiptDemo = new("00000000-0000-0000-0070-000000000001");
+
+    // Lot 6 — Import de démonstration (§27)
+    public static readonly Guid ImportBatchDemo = new("00000000-0000-0000-0071-000000000001");
+    public static readonly Guid ImportDiffDemoAdd = new("00000000-0000-0000-0072-000000000001");
+    public static readonly Guid ImportDiffDemoUpdate = new("00000000-0000-0000-0072-000000000002");
+
+    // Lot 6 — Journal d'audit de démonstration (§28.3)
+    public static readonly Guid AuditLogDemoOrderExtension = new("00000000-0000-0000-0073-000000000001");
+    public static readonly Guid AuditLogDemoImport = new("00000000-0000-0000-0073-000000000002");
 }

@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using SafranTimeTracker.Domain.Absences;
 using SafranTimeTracker.Domain.Activities;
 using SafranTimeTracker.Domain.Applications;
+using SafranTimeTracker.Domain.Auditing;
 using SafranTimeTracker.Domain.Budgets;
 using SafranTimeTracker.Domain.Companies;
+using SafranTimeTracker.Domain.Imports;
 using SafranTimeTracker.Domain.Milestones;
 using SafranTimeTracker.Domain.Organisation;
 using SafranTimeTracker.Domain.Orders;
@@ -20,9 +22,10 @@ namespace SafranTimeTracker.Infrastructure.Persistence;
 
 /// <summary>
 /// Contexte EF Core unique de l'application. Porte les référentiels du Lot 1, le modèle financier
-/// du Lot 2, le temps/capacité du Lot 3, les projets du Lot 4 et les budgets/reporting du Lot 5
-/// (docs/ROADMAP.md). Les configurations d'entités (IEntityTypeConfiguration&lt;T&gt;) sont
-/// appliquées automatiquement via ApplyConfigurationsFromAssembly.
+/// du Lot 2, le temps/capacité du Lot 3, les projets du Lot 4, les budgets/reporting du Lot 5 et
+/// les imports/audit du Lot 6 (docs/ROADMAP.md). Les configurations d'entités
+/// (IEntityTypeConfiguration&lt;T&gt;) sont appliquées automatiquement via
+/// ApplyConfigurationsFromAssembly.
 /// </summary>
 public class AppDbContext : DbContext
 {
@@ -90,6 +93,12 @@ public class AppDbContext : DbContext
     public DbSet<DashboardKpi> DashboardKpis => Set<DashboardKpi>();
     public DbSet<ExportLog> ExportLogs => Set<ExportLog>();
 
+    // Imports et audit (Lot 6)
+    public DbSet<OrderReceipt> OrderReceipts => Set<OrderReceipt>();
+    public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
+    public DbSet<ImportDiff> ImportDiffs => Set<ImportDiff>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -99,5 +108,6 @@ public class AppDbContext : DbContext
         Lot3Seed.Apply(modelBuilder);
         Lot4Seed.Apply(modelBuilder);
         Lot5Seed.Apply(modelBuilder);
+        Lot6Seed.Apply(modelBuilder);
     }
 }

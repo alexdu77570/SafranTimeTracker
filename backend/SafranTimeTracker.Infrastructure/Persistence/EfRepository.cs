@@ -14,6 +14,12 @@ public class EfRepository<TEntity>(AppDbContext dbContext) : IRepository<TEntity
     public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         await dbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
 
+    public Task RemoveAsync(TEntity entity, CancellationToken cancellationToken = default)
+    {
+        dbContext.Set<TEntity>().Remove(entity);
+        return Task.CompletedTask;
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         dbContext.SaveChangesAsync(cancellationToken);
 }

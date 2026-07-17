@@ -10,7 +10,8 @@ namespace SafranTimeTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/companies")]
-public class CompaniesController(CompanyService service, IValidator<CompanyCreateRequest> validator) : ControllerBase
+public class CompaniesController(
+    CompanyService service, IValidator<CompanyCreateRequest> createValidator, IValidator<CompanyUpdateRequest> updateValidator) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<CompanyDto>>> GetList(
@@ -30,7 +31,7 @@ public class CompaniesController(CompanyService service, IValidator<CompanyCreat
     [HttpPost]
     public async Task<ActionResult<CompanyDto>> Create([FromBody] CompanyCreateRequest request, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        var validationResult = await createValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return ValidationProblem(new ValidationProblemDetails(validationResult.ToErrorDictionary()));
@@ -38,5 +39,18 @@ public class CompaniesController(CompanyService service, IValidator<CompanyCreat
 
         var dto = await service.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<CompanyDto>> Update(Guid id, [FromBody] CompanyUpdateRequest request, CancellationToken cancellationToken)
+    {
+        var validationResult = await updateValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validationResult.ToErrorDictionary()));
+        }
+
+        var dto = await service.UpdateAsync(id, request, cancellationToken);
+        return dto is null ? NotFound() : Ok(dto);
     }
 }

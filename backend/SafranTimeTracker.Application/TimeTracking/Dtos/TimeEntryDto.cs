@@ -49,3 +49,9 @@ public class TimeEntryUpdateRequest
     public string? Reference { get; set; }
     public string? Commentaire { get; set; }
 }
+
+/// <summary>§19.6 : recalcul explicite d'un instantané financier déjà figé — motif obligatoire.</summary>
+public class TimeEntryRecalculationRequest
+{
+    public string Reason { get; set; } = string.Empty;
+}

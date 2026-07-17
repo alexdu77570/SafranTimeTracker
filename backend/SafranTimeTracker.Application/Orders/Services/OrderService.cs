@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Exceptions;
 using SafranTimeTracker.Application.Common.Persistence;
@@ -16,7 +18,16 @@ namespace SafranTimeTracker.Application.Orders.Services;
 /// l'utilisateur, Lot 5) : aucune transition libre, une commande Clôturée ne peut redevenir Active
 /// que via <see cref="ReopenAsync"/> (motif obligatoire), jamais via <see cref="ActivateAsync"/>.
 /// Le sous-objet financier est omis sans FINANCIAL_DATA_VIEW (CLAUDE.md §13), même principe que
-/// <c>ProjectService</c>.
+/// <c>ProjectService</c>. Toute création/modification est auditée (§28.3).
+///
+/// Règle métier validée Lot 6 : le vocabulaire "Demande d'achat → Commande → Réceptions
+/// partielles → Clôture" se représente techniquement par cette machine d'état (Brouillon ≈
+/// Demande d'achat, Active ≈ Commande, Clôturée ≈ Clôture — inchangée depuis le Lot 5, aucune
+/// régression) complétée par les événements <see cref="Orders.OrderReceipt"/> (Réceptions
+/// partielles, <c>OrderReceiptService</c>) qui s'ajoutent par-dessus sans modifier cette machine
+/// d'état. La société d'une commande (<see cref="Order.CompanyId"/>) est immuable après création :
+/// <see cref="OrderUpdateRequest"/> ne porte volontairement pas ce champ. La ressource affectée
+/// peut changer en cours de vie de la commande via <see cref="OrderUpdateRequest.AuthorizedResourceIds"/>.
 /// </summary>
 public class OrderService(
     IRepository<Order> repository,
@@ -24,6 +35,7 @@ public class OrderService(
     IReadRepository<TimeEntryFinancialSnapshot> snapshotRepository,
     IReadRepository<TimeEntry> timeEntryRepository,
     IReadRepository<SettingsEntity> settingsRepository,
+    AuditService auditService,
     ICurrentUser currentUser)
 {
     private const string StatusBrouillon = "BROUILLON";
@@ -102,6 +114,7 @@ public class OrderService(
             .ToList();
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(AuditActions.Create, nameof(Order), entity.Id, null, entity.Adapt<OrderDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return (await GetByIdAsync(entity.Id, cancellationToken))!;
@@ -115,6 +128,7 @@ public class OrderService(
             return null;
         }
 
+        var oldValue = entity.Adapt<OrderDto>();
         request.Adapt(entity);
         entity.AuthorizedResources = request.AuthorizedResourceIds
             .Select(resourceId => new OrderAuthorizedResource { OrderId = entity.Id, ResourceId = resourceId })
@@ -122,6 +136,7 @@ public class OrderService(
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        await auditService.RecordAsync(AuditActions.Update, nameof(Order), id, oldValue, entity.Adapt<OrderDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
@@ -163,6 +178,9 @@ public class OrderService(
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        await auditService.RecordAsync(
+            AuditActions.StatusChange, nameof(Order), id,
+            new { Status = StatusCloturee }, new { Status = StatusActive }, request.Motif, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
@@ -189,6 +207,9 @@ public class OrderService(
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        await auditService.RecordAsync(
+            AuditActions.StatusChange, nameof(Order), id,
+            new { Status = currentStatus.Code }, new { Status = targetStatusCode }, cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
