@@ -7,6 +7,7 @@ using SafranTimeTracker.Application.Companies.Dtos;
 using SafranTimeTracker.Application.Organisation.Dtos;
 using SafranTimeTracker.Application.Orders.Dtos;
 using SafranTimeTracker.Application.Resources.Dtos;
+using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Application.Settings.Dtos;
 using SafranTimeTracker.Application.Users.Dtos;
 using SafranTimeTracker.Domain.Applications;
@@ -154,6 +155,32 @@ public class ReferentialsTests(SafranTimeTrackerApiFactory factory) : IClassFixt
         var response = await _client.PostAsJsonAsync("/api/v1/applications", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetPermissions_ReturnsSeededPermissionCodes()
+    {
+        var result = await _client.GetFromJsonAsync<PagedResult<PermissionDto>>("/api/v1/permissions?pageSize=100");
+
+        result.Should().NotBeNull();
+        result!.Items.Select(p => p.Code).Should().Contain(new[]
+        {
+            PermissionCodes.FinancialDataView,
+            PermissionCodes.TimeEntryCorrection,
+            PermissionCodes.TimeEntryRecalculation,
+            PermissionCodes.UserAdministration,
+            PermissionCodes.ImportExecute,
+            PermissionCodes.AuditView,
+            PermissionCodes.OrderReceiptOverride,
+        });
+    }
+
+    [Fact]
+    public async Task GetPermissionById_WithUnknownId_Returns404()
+    {
+        var response = await _client.GetAsync($"/api/v1/permissions/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

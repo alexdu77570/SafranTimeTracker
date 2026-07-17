@@ -1,13 +1,26 @@
-import { createBrowserRouter } from 'react-router-dom'
-import { AppLayoutPlaceholder } from './AppLayoutPlaceholder'
+import { createBrowserRouter, type RouteObject } from 'react-router-dom'
+import { AppLayout } from '../components/ui/AppLayout'
+import { navigation } from './navigation'
+import { PlaceholderPage } from './pages/PlaceholderPage'
+import { RouteErrorBoundary } from './RouteErrorBoundary'
 
 /**
- * Squelette de routage (CLAUDE.md §9). Une seule route technique de vérification en Lot 0 ;
- * les routes fonctionnelles (Tableau de bord, Temps, Projets, ...) arrivent à partir du Lot 1.
+ * Routage complet (cahier des charges §8.2, Lot 7) : une route par entrée de navigation, rendant
+ * un écran neutre "à venir" — aucun écran métier n'est construit dans ce lot (voir
+ * docs/ROADMAP.md). Générées depuis `navigation` pour ne jamais faire diverger sidebar et routes.
  */
+const children: RouteObject[] = navigation.map((entry) => ({
+  path: entry.path === '/' ? undefined : entry.path.slice(1),
+  index: entry.path === '/',
+  element: <PlaceholderPage title={entry.label} />,
+  handle: { crumb: entry.label },
+}))
+
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <AppLayoutPlaceholder />,
+    element: <AppLayout />,
+    errorElement: <RouteErrorBoundary />,
+    children,
   },
 ])

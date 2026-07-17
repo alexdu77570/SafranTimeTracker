@@ -61,14 +61,17 @@ Le `FinancialCalculationService` est le **seul** point de calcul des coûts rée
 frontend/safran-time-tracker-web/
 ├── src/
 │   ├── api/           Client HTTP centralisé, un module par famille d'endpoints
+│   ├── auth/           Identité de démonstration, résolution des permissions, PermissionGuard (Lot 7)
 │   ├── components/ui/ Composants réutilisables transverses (voir liste ci-dessous)
 │   ├── features/       Un dossier par domaine fonctionnel (temps, projets, budgets, ...)
 │   ├── hooks/          Hooks partagés non spécifiques à une feature
-│   ├── routes/         Déclaration du routage
+│   ├── routes/         Déclaration du routage, navigation, gestion des erreurs de route
+│   ├── theme/           Thème MUI (identité visuelle §8.1, Lot 7)
+│   ├── test/            Utilitaires et configuration de test partagés (Lot 7)
 │   └── lib/            Utilitaires (dateUtils, currencyUtils, validationUtils, ...)
 ```
 
-Composants UI transverses attendus : `AppLayout`, `Sidebar`, `Header`, `Breadcrumb`, `KpiCard`, `DataTable`, `StatusBadge`, `ProgressBar`, `Modal`, `Drawer`, `FormField`, `Select`, `DatePicker`, `ChartCard`, `Timeline`, `CalendarView`, `EmptyState`, `ConfirmDialog`, `FilterBar`, `ImportWizard`, `DiffViewer`, `BudgetGauge`, `WorkloadHeatmap`, `WeeklyPlanningGrid`, `PermissionGuard`, `FinancialValue`, `AuditTimeline`.
+Composants UI transverses attendus : `AppLayout`, `Sidebar`, `Header`, `Breadcrumb`, `KpiCard`, `DataTable`, `StatusBadge`, `ProgressBar`, `Modal`, `Drawer`, `FormField`, `Select`, `DatePicker`, `ChartCard`, `Timeline`, `CalendarView`, `EmptyState`, `ConfirmDialog`, `FilterBar`, `ImportWizard`, `DiffViewer`, `BudgetGauge`, `WorkloadHeatmap`, `WeeklyPlanningGrid`, `PermissionGuard`, `FinancialValue`, `AuditTimeline`. Implémentés depuis le Lot 7 (fondations) : `AppLayout`, `Sidebar`, `Header`, `Breadcrumb`, `KpiCard`, `DataTable`, `StatusBadge`, `ProgressBar`, `Modal`, `FormField` (+ `FormSelect`/`FormDatePicker`), `EmptyState`, `ConfirmDialog`, `FilterBar`, `PermissionGuard`, `FinancialValue`. Les autres (`Drawer`, `ChartCard`, `Timeline`, `CalendarView`, `ImportWizard`, `DiffViewer`, `BudgetGauge`, `WorkloadHeatmap`, `WeeklyPlanningGrid`, `AuditTimeline`) sont spécifiques à un écran métier et attendent le lot qui les introduit (Lots 8 à 12, `docs/ROADMAP.md`).
 
 Le composant `PermissionGuard` et le composant `FinancialValue` **n'affichent jamais** une donnée financière non autorisée : ils s'appuient sur l'absence du champ dans la réponse API (voir `CLAUDE.md` §12-13), pas sur un masquage visuel.
 

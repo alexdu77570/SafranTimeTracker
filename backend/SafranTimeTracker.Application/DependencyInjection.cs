@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<OrderReceiptService>();
         services.AddScoped<ResourceService>();
         services.AddScoped<UserService>();
+        services.AddScoped<PermissionService>();
         services.AddScoped<ApplicationReferenceService>();
         services.AddScoped<SettingsService>();
         services.AddScoped<ResourceTjmHistoryService>();

@@ -1,13 +1,12 @@
-/* Réinitialisation minimale. Le design system (cahier des charges §8.1 : fond gris clair,
-   sidebar bleu marine, accent bleu Safran, typographie Inter/Segoe UI) est hors périmètre
-   du Lot 0 et sera mis en place avec les premiers écrans fonctionnels. */
+/* Réinitialisation minimale. Le design system (cahier des charges §8.1) est porté par le thème
+   MUI (src/theme/theme.ts) et CssBaseline (App.tsx) à partir du Lot 7 ; ce fichier ne garde que
+   le strict nécessaire non couvert par CssBaseline. */
 :root {
   color-scheme: light dark;
 }
 
 body {
-  margin: 0;
-  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter Variable', Inter, 'Segoe UI', system-ui, sans-serif;
 }
 
 #root {

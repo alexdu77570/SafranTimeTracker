@@ -2,6 +2,15 @@
 
 > Découpage recommandé par le cahier des charges (section 40), détaillé ici comme plan de référence. L'avancement réel est suivi dans `docs/IMPLEMENTATION_STATUS.md`, qui est le document à consulter pour connaître l'état effectif du projet.
 
+## Révision de la roadmap (à la clôture du Lot 6)
+
+Le découpage du cahier des charges (§40) ne prévoyait aucun lot dédié à la construction des écrans fonctionnels (§8 à §28) : le frontend n'a reçu aucune évolution depuis le socle technique du Lot 0. Un produit techniquement industrialisé mais sans interface fonctionnelle complète ne constitue pas une V1 utilisable. La roadmap est donc révisée, décision actée après le Lot 6 :
+
+- l'ancien **Lot 7 — Industrialisation** est remplacé par une phase **Frontend complet (V1)**, découpée en six nouveaux lots (7 à 12), construite écran par écran sur l'API déjà livrée aux Lots 1 à 6 ;
+- l'industrialisation (packaging, déploiement, exploitation) est conservée intégralement mais repoussée en dernière position, renumérotée **Lot 13**.
+
+Les Lots 0 à 6 ne sont pas modifiés par cette révision.
+
 ## Règle commune à tous les lots
 
 **Un lot n'est terminé que lorsqu'il produit une version compilable, testée réellement et démontrable.** On ne démarre pas le lot suivant tant que ce critère n'est pas satisfait. Aucune fonctionnalité d'un lot ultérieur n'est anticipée dans un lot antérieur.
@@ -73,14 +82,69 @@
 - Comparaison de lots d'import.
 - Audit complet.
 
-## Lot 7 — Industrialisation
+---
+
+# Phase — Frontend complet (V1)
+
+> Objectif : livrer les écrans fonctionnels décrits au cahier des charges §8 à §28, jusqu'ici absents (seul le squelette technique du Lot 0 existe). Chaque lot consomme exclusivement l'API déjà livrée aux Lots 1 à 6 : aucune évolution backend, aucune règle métier nouvelle. Même règle de méthode que les Lots 0 à 6 (version compilable, testée réellement, démontrable, avant passage au lot suivant).
+
+## Lot 7 — Frontend Foundation (Design System)
+
+- Identité visuelle (palette, typographie, thème corporate — cahier des charges §8.1).
+- Layout applicatif : `AppLayout`, `Sidebar` (filtrée par droits), `Header`, `Breadcrumb`.
+- Composants transverses de base : `DataTable`, `StatusBadge`, `FormField`, `Select`, `DatePicker`, `Modal`, `ConfirmDialog`, `EmptyState`, `FilterBar`, `KpiCard`, `ProgressBar`, `PermissionGuard`, `FinancialValue`.
+- Sélecteur d'identité de démonstration (pilote l'en-tête `X-Demo-User` existant).
+- Routage complet avec garde de permissions.
+- Gestion centralisée des erreurs et des états de chargement (TanStack Query).
+- Formats français (dates, montants en euros).
+- Aucun écran métier : ce lot rend les lots suivants mécaniques plutôt que fondateurs.
+
+## Lot 8 — Référentiels et Administration
+
+- Ressources / Utilisateurs (fiche à 4 sections : Général, Organisation, Sécurité, Historique des TJM sous permission financière).
+- Sociétés (+ historique des contrats, confidentiel).
+- Applications (+ détail statistique).
+- Administration (13 onglets : Utilisateurs, Département, Services, Équipes, Applications, Types d'activités, Types d'absences, Types de jalons, Sociétés, Commandes, Paramètres, Permissions, Audit).
+
+## Lot 9 — Temps et Disponibilités
+
+- Saisie des temps (formulaire, validation de référence dynamique par type d'activité, historique, snapshot financier conditionnel).
+- Mes absences (workflow Brouillon → Soumis → Validé/Refusé/Annulé, totaux mensuel/annuel).
+- Disponibilités (vues mensuelle/hebdomadaire, calendrier coloré, accès filtré par rôle).
+
+## Lot 10 — Projets et Planning
+
+- Projets : vue liste (filtres multiples) et détail à 7 onglets (Synthèse, Participants, Planning, Budget, Temps, Jalons, Références liées).
+- Planning projet : vue transverse tous projets, comparaison initial/ajusté/réalisé, alertes surcharge/sous-charge.
+- Composants `WeeklyPlanningGrid`, `Timeline`.
+
+## Lot 11 — Commandes, Budgets et Jalons
+
+- Commandes (CRUD, machine d'état à 5 statuts, rallonges, réceptions partielles — Lot 6).
+- Budgets (indicateurs, versions/ajustements historisés, `BudgetGauge`).
+- Jalons (timeline, calendrier, tableau, compteur à 30 jours, mise en évidence des retards).
+
+## Lot 12 — Charges, Tableau de bord, Reporting et Imports
+
+- Charges (filtres, indicateurs, graphiques dont `WorkloadHeatmap`).
+- Tableau de bord (KPI opérationnels et financiers, graphiques adaptés au périmètre de l'utilisateur).
+- Reporting (rapports opérationnels et financiers, exports réels CSV/Excel/PDF).
+- Imports (assistant en 12 étapes, `ImportWizard`, `DiffViewer`, comparaison SharePoint simulée).
+
+---
+
+# Phase — Industrialisation
+
+## Lot 13 — Industrialisation (ancien Lot 7)
 
 - Tests (couverture élargie, non-régression).
 - Optimisation.
 - Documentation (installation, exploitation, fonctionnelle, API, guides utilisateur/administrateur).
 - Sécurité (revue complète).
 - Sauvegarde et restauration (procédures testées).
-- Packaging portable.
+- Packaging portable — deux profils distincts :
+  - **PortableDemo** : package ZIP autonome, API self-contained Windows x64, frontend statique servi par l'API elle-même, base SQLite locale, sans Internet ni droits administrateur.
+  - **ServerIIS** : déploiement Windows Server / IIS, base SQL Server en priorité (PostgreSQL conservé comme provider compatible), scripts de déploiement/sauvegarde/restauration/rollback/health-check, chemins normalisés `E:\appl`, `E:\certificats`, `E:\CD_INSTALL`, `E:\data`.
 
 ---
 
