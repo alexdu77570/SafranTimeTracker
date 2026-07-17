@@ -63,7 +63,7 @@ Les entités C# sont nommées en `PascalCase`. Le mapping physique (tables, colo
 `Milestone`, `ActivityType`.
 
 ### Financier
-`Order`, `OrderStatus`, `OrderExtension`, `Budget`, `BudgetVersion`.
+`Order`, `OrderStatus`, `OrderExtension`, `OrderReceipt` (Lot 6 — réceptions partielles, règle métier validée : le vocabulaire "Demande d'achat → Commande → Réceptions partielles → Clôture" se représente par la machine d'état `Order`/`OrderStatus` inchangée depuis le Lot 5, complétée par ces événements répétables), `Budget`, `BudgetVersion`.
 
 ### Imports et audit
 `ImportBatch`, `ImportDiff`, `AuditLog`.
@@ -73,7 +73,7 @@ Les entités C# sont nommées en `PascalCase`. Le mapping physique (tables, colo
 
 ## 5. Historisation — principe commun
 
-Toute entité d'historique (`ResourceTjmHistory`, `CompanyContractHistory`, `ResourceCompanyAssignment`, `ProjectPlanVersion`, `OrderExtension`, `BudgetVersion`, …) partage les mêmes règles d'intégrité :
+Toute entité d'historique (`ResourceTjmHistory`, `CompanyContractHistory`, `ResourceCompanyAssignment`, `ProjectPlanVersion`, `OrderExtension`, `OrderReceipt`, `BudgetVersion`, …) partage les mêmes règles d'intégrité :
 
 - une seule période **ouverte** (sans date de fin) à la fois par sujet (ressource, société, …) ;
 - deux périodes actives ne peuvent pas se chevaucher ;

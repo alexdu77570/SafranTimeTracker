@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Exceptions;
 using SafranTimeTracker.Application.Common.Persistence;
@@ -19,7 +21,8 @@ namespace SafranTimeTracker.Application.TimeTracking.Services;
 /// Orchestration de la saisie de temps (cahier des charges §19). Toute création ou modification
 /// autorisée revalorise la saisie via FinancialCalculationService (§19.5) — la seule source de
 /// calcul, jamais dupliquée ici. Le sous-objet financier du DTO retourné est omis sans
-/// FINANCIAL_DATA_VIEW (CLAUDE.md §13), projection faite ici, jamais a posteriori.
+/// FINANCIAL_DATA_VIEW (CLAUDE.md §13), projection faite ici, jamais a posteriori. Création,
+/// modification et suppression logique sont auditées (§28.3, Lot 6).
 /// </summary>
 public class TimeEntryService(
     IRepository<TimeEntry> repository,
@@ -29,6 +32,7 @@ public class TimeEntryService(
     IReadRepository<OrderStatus> orderStatusRepository,
     IReadRepository<SettingsEntity> settingsRepository,
     FinancialCalculationService financialCalculationService,
+    AuditService auditService,
     ICurrentUser currentUser)
 {
     public async Task<PagedResult<TimeEntryDto>> GetListAsync(
@@ -82,6 +86,8 @@ public class TimeEntryService(
         entity.CreatedBy = currentUser.Identifier;
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(
+            AuditActions.Create, nameof(TimeEntry), entity.Id, null, ToDto(entity, hasFinancialAccess: false), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         await ValorizeAsync(entity, cancellationToken);
@@ -99,15 +105,45 @@ public class TimeEntryService(
 
         await EnsureBusinessRulesAsync(entity.ResourceId, request.OrderId, request.Date, cancellationToken);
 
+        var oldValue = ToDto(entity, hasFinancialAccess: false);
         request.Adapt(entity);
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        await auditService.RecordAsync(
+            AuditActions.Update, nameof(TimeEntry), id, oldValue, ToDto(entity, hasFinancialAccess: false), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         await ValorizeAsync(entity, cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
+    }
+
+    /// <summary>§28.3 "suppression logique d'une saisie" : statut plutôt que suppression physique
+    /// (CLAUDE.md §7), même règle de période close que <see cref="UpdateAsync"/> (§19.4).</summary>
+    public async Task<TimeEntryDto?> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var entity = await repository.GetByIdAsync(id, cancellationToken);
+        if (entity is null)
+        {
+            return null;
+        }
+        if (entity.Statut == ReferentialStatus.Inactif)
+        {
+            throw new BusinessConflictException("Cette saisie est déjà supprimée.");
+        }
+
+        await EnsurePeriodNotClosedAsync(entity.Date, cancellationToken);
+
+        var oldValue = ToDto(entity, hasFinancialAccess: false);
+        entity.Statut = ReferentialStatus.Inactif;
+        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedBy = currentUser.Identifier;
+
+        await auditService.RecordAsync(AuditActions.LogicalDelete, nameof(TimeEntry), id, oldValue, null, cancellationToken: cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+
+        return entity.Adapt<TimeEntryDto>();
     }
 
     private async Task EnsureBusinessRulesAsync(Guid resourceId, Guid? orderId, DateOnly date, CancellationToken cancellationToken)
@@ -118,15 +154,7 @@ public class TimeEntryService(
             throw new BusinessConflictException("Impossible de saisir du temps sur une ressource inactive (cahier des charges §19.4).");
         }
 
-        var delaiModificationJours = await settingsRepository.Query()
-            .Select(s => s.DelaiModificationTempsJours)
-            .FirstAsync(cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        if (today.DayNumber - date.DayNumber > delaiModificationJours)
-        {
-            throw new BusinessConflictException(
-                $"La période est clôturée : la saisie n'est plus modifiable au-delà de {delaiModificationJours} jour(s) (cahier des charges §19.4).");
-        }
+        await EnsurePeriodNotClosedAsync(date, cancellationToken);
 
         if (orderId is not null)
         {
@@ -152,6 +180,19 @@ public class TimeEntryService(
         }
     }
 
+    private async Task EnsurePeriodNotClosedAsync(DateOnly date, CancellationToken cancellationToken)
+    {
+        var delaiModificationJours = await settingsRepository.Query()
+            .Select(s => s.DelaiModificationTempsJours)
+            .FirstAsync(cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        if (today.DayNumber - date.DayNumber > delaiModificationJours)
+        {
+            throw new BusinessConflictException(
+                $"La période est clôturée : la saisie n'est plus modifiable au-delà de {delaiModificationJours} jour(s) (cahier des charges §19.4).");
+        }
+    }
+
     private async Task ValorizeAsync(TimeEntry entity, CancellationToken cancellationToken)
     {
         var result = await financialCalculationService.CalculateAsync(
@@ -173,33 +214,17 @@ public class TimeEntryService(
                 CreatedAt = now,
                 CreatedBy = currentUser.Identifier
             };
-            ApplyResult(snapshot, result, now);
+            FinancialCalculationService.ApplyToSnapshot(snapshot, result, now);
             await snapshotRepository.AddAsync(snapshot, cancellationToken);
         }
         else
         {
-            ApplyResult(snapshot, result, now);
+            FinancialCalculationService.ApplyToSnapshot(snapshot, result, now);
             snapshot.UpdatedAt = now;
             snapshot.UpdatedBy = currentUser.Identifier;
         }
 
         await snapshotRepository.SaveChangesAsync(cancellationToken);
-    }
-
-    private static void ApplyResult(TimeEntryFinancialSnapshot snapshot, FinancialCalculationResultDto result, DateTime calculationDate)
-    {
-        snapshot.TjmPersonneSnapshot = result.DailyRatePersonne;
-        snapshot.SourceTjmPersonne = result.SourceTjmPersonne;
-        snapshot.ResourceTjmHistoryId = result.ResourceTjmHistoryId;
-        snapshot.TjmContratSnapshot = result.DailyRateContrat;
-        snapshot.SourceContrat = result.SourceContrat;
-        snapshot.CompanyContractHistoryId = result.CompanyContractHistoryId;
-        snapshot.CompanyIdSnapshot = result.CompanyId;
-        snapshot.CoutReelCalcule = result.CoutReel;
-        snapshot.CoutContratCalcule = result.CoutContractuel;
-        snapshot.DifferentielCalcule = result.Differentiel;
-        snapshot.CalculationDate = calculationDate;
-        snapshot.CalculationStatus = result.ValuationStatus;
     }
 
     private static TimeEntryDto ToDto(TimeEntry entity, bool hasFinancialAccess)

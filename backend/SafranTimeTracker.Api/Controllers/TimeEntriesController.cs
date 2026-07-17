@@ -1,7 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SafranTimeTracker.Api.Extensions;
+using SafranTimeTracker.Api.Security;
 using SafranTimeTracker.Application.Common.Dtos;
+using SafranTimeTracker.Application.Common.Security;
+using SafranTimeTracker.Application.Financial.Services;
 using SafranTimeTracker.Application.TimeTracking.Dtos;
 using SafranTimeTracker.Application.TimeTracking.Services;
 
@@ -14,8 +17,10 @@ namespace SafranTimeTracker.Api.Controllers;
 [Route("api/v1/time-entries")]
 public class TimeEntriesController(
     TimeEntryService service,
+    ITimeEntryRevaluationService revaluationService,
     IValidator<TimeEntryCreateRequest> createValidator,
-    IValidator<TimeEntryUpdateRequest> updateValidator) : ControllerBase
+    IValidator<TimeEntryUpdateRequest> updateValidator,
+    IValidator<TimeEntryRecalculationRequest> recalculationValidator) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<TimeEntryDto>>> GetList(
@@ -57,5 +62,28 @@ public class TimeEntriesController(
 
         var dto = await service.UpdateAsync(id, request, cancellationToken);
         return dto is null ? NotFound() : Ok(dto);
+    }
+
+    /// <summary>§28.3 "suppression logique d'une saisie" : statut plutôt que suppression physique.</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await service.DeleteAsync(id, cancellationToken);
+        return dto is null ? NotFound() : NoContent();
+    }
+
+    /// <summary>§19.6 : recalcul explicite, permission dédiée, motif obligatoire.</summary>
+    [HttpPost("{id:guid}/recalculate")]
+    [RequirePermission(PermissionCodes.TimeEntryRecalculation)]
+    public async Task<ActionResult> Recalculate(Guid id, [FromBody] TimeEntryRecalculationRequest request, CancellationToken cancellationToken)
+    {
+        var validationResult = await recalculationValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validationResult.ToErrorDictionary()));
+        }
+
+        var snapshot = await revaluationService.RecalculateAsync(id, request.Reason, cancellationToken);
+        return Ok(snapshot);
     }
 }

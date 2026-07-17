@@ -40,4 +40,5 @@ public class Order : AuditableEntity
 
     public ICollection<OrderAuthorizedResource> AuthorizedResources { get; set; } = new List<OrderAuthorizedResource>();
     public ICollection<OrderExtension> Extensions { get; set; } = new List<OrderExtension>();
+    public ICollection<OrderReceipt> Receipts { get; set; } = new List<OrderReceipt>();
 }

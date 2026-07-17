@@ -3,10 +3,14 @@ using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using SafranTimeTracker.Application.Absences.Services;
 using SafranTimeTracker.Application.Applications.Services;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Budgets.Services;
 using SafranTimeTracker.Application.Capacity.Services;
 using SafranTimeTracker.Application.Companies.Services;
 using SafranTimeTracker.Application.Financial.Services;
+using SafranTimeTracker.Application.Imports;
+using SafranTimeTracker.Application.Imports.Adapters;
+using SafranTimeTracker.Application.Imports.Services;
 using SafranTimeTracker.Application.Milestones.Services;
 using SafranTimeTracker.Application.Organisation.Services;
 using SafranTimeTracker.Application.Orders.Services;
@@ -34,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<TeamService>();
         services.AddScoped<CompanyService>();
         services.AddScoped<OrderService>();
+        services.AddScoped<OrderReceiptService>();
         services.AddScoped<ResourceService>();
         services.AddScoped<UserService>();
         services.AddScoped<ApplicationReferenceService>();
@@ -59,6 +64,31 @@ public static class DependencyInjection
         services.AddScoped<ReportingService>();
         services.AddScoped<ExportService>();
         services.AddScoped<DashboardKpiService>();
+
+        // Audit (Lot 6, §28.3)
+        services.AddScoped<AuditService>();
+        services.AddScoped<AuditLogService>();
+
+        // Imports (Lot 6, §27) : un adaptateur par type importable, résolus collectivement par
+        // ImportService via IEnumerable<IImportAdapter> — même principe d'enregistrement multiple
+        // que les IEntityTypeConfiguration<T> côté Infrastructure.
+        services.AddScoped<ImportService>();
+        services.AddScoped<IImportAdapter, ResourceImportAdapter>();
+        services.AddScoped<IImportAdapter, ApplicationReferenceImportAdapter>();
+        services.AddScoped<IImportAdapter, OrganisationImportAdapter>();
+        services.AddScoped<IImportAdapter, AbsenceImportAdapter>();
+        services.AddScoped<IImportAdapter, CompanyImportAdapter>();
+        services.AddScoped<IImportAdapter, ResourceTjmHistoryImportAdapter>();
+        services.AddScoped<IImportAdapter, CompanyContractHistoryImportAdapter>();
+        services.AddScoped<IImportAdapter, ResourceCompanyAssignmentImportAdapter>();
+        services.AddScoped<IImportAdapter, OrderImportAdapter>();
+        services.AddScoped<IImportAdapter, ProjectImportAdapter>();
+        services.AddScoped<IImportAdapter, BudgetImportAdapter>();
+        services.AddScoped<IImportAdapter, UserImportAdapter>();
+        services.AddScoped<IImportAdapter, TimeEntryImportAdapter>();
+        services.AddScoped<IImportAdapter, MilestoneImportAdapter>();
+        services.AddScoped<IImportAdapter, ProjectParticipantImportAdapter>();
+        services.AddScoped<IImportAdapter, PlanningImportAdapter>();
 
         return services;
     }

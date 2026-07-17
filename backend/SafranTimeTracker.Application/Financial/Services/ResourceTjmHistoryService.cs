@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Exceptions;
@@ -12,8 +14,9 @@ using SafranTimeTracker.Domain.Resources;
 namespace SafranTimeTracker.Application.Financial.Services;
 
 /// <summary>Cahier des charges §11. Le chevauchement de périodes est un conflit métier (409),
-/// pas une erreur de format : il dépend de l'état existant, pas de la requête seule.</summary>
-public class ResourceTjmHistoryService(IRepository<ResourceTjmHistory> repository, ICurrentUser currentUser)
+/// pas une erreur de format : il dépend de l'état existant, pas de la requête seule. Création et
+/// modification auditées (§28.3, Lot 6).</summary>
+public class ResourceTjmHistoryService(IRepository<ResourceTjmHistory> repository, AuditService auditService, ICurrentUser currentUser)
 {
     public async Task<PagedResult<ResourceTjmHistoryDto>> GetListAsync(
         PaginationQuery pagination, Guid? resourceId, CancellationToken cancellationToken = default)
@@ -49,6 +52,8 @@ public class ResourceTjmHistoryService(IRepository<ResourceTjmHistory> repositor
         entity.CreatedBy = currentUser.Identifier;
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(
+            AuditActions.Create, nameof(ResourceTjmHistory), entity.Id, null, entity.Adapt<ResourceTjmHistoryDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return entity.Adapt<ResourceTjmHistoryDto>();
@@ -64,11 +69,15 @@ public class ResourceTjmHistoryService(IRepository<ResourceTjmHistory> repositor
 
         await EnsureNoOverlapAsync(entity.ResourceId, request.StartDate, request.EndDate, excludeId: id, cancellationToken);
 
+        var oldValue = entity.Adapt<ResourceTjmHistoryDto>();
         request.Adapt(entity);
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
         entity.ConcurrencyStamp = Guid.NewGuid();
 
+        await auditService.RecordAsync(
+            AuditActions.Update, nameof(ResourceTjmHistory), id, oldValue, entity.Adapt<ResourceTjmHistoryDto>(),
+            request.Reason, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return entity.Adapt<ResourceTjmHistoryDto>();

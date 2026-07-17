@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Exceptions;
@@ -12,8 +14,9 @@ using SafranTimeTracker.Domain.Companies;
 namespace SafranTimeTracker.Application.Financial.Services;
 
 /// <summary>Cahier des charges §12.3-§12.4. Mêmes règles d'intégrité que ResourceTjmHistory
-/// (docs/DATABASE.md §5), chevauchement traduit en 409 (CLAUDE.md §12).</summary>
-public class CompanyContractHistoryService(IRepository<CompanyContractHistory> repository, ICurrentUser currentUser)
+/// (docs/DATABASE.md §5), chevauchement traduit en 409 (CLAUDE.md §12). Création et modification
+/// auditées (§28.3, Lot 6).</summary>
+public class CompanyContractHistoryService(IRepository<CompanyContractHistory> repository, AuditService auditService, ICurrentUser currentUser)
 {
     public async Task<PagedResult<CompanyContractHistoryDto>> GetListAsync(
         PaginationQuery pagination, Guid? companyId, CancellationToken cancellationToken = default)
@@ -49,6 +52,9 @@ public class CompanyContractHistoryService(IRepository<CompanyContractHistory> r
         entity.CreatedBy = currentUser.Identifier;
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(
+            AuditActions.Create, nameof(CompanyContractHistory), entity.Id, null, entity.Adapt<CompanyContractHistoryDto>(),
+            cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return entity.Adapt<CompanyContractHistoryDto>();
@@ -64,11 +70,15 @@ public class CompanyContractHistoryService(IRepository<CompanyContractHistory> r
 
         await EnsureNoOverlapAsync(entity.CompanyId, request.StartDate, request.EndDate, excludeId: id, cancellationToken);
 
+        var oldValue = entity.Adapt<CompanyContractHistoryDto>();
         request.Adapt(entity);
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
         entity.ConcurrencyStamp = Guid.NewGuid();
 
+        await auditService.RecordAsync(
+            AuditActions.Update, nameof(CompanyContractHistory), id, oldValue, entity.Adapt<CompanyContractHistoryDto>(),
+            request.Comment, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return entity.Adapt<CompanyContractHistoryDto>();

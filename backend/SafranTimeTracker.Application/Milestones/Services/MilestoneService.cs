@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Persistence;
 using SafranTimeTracker.Application.Common.Security;
@@ -9,8 +11,8 @@ using SafranTimeTracker.Domain.Milestones;
 namespace SafranTimeTracker.Application.Milestones.Services;
 
 /// <summary>Cahier des charges §24. "En retard" (§24.2) est dérivé à la lecture, jamais stocké
-/// (voir MilestoneDto.EstEnRetard).</summary>
-public class MilestoneService(IRepository<Milestone> repository, ICurrentUser currentUser)
+/// (voir MilestoneDto.EstEnRetard). Création et modification auditées (§28.3, Lot 6).</summary>
+public class MilestoneService(IRepository<Milestone> repository, AuditService auditService, ICurrentUser currentUser)
 {
     public async Task<PagedResult<MilestoneDto>> GetListAsync(
         PaginationQuery pagination, Guid? projectId, Guid? responsableId, MilestoneStatus? statut, bool? enRetard,
@@ -62,6 +64,7 @@ public class MilestoneService(IRepository<Milestone> repository, ICurrentUser cu
         entity.CreatedBy = currentUser.Identifier;
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(AuditActions.Create, nameof(Milestone), entity.Id, null, ToDto(entity), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return ToDto(entity);
@@ -75,10 +78,12 @@ public class MilestoneService(IRepository<Milestone> repository, ICurrentUser cu
             return null;
         }
 
+        var oldValue = ToDto(entity);
         request.Adapt(entity);
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        await auditService.RecordAsync(AuditActions.Update, nameof(Milestone), id, oldValue, ToDto(entity), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return ToDto(entity);
     }

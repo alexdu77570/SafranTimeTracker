@@ -67,8 +67,11 @@ internal static class Lot3Seed
             ActivityType(SeedIds.ActivityTypeAstreinte, "ASTREINTE", "Astreinte", isRun: true, referenceRequired: false),
             ActivityType(SeedIds.ActivityTypeReunion, "REUNION", "Réunion", isRun: false, referenceRequired: false),
             ActivityType(SeedIds.ActivityTypeFormation, "FORMATION", "Formation", isRun: false, referenceRequired: false),
-            ActivityType(SeedIds.ActivityTypeVabe, "VABE", "VABE", isRun: false, referenceRequired: true, @"^VABE-\d{4}$", "VABE-0012"),
-            ActivityType(SeedIds.ActivityTypeVsr, "VSR", "VSR", isRun: false, referenceRequired: true, @"^VSR-\d{4}$", "VSR-0012"));
+            // IsRun corrigé à true au Lot 6 (règle métier validée : "les références INC/CHG/PRB/
+            // RITM/VABE/VSR sont des références RUN") — écart de seed du Lot 3 (VABE/VSR étaient
+            // seedés hors RUN), voir docs/IMPLEMENTATION_STATUS.md.
+            ActivityType(SeedIds.ActivityTypeVabe, "VABE", "VABE", isRun: true, referenceRequired: true, @"^VABE-\d{4}$", "VABE-0012"),
+            ActivityType(SeedIds.ActivityTypeVsr, "VSR", "VSR", isRun: true, referenceRequired: true, @"^VSR-\d{4}$", "VSR-0012"));
 
         ActivityType ActivityType(
             Guid id, string code, string libelle, bool isRun, bool referenceRequired,

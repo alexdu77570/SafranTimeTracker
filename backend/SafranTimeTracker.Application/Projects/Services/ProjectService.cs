@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Exceptions;
 using SafranTimeTracker.Application.Common.Persistence;
@@ -14,12 +16,15 @@ namespace SafranTimeTracker.Application.Projects.Services;
 /// Cahier des charges §16. Le sous-objet financier (budget, coûts consommés, différentiel) est
 /// omis sans FINANCIAL_DATA_VIEW (CLAUDE.md §13, §17 : "budgets"/"montants" sont des données
 /// financières). Coûts consommés agrégés depuis TimeEntryFinancialSnapshot via TimeEntry.ProjectId
-/// (§20.6), jamais recalculés aux taux actuels.
+/// (§20.6), jamais recalculés aux taux actuels. Création, modification et archivage audités
+/// (§28.3, Lot 6) — les entrées d'audit ne portent que les champs non financiers du projet, jamais
+/// FinancialSummary (calculé, pas persisté sur l'entité).
 /// </summary>
 public class ProjectService(
     IRepository<Project> repository,
     IReadRepository<ProjectStatus> statusRepository,
     IReadRepository<TimeEntryFinancialSnapshot> snapshotRepository,
+    AuditService auditService,
     ICurrentUser currentUser)
 {
     private const string StatusActif = "ACTIF";
@@ -73,6 +78,8 @@ public class ProjectService(
         entity.CreatedBy = currentUser.Identifier;
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(
+            AuditActions.Create, nameof(Project), entity.Id, null, entity.Adapt<ProjectDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return (await GetByIdAsync(entity.Id, cancellationToken))!;
@@ -86,10 +93,13 @@ public class ProjectService(
             return null;
         }
 
+        var oldValue = entity.Adapt<ProjectDto>();
         request.Adapt(entity);
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        await auditService.RecordAsync(
+            AuditActions.Update, nameof(Project), id, oldValue, entity.Adapt<ProjectDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
@@ -115,10 +125,14 @@ public class ProjectService(
             throw new BusinessConflictException(conflictMessage);
         }
 
+        var oldStatusId = entity.StatusId;
         entity.StatusId = targetStatus.Id;
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
 
+        var action = targetStatusCode == StatusArchive ? AuditActions.Archive : AuditActions.Reactivate;
+        await auditService.RecordAsync(
+            action, nameof(Project), id, new { StatusId = oldStatusId }, new { entity.StatusId }, cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }

@@ -350,7 +350,7 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             Code = "VABE",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
-                            IsRun = false,
+                            IsRun = true,
                             Libelle = "VABE",
                             ReferenceExample = "VABE-0012",
                             ReferenceFormatRegex = "^VABE-\\d{4}$",
@@ -363,7 +363,7 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             Code = "VSR",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
-                            IsRun = false,
+                            IsRun = true,
                             Libelle = "VSR",
                             ReferenceExample = "VSR-0012",
                             ReferenceFormatRegex = "^VSR-\\d{4}$",
@@ -490,6 +490,96 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             ResponsableId = new Guid("00000000-0000-0000-0021-000000000005"),
                             ServiceId = new Guid("00000000-0000-0000-0011-000000000003"),
                             Statut = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Auditing.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("action");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("author");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("entity_type");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("new_value");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("old_value");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("TechnicalContext")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("technical_context");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("timestamp");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_logs");
+
+                    b.HasIndex("Author")
+                        .HasDatabaseName("ix_audit_logs_author");
+
+                    b.HasIndex("Timestamp")
+                        .HasDatabaseName("ix_audit_logs_timestamp");
+
+                    b.HasIndex("EntityType", "EntityId")
+                        .HasDatabaseName("ix_audit_logs_entity_type_entity_id");
+
+                    b.ToTable("audit_logs", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0073-000000000001"),
+                            Action = "EXTENSION",
+                            Author = "system-seed",
+                            EntityId = new Guid("00000000-0000-0000-0023-000000000001"),
+                            EntityType = "Order",
+                            NewValue = "{\"BudgetFinancierAjuste\":170000.00}",
+                            OldValue = "{\"BudgetFinancierAjuste\":150000.00}",
+                            Reason = "Extension de périmètre validée par le comité de pilotage (démonstration, cf. OrderExtensionDemo).",
+                            Timestamp = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0073-000000000002"),
+                            Action = "IMPORT",
+                            Author = "system-seed",
+                            EntityId = new Guid("00000000-0000-0000-0071-000000000001"),
+                            EntityType = "Applications",
+                            NewValue = "{\"Mode\":\"MiseAJour\",\"AddCount\":1,\"UpdateCount\":1}",
+                            Timestamp = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -1005,6 +1095,180 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
                             StartDate = new DateOnly(2024, 1, 1),
                             Status = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Imports.ImportBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AddCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("add_count");
+
+                    b.Property<string>("Checksum")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("checksum");
+
+                    b.Property<int>("DeleteCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("delete_count");
+
+                    b.Property<int>("ErrorCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("error_count");
+
+                    b.Property<string>("Errors")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("errors");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("file_name");
+
+                    b.Property<DateTime>("ImportDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("import_date");
+
+                    b.Property<int>("LineCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("line_count");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("mode");
+
+                    b.Property<Guid?>("PreviousBatchId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("previous_batch_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("source");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("status");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("type");
+
+                    b.Property<int>("UpdateCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("update_count");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_import_batches");
+
+                    b.HasIndex("ImportDate")
+                        .HasDatabaseName("ix_import_batches_import_date");
+
+                    b.HasIndex("Type", "Source", "Status")
+                        .HasDatabaseName("ix_import_batches_type_source_status");
+
+                    b.ToTable("import_batches", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0071-000000000001"),
+                            AddCount = 1,
+                            Checksum = "demo-checksum-lot6",
+                            DeleteCount = 0,
+                            ErrorCount = 0,
+                            FileName = "applications-demo.csv",
+                            ImportDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LineCount = 2,
+                            Mode = 1,
+                            Source = "CSV",
+                            Status = 2,
+                            Type = 14,
+                            UpdateCount = 1,
+                            UserId = "system-seed"
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Imports.ImportDiff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DiffType")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("diff_type");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("entity_type");
+
+                    b.Property<string>("FieldName")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("field_name");
+
+                    b.Property<Guid>("ImportBatchId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("import_batch_id");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("new_value");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("old_value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_import_diffs");
+
+                    b.HasIndex("ImportBatchId")
+                        .HasDatabaseName("ix_import_diffs_import_batch_id");
+
+                    b.ToTable("import_diffs", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0072-000000000001"),
+                            DiffType = 0,
+                            EntityId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            EntityType = "Applications",
+                            ImportBatchId = new Guid("00000000-0000-0000-0071-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0072-000000000002"),
+                            DiffType = 1,
+                            EntityId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            EntityType = "Applications",
+                            FieldName = "Criticite",
+                            ImportBatchId = new Guid("00000000-0000-0000-0071-000000000001"),
+                            NewValue = "Haute",
+                            OldValue = "Moyenne"
                         });
                 });
 
@@ -1538,6 +1802,72 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             OrderId = new Guid("00000000-0000-0000-0023-000000000001"),
                             PreviousEndDate = new DateOnly(2026, 12, 31),
                             Reason = "Extension de périmètre validée par le comité de pilotage (démonstration)."
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Orders.OrderReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("reason");
+
+                    b.Property<DateOnly>("ReceiptDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("receipt_date");
+
+                    b.Property<decimal?>("ReceivedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("received_amount");
+
+                    b.Property<decimal?>("ReceivedDays")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("received_days");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_receipts");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_order_receipts_order_id");
+
+                    b.ToTable("order_receipts", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0070-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            OrderId = new Guid("00000000-0000-0000-0023-000000000001"),
+                            Reason = "Première réception partielle (démonstration).",
+                            ReceiptDate = new DateOnly(2026, 3, 1),
+                            ReceivedAmount = 15000.00m
                         });
                 });
 
@@ -3800,6 +4130,41 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             Code = "TIME_ENTRY_CORRECTION",
                             Description = "Autorise une saisie de temps sur une commande clôturée, à titre de correction (cahier des charges §13.4).",
                             Libelle = "Correction de saisie sur commande clôturée"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0002-000000000003"),
+                            Code = "USER_ADMINISTRATION",
+                            Description = "Autorise la modification/désactivation d'un utilisateur, le changement de rôle et l'octroi/retrait de permission (cahier des charges §28.3).",
+                            Libelle = "Administration des utilisateurs"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0002-000000000004"),
+                            Code = "TIME_ENTRY_RECALCULATION",
+                            Description = "Autorise le recalcul explicite d'une saisie déjà valorisée (cahier des charges §19.6).",
+                            Libelle = "Recalcul financier explicite d'une saisie"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0002-000000000005"),
+                            Code = "IMPORT_EXECUTE",
+                            Description = "Autorise l'aperçu, la simulation et l'exécution d'un import (cahier des charges §27).",
+                            Libelle = "Exécution d'un import"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0002-000000000006"),
+                            Code = "AUDIT_VIEW",
+                            Description = "Autorise la consultation du journal d'audit (cahier des charges §28.1).",
+                            Libelle = "Consultation du journal d'audit"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0002-000000000007"),
+                            Code = "ORDER_RECEIPT_OVERRIDE",
+                            Description = "Autorise l'enregistrement d'une réception de commande au-delà du reste réceptionnable (règle métier validée, Lot 6).",
+                            Libelle = "Dépassement du reste réceptionnable d'une commande"
                         });
                 });
 
@@ -4225,6 +4590,41 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000002"),
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("00000000-0000-0000-0020-000000000001"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000003"),
+                            GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrantedBy = "system-seed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("00000000-0000-0000-0020-000000000001"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000004"),
+                            GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrantedBy = "system-seed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("00000000-0000-0000-0020-000000000001"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000005"),
+                            GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrantedBy = "system-seed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("00000000-0000-0000-0020-000000000001"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000006"),
+                            GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrantedBy = "system-seed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("00000000-0000-0000-0020-000000000001"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000007"),
+                            GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            GrantedBy = "system-seed"
                         });
                 });
 
@@ -4344,6 +4744,18 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                     b.Navigation("Resource");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Imports.ImportDiff", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Imports.ImportBatch", "ImportBatch")
+                        .WithMany("Diffs")
+                        .HasForeignKey("ImportBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_import_diffs_import_batches_import_batch_id");
+
+                    b.Navigation("ImportBatch");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Milestones.Milestone", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Applications.ApplicationReference", "Application")
@@ -4448,6 +4860,18 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_order_extensions_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Orders.OrderReceipt", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Orders.Order", "Order")
+                        .WithMany("Receipts")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_receipts_orders_order_id");
 
                     b.Navigation("Order");
                 });
@@ -4827,11 +5251,18 @@ namespace SafranTimeTracker.Migrations.Sqlite.Migrations
                     b.Navigation("Companies");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Imports.ImportBatch", b =>
+                {
+                    b.Navigation("Diffs");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.Order", b =>
                 {
                     b.Navigation("AuthorizedResources");
 
                     b.Navigation("Extensions");
+
+                    b.Navigation("Receipts");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Orders.OrderStatus", b =>

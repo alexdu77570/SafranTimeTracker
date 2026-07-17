@@ -1,5 +1,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Audit;
+using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Common.Exceptions;
 using SafranTimeTracker.Application.Common.Persistence;
@@ -13,10 +15,11 @@ namespace SafranTimeTracker.Application.Orders.Services;
 /// Rallonges de commande (cahier des charges §13.3). Toute rallonge augmente le budget ajusté,
 /// conserve le budget initial, reste visible dans l'historique (append-only, jamais corrigée) et
 /// met à jour les prévisions (budget/jours/date ajustés de la commande, dans la même transaction).
+/// Auditée (§28.3 "rallonge").
 /// </summary>
 public class OrderExtensionService(
     IRepository<OrderExtension> repository, IRepository<Order> orderRepository, IReadRepository<OrderStatus> orderStatusRepository,
-    ICurrentUser currentUser)
+    AuditService auditService, ICurrentUser currentUser)
 {
     public async Task<PagedResult<OrderExtensionDto>> GetListAsync(
         Guid orderId, PaginationQuery pagination, CancellationToken cancellationToken = default)
@@ -80,6 +83,8 @@ public class OrderExtensionService(
         order.UpdatedBy = currentUser.Identifier;
 
         await repository.AddAsync(entity, cancellationToken);
+        await auditService.RecordAsync(
+            AuditActions.Extension, nameof(Order), orderId, null, entity.Adapt<OrderExtensionDto>(), request.Reason, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
         return entity.Adapt<OrderExtensionDto>();
