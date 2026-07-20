@@ -7,12 +7,24 @@ import { ReferentialStatus } from '../../../api/types'
 import { TimeEntryCreateForm, validateReference } from './TimeEntryForm'
 
 const runType: ActivityTypeDto = {
-  id: 'run', code: 'RUN', libelle: 'RUN', isRun: true, referenceRequired: false,
-  referenceFormatRegex: null, referenceExample: null, statut: ReferentialStatus.Actif,
+  id: 'run',
+  code: 'RUN',
+  libelle: 'RUN',
+  isRun: true,
+  referenceRequired: false,
+  referenceFormatRegex: null,
+  referenceExample: null,
+  statut: ReferentialStatus.Actif,
 }
 const incidentType: ActivityTypeDto = {
-  id: 'incident', code: 'INCIDENT', libelle: 'Incident', isRun: true, referenceRequired: true,
-  referenceFormatRegex: '^INC\\d{7}$', referenceExample: 'INC0001234', statut: ReferentialStatus.Actif,
+  id: 'incident',
+  code: 'INCIDENT',
+  libelle: 'Incident',
+  isRun: true,
+  referenceRequired: true,
+  referenceFormatRegex: '^INC\\d{7}$',
+  referenceExample: 'INC0001234',
+  statut: ReferentialStatus.Actif,
 }
 
 /** Réplique côté client la même donnée que ActivityType.ReferenceRequired/ReferenceFormatRegex
@@ -28,7 +40,7 @@ describe('validateReference', () => {
   })
 
   it('rejects a reference that does not match the format', () => {
-    expect(validateReference(incidentType, 'TICKET-123')).toContain('Format');
+    expect(validateReference(incidentType, 'TICKET-123')).toContain('Format')
   })
 
   it('accepts a reference matching the format', () => {
@@ -42,14 +54,23 @@ describe('validateReference', () => {
 
 const { fetchActivityTypes } = vi.hoisted(() => ({ fetchActivityTypes: vi.fn() }))
 vi.mock('../../../api/endpoints/activityTypes', () => ({ fetchActivityTypes }))
-vi.mock('../../../api/endpoints/projects', () => ({ fetchProjects: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, totalCount: 0 }) }))
-vi.mock('../../../api/endpoints/orders', () => ({ fetchOrders: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, totalCount: 0 }) }))
+vi.mock('../../../api/endpoints/projects', () => ({
+  fetchProjects: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, totalCount: 0 }),
+}))
+vi.mock('../../../api/endpoints/orders', () => ({
+  fetchOrders: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, totalCount: 0 }),
+}))
 const { createTimeEntry } = vi.hoisted(() => ({ createTimeEntry: vi.fn() }))
 vi.mock('../../../api/endpoints/timeEntries', () => ({ createTimeEntry, updateTimeEntry: vi.fn() }))
 
 describe('TimeEntryCreateForm', () => {
   it('blocks submission client-side when the reference is missing for a type that requires one', async () => {
-    fetchActivityTypes.mockResolvedValue({ items: [incidentType], page: 1, pageSize: 100, totalCount: 1 })
+    fetchActivityTypes.mockResolvedValue({
+      items: [incidentType],
+      page: 1,
+      pageSize: 100,
+      totalCount: 1,
+    })
     const user = userEvent.setup()
     const onSuccess = vi.fn()
 
@@ -58,7 +79,12 @@ describe('TimeEntryCreateForm', () => {
         {/* `seed` pré-remplit la date (fonctionnalité réelle de duplication) : évite d'avoir à
          * piloter le DatePicker MUI segmenté dans ce test, qui porte sur la validation de
          * référence, pas sur le composant DatePicker lui-même. */}
-        <TimeEntryCreateForm resourceId="resource-1" seed={{ date: '2026-07-20' }} onSuccess={onSuccess} onCancel={vi.fn()} />
+        <TimeEntryCreateForm
+          resourceId="resource-1"
+          seed={{ date: '2026-07-20' }}
+          onSuccess={onSuccess}
+          onCancel={vi.fn()}
+        />
       </TestProviders>,
     )
 

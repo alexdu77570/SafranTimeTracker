@@ -31,10 +31,24 @@ const schema = z.object({
 })
 type FormValues = z.infer<typeof schema>
 
-export function AbsenceCreateForm({ resourceId, onSuccess, onCancel }: { resourceId: string; onSuccess: () => void; onCancel: () => void }) {
+export function AbsenceCreateForm({
+  resourceId,
+  onSuccess,
+  onCancel,
+}: {
+  resourceId: string
+  onSuccess: () => void
+  onCancel: () => void
+}) {
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { type: String(AbsenceType.Conge), dateDebut: '', dateFin: '', demiJournee: false, commentaire: '' },
+    defaultValues: {
+      type: String(AbsenceType.Conge),
+      dateDebut: '',
+      dateFin: '',
+      demiJournee: false,
+      commentaire: '',
+    },
   })
   const mutation = useMutation({
     mutationFn: (values: FormValues) =>
@@ -60,7 +74,12 @@ export function AbsenceCreateForm({ resourceId, onSuccess, onCancel }: { resourc
           name="demiJournee"
           render={({ field }) => (
             <FormControlLabel
-              control={<Checkbox checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
+              control={
+                <Checkbox
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              }
               label="Demi-journée"
             />
           )}
@@ -79,7 +98,15 @@ export function AbsenceCreateForm({ resourceId, onSuccess, onCancel }: { resourc
 
 /** Restreint au statut Brouillon côté serveur (409 sinon, docs/BACKLOG_METIER.md §12) — le
  * formulaire n'est proposé que sur une ligne au statut Brouillon (voir AbsencesPage). */
-export function AbsenceEditForm({ row, onSuccess, onCancel }: { row: AbsenceDto; onSuccess: () => void; onCancel: () => void }) {
+export function AbsenceEditForm({
+  row,
+  onSuccess,
+  onCancel,
+}: {
+  row: AbsenceDto
+  onSuccess: () => void
+  onCancel: () => void
+}) {
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -113,7 +140,12 @@ export function AbsenceEditForm({ row, onSuccess, onCancel }: { row: AbsenceDto;
           name="demiJournee"
           render={({ field }) => (
             <FormControlLabel
-              control={<Checkbox checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
+              control={
+                <Checkbox
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              }
               label="Demi-journée"
             />
           )}

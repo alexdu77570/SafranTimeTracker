@@ -45,7 +45,10 @@ type PeriodType = 'mensuelle' | 'hebdomadaire'
 /** Bornes de la période affichée (mensuelle = mois calendaire, hebdomadaire = `weekBounds`
  * partagée avec `/temps`, `lib/dateUtils.ts`). Fonction pure, testée sans dépendre de l'ordre de
  * montage de l'application. */
-export function periodBounds(periodType: PeriodType, referenceDate: string): { start: string; end: string } {
+export function periodBounds(
+  periodType: PeriodType,
+  referenceDate: string,
+): { start: string; end: string } {
   if (periodType === 'hebdomadaire') {
     return weekBounds(referenceDate)
   }
@@ -74,12 +77,20 @@ export function AvailabilityPage() {
 
   const { start, end } = periodBounds(periodType, referenceDate)
 
-  const departmentsQuery = useQuery({ queryKey: ['departments', 'all'], queryFn: () => fetchDepartments() })
+  const departmentsQuery = useQuery({
+    queryKey: ['departments', 'all'],
+    queryFn: () => fetchDepartments(),
+  })
   const servicesQuery = useQuery({ queryKey: ['services', 'all'], queryFn: () => fetchServices() })
   const teamsQuery = useQuery({ queryKey: ['teams', 'all'], queryFn: () => fetchTeams() })
   const resourcesQuery = useQuery({
     queryKey: ['resources', 'availability-scope', departmentId, serviceId],
-    queryFn: () => fetchResources({ pageSize: 100, departmentId: departmentId || undefined, serviceId: serviceId || undefined }),
+    queryFn: () =>
+      fetchResources({
+        pageSize: 100,
+        departmentId: departmentId || undefined,
+        serviceId: serviceId || undefined,
+      }),
   })
   const resources = useMemo(
     () => (resourcesQuery.data?.items ?? []).filter((r) => !teamId || r.teamId === teamId),
@@ -94,16 +105,30 @@ export function AvailabilityPage() {
     })),
   })
 
-  const effectiveCalendarResourceId = calendarResourceId || user?.resourceId || resources[0]?.id || ''
+  const effectiveCalendarResourceId =
+    calendarResourceId || user?.resourceId || resources[0]?.id || ''
   const yearsInPeriod = Array.from(new Set([dayjs(start).year(), dayjs(end).year()]))
-  const holidaysQueries = useQueries({ queries: yearsInPeriod.map((year) => ({ queryKey: ['holidays', year], queryFn: () => fetchHolidays(year) })) })
+  const holidaysQueries = useQueries({
+    queries: yearsInPeriod.map((year) => ({
+      queryKey: ['holidays', year],
+      queryFn: () => fetchHolidays(year),
+    })),
+  })
   const holidayDates = new Set(
-    holidaysQueries.flatMap((q) => q.data?.items.filter((h) => h.statut === ReferentialStatus.Actif).map((h) => h.date) ?? []),
+    holidaysQueries.flatMap(
+      (q) =>
+        q.data?.items.filter((h) => h.statut === ReferentialStatus.Actif).map((h) => h.date) ?? [],
+    ),
   )
 
   const calendarAbsencesQuery = useQuery({
     queryKey: ['absences', 'calendar', effectiveCalendarResourceId, start, end],
-    queryFn: () => fetchAbsences({ resourceId: effectiveCalendarResourceId, statut: AbsenceStatus.Valide, pageSize: 100 }),
+    queryFn: () =>
+      fetchAbsences({
+        resourceId: effectiveCalendarResourceId,
+        statut: AbsenceStatus.Valide,
+        pageSize: 100,
+      }),
     enabled: Boolean(effectiveCalendarResourceId),
   })
 
@@ -120,7 +145,9 @@ export function AvailabilityPage() {
     if (holidayDates.has(date)) {
       return { label: 'Férié', tone: 'info' }
     }
-    const absence = calendarAbsencesQuery.data?.items.find((a) => a.dateDebut <= date && a.dateFin >= date)
+    const absence = calendarAbsencesQuery.data?.items.find(
+      (a) => a.dateDebut <= date && a.dateFin >= date,
+    )
     if (absence) {
       return { label: typeLabels[absence.type], tone: 'warning' }
     }
@@ -138,7 +165,14 @@ export function AvailabilityPage() {
           setTeamId('')
         }}
       >
-        <TextField select size="small" label="Département" value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} sx={{ minWidth: 180 }}>
+        <TextField
+          select
+          size="small"
+          label="Département"
+          value={departmentId}
+          onChange={(e) => setDepartmentId(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
           <MenuItem value="">(tous)</MenuItem>
           {(departmentsQuery.data?.items ?? []).map((d) => (
             <MenuItem key={d.id} value={d.id}>
@@ -146,7 +180,14 @@ export function AvailabilityPage() {
             </MenuItem>
           ))}
         </TextField>
-        <TextField select size="small" label="Service" value={serviceId} onChange={(e) => setServiceId(e.target.value)} sx={{ minWidth: 180 }}>
+        <TextField
+          select
+          size="small"
+          label="Service"
+          value={serviceId}
+          onChange={(e) => setServiceId(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
           <MenuItem value="">(tous)</MenuItem>
           {(servicesQuery.data?.items ?? []).map((s) => (
             <MenuItem key={s.id} value={s.id}>
@@ -154,7 +195,14 @@ export function AvailabilityPage() {
             </MenuItem>
           ))}
         </TextField>
-        <TextField select size="small" label="Équipe" value={teamId} onChange={(e) => setTeamId(e.target.value)} sx={{ minWidth: 180 }}>
+        <TextField
+          select
+          size="small"
+          label="Équipe"
+          value={teamId}
+          onChange={(e) => setTeamId(e.target.value)}
+          sx={{ minWidth: 180 }}
+        >
           <MenuItem value="">(toutes)</MenuItem>
           {(teamsQuery.data?.items ?? []).map((t) => (
             <MenuItem key={t.id} value={t.id}>
@@ -185,7 +233,10 @@ export function AvailabilityPage() {
         <CardHeader title="Capacité par ressource" subheader={`Du ${start} au ${end}`} />
         <CardContent>
           {resources.length === 0 ? (
-            <EmptyState title="Aucune ressource" description="Ajustez les filtres département/service/équipe." />
+            <EmptyState
+              title="Aucune ressource"
+              description="Ajustez les filtres département/service/équipe."
+            />
           ) : (
             <Table size="small">
               <TableHead>
@@ -211,7 +262,9 @@ export function AvailabilityPage() {
                       onClick={() => setCalendarResourceId(resource.id)}
                       sx={{ cursor: 'pointer' }}
                     >
-                      <TableCell>{resource.prenom} {resource.nom}</TableCell>
+                      <TableCell>
+                        {resource.prenom} {resource.nom}
+                      </TableCell>
                       <TableCell>{result ? `${result.capaciteTheorique} h` : '…'}</TableCell>
                       <TableCell>{result ? `${result.capaciteReelle} h` : '…'}</TableCell>
                       <TableCell>{result ? `${result.tauxDisponibilite}%` : '…'}</TableCell>
@@ -231,7 +284,10 @@ export function AvailabilityPage() {
       <Card>
         <CardHeader
           title="Calendrier coloré"
-          subheader={resourceLabel(resources, effectiveCalendarResourceId) ?? 'Sélectionnez une ressource dans le tableau ci-dessus'}
+          subheader={
+            resourceLabel(resources, effectiveCalendarResourceId) ??
+            'Sélectionnez une ressource dans le tableau ci-dessus'
+          }
         />
         <CardContent>
           {effectiveCalendarResourceId ? (
@@ -260,7 +316,15 @@ export function AvailabilityPage() {
           <Grid key={tone}>
             <StatusBadge
               tone={tone}
-              label={tone === 'success' ? 'Disponible' : tone === 'info' ? 'Férié' : tone === 'warning' ? 'Absence' : 'Week-end'}
+              label={
+                tone === 'success'
+                  ? 'Disponible'
+                  : tone === 'info'
+                    ? 'Férié'
+                    : tone === 'warning'
+                      ? 'Absence'
+                      : 'Week-end'
+              }
             />
           </Grid>
         ))}

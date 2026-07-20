@@ -14,7 +14,12 @@ import { fetchActivityTypes } from '../../../api/endpoints/activityTypes'
 import { fetchOrders } from '../../../api/endpoints/orders'
 import { fetchProjects } from '../../../api/endpoints/projects'
 import { fetchResources } from '../../../api/endpoints/resources'
-import { deleteTimeEntry, fetchTimeEntries, recalculateTimeEntry, type TimeEntryListParams } from '../../../api/endpoints/timeEntries'
+import {
+  deleteTimeEntry,
+  fetchTimeEntries,
+  recalculateTimeEntry,
+  type TimeEntryListParams,
+} from '../../../api/endpoints/timeEntries'
 import type { TimeEntryDto } from '../../../api/types'
 import { PermissionCodes } from '../../../auth/permissionCodes'
 import { PermissionGuard } from '../../../auth/PermissionGuard'
@@ -65,11 +70,22 @@ export function TimeEntriesPage() {
 
   const effectiveResourceId = resourceId || user?.resourceId || ''
 
-  const resourcesQuery = useQuery({ queryKey: ['resources', 'all'], queryFn: () => fetchResources({ pageSize: 100 }) })
-  const activityTypesQuery = useQuery({ queryKey: ['activity-types', 'all'], queryFn: () => fetchActivityTypes({ pageSize: 100 }) })
-  const activityTypeLabel = new Map((activityTypesQuery.data?.items ?? []).map((a) => [a.id, a.libelle]))
+  const resourcesQuery = useQuery({
+    queryKey: ['resources', 'all'],
+    queryFn: () => fetchResources({ pageSize: 100 }),
+  })
+  const activityTypesQuery = useQuery({
+    queryKey: ['activity-types', 'all'],
+    queryFn: () => fetchActivityTypes({ pageSize: 100 }),
+  })
+  const activityTypeLabel = new Map(
+    (activityTypesQuery.data?.items ?? []).map((a) => [a.id, a.libelle]),
+  )
   const projectsQuery = useQuery({ queryKey: ['projects', 'all'], queryFn: () => fetchProjects() })
-  const ordersQuery = useQuery({ queryKey: ['orders', 'all'], queryFn: () => fetchOrders({ pageSize: 100 }) })
+  const ordersQuery = useQuery({
+    queryKey: ['orders', 'all'],
+    queryFn: () => fetchOrders({ pageSize: 100 }),
+  })
 
   const baseFilters = {
     resourceId: effectiveResourceId || undefined,
@@ -80,7 +96,10 @@ export function TimeEntriesPage() {
     to: to || undefined,
   }
   const filters: TimeEntryListParams = { page, pageSize, ...baseFilters }
-  const query = useQuery({ queryKey: ['time-entries', filters], queryFn: () => fetchTimeEntries(filters) })
+  const query = useQuery({
+    queryKey: ['time-entries', filters],
+    queryFn: () => fetchTimeEntries(filters),
+  })
 
   /** Totalisation automatique (§19.4) : somme des heures sur l'ensemble des saisies correspondant
    * au filtre courant, pas seulement la page affichée — requête dédiée sur le même endpoint,
@@ -121,7 +140,12 @@ export function TimeEntriesPage() {
       valueFormatter: (value: string) => activityTypeLabel.get(value) ?? value,
     },
     { field: 'dureeHeures', headerName: 'Durée (h)', width: 100 },
-    { field: 'reference', headerName: 'Référence', width: 140, valueFormatter: (value: string | null) => value ?? '—' },
+    {
+      field: 'reference',
+      headerName: 'Référence',
+      width: 140,
+      valueFormatter: (value: string | null) => value ?? '—',
+    },
     {
       field: 'statut',
       headerName: 'Statut',
@@ -307,11 +331,17 @@ export function TimeEntriesPage() {
       </FilterBar>
 
       {effectiveResourceId && (
-        <KpiCard label="Total (filtre courant)" value={totalHeures !== undefined ? `${totalHeures} h` : '—'} />
+        <KpiCard
+          label="Total (filtre courant)"
+          value={totalHeures !== undefined ? `${totalHeures} h` : '—'}
+        />
       )}
 
       {!effectiveResourceId ? (
-        <EmptyState title="Sélectionnez une ressource" description="Choisissez une ressource dans le filtre ci-dessus pour afficher ses saisies." />
+        <EmptyState
+          title="Sélectionnez une ressource"
+          description="Choisissez une ressource dans le filtre ci-dessus pour afficher ses saisies."
+        />
       ) : (
         <DataTable
           rows={query.data?.items ?? []}
@@ -326,7 +356,11 @@ export function TimeEntriesPage() {
         />
       )}
 
-      <Modal open={createOpen} title="Créer une saisie de temps" onClose={() => setCreateOpen(false)}>
+      <Modal
+        open={createOpen}
+        title="Créer une saisie de temps"
+        onClose={() => setCreateOpen(false)}
+      >
         {effectiveResourceId && (
           <TimeEntryCreateForm
             resourceId={effectiveResourceId}
@@ -375,12 +409,16 @@ export function TimeEntriesPage() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      <Modal open={Boolean(recalculateTarget)} title="Recalculer cette saisie" onClose={() => setRecalculateTarget(null)}>
+      <Modal
+        open={Boolean(recalculateTarget)}
+        title="Recalculer cette saisie"
+        onClose={() => setRecalculateTarget(null)}
+      >
         <Stack spacing={2}>
           <Chip label="Motif obligatoire (§19.6)" size="small" sx={{ alignSelf: 'flex-start' }} />
           <Typography variant="body2" color="text.secondary">
-            Le recalcul explicite est audité et nécessite un motif (cahier des charges §19.6) : l'ancienne valeur du
-            snapshot financier est conservée dans le journal d'audit.
+            Le recalcul explicite est audité et nécessite un motif (cahier des charges §19.6) :
+            l'ancienne valeur du snapshot financier est conservée dans le journal d'audit.
           </Typography>
           <TextField
             label="Motif"

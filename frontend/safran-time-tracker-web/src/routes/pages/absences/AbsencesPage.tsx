@@ -11,7 +11,13 @@ import dayjs from 'dayjs'
 import { Ban, Check, Pencil, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import type { GridColDef } from '@mui/x-data-grid'
-import { cancelAbsence, fetchAbsences, refuseAbsence, submitAbsence, validateAbsence } from '../../../api/endpoints/absences'
+import {
+  cancelAbsence,
+  fetchAbsences,
+  refuseAbsence,
+  submitAbsence,
+  validateAbsence,
+} from '../../../api/endpoints/absences'
 import { fetchAvailability } from '../../../api/endpoints/availability'
 import { fetchResources } from '../../../api/endpoints/resources'
 import type { AbsenceDto } from '../../../api/types'
@@ -35,7 +41,10 @@ const typeLabels: Record<AbsenceType, string> = {
   [AbsenceType.Indisponible]: 'Indisponible',
 }
 
-const statutTone: Record<AbsenceStatus, { label: string; tone: 'neutral' | 'success' | 'warning' | 'error' | 'info' }> = {
+const statutTone: Record<
+  AbsenceStatus,
+  { label: string; tone: 'neutral' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   [AbsenceStatus.Brouillon]: { label: 'Brouillon', tone: 'neutral' },
   [AbsenceStatus.Soumis]: { label: 'Soumis', tone: 'info' },
   [AbsenceStatus.Valide]: { label: 'Validé', tone: 'success' },
@@ -67,10 +76,22 @@ export function AbsencesPage() {
 
   const effectiveResourceId = resourceId || user?.resourceId || ''
 
-  const resourcesQuery = useQuery({ queryKey: ['resources', 'all'], queryFn: () => fetchResources({ pageSize: 100 }) })
+  const resourcesQuery = useQuery({
+    queryKey: ['resources', 'all'],
+    queryFn: () => fetchResources({ pageSize: 100 }),
+  })
 
-  const filters = { page, pageSize, resourceId: effectiveResourceId || undefined, statut: statut ? (Number(statut) as AbsenceStatus) : undefined }
-  const query = useQuery({ queryKey: ['absences', filters], queryFn: () => fetchAbsences(filters), enabled: Boolean(effectiveResourceId) })
+  const filters = {
+    page,
+    pageSize,
+    resourceId: effectiveResourceId || undefined,
+    statut: statut ? (Number(statut) as AbsenceStatus) : undefined,
+  }
+  const query = useQuery({
+    queryKey: ['absences', filters],
+    queryFn: () => fetchAbsences(filters),
+    enabled: Boolean(effectiveResourceId),
+  })
 
   const monthStart = dayjs().startOf('month').format('YYYY-MM-DD')
   const monthEnd = dayjs().endOf('month').format('YYYY-MM-DD')
@@ -113,13 +134,28 @@ export function AbsencesPage() {
   const columns: GridColDef<AbsenceDto>[] = [
     { field: 'dateDebut', headerName: 'Début', width: 110 },
     { field: 'dateFin', headerName: 'Fin', width: 110 },
-    { field: 'type', headerName: 'Type', width: 130, valueFormatter: (value: AbsenceType) => typeLabels[value] },
-    { field: 'demiJournee', headerName: 'Demi-journée', width: 120, valueFormatter: (value: boolean) => (value ? 'Oui' : 'Non') },
+    {
+      field: 'type',
+      headerName: 'Type',
+      width: 130,
+      valueFormatter: (value: AbsenceType) => typeLabels[value],
+    },
+    {
+      field: 'demiJournee',
+      headerName: 'Demi-journée',
+      width: 120,
+      valueFormatter: (value: boolean) => (value ? 'Oui' : 'Non'),
+    },
     {
       field: 'statut',
       headerName: 'Statut',
       width: 120,
-      renderCell: (params) => <StatusBadge label={statutTone[params.value as AbsenceStatus].label} tone={statutTone[params.value as AbsenceStatus].tone} />,
+      renderCell: (params) => (
+        <StatusBadge
+          label={statutTone[params.value as AbsenceStatus].label}
+          tone={statutTone[params.value as AbsenceStatus].tone}
+        />
+      ),
     },
     {
       field: 'actions',
@@ -133,12 +169,24 @@ export function AbsencesPage() {
             {row.statut === AbsenceStatus.Brouillon && (
               <>
                 <Tooltip title="Modifier">
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); setEditRow(row) }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditRow(row)
+                    }}
+                  >
                     <Pencil size={16} />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Soumettre">
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); submitMutation.mutate(row.id) }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      submitMutation.mutate(row.id)
+                    }}
+                  >
                     <Send size={16} />
                   </IconButton>
                 </Tooltip>
@@ -147,20 +195,42 @@ export function AbsencesPage() {
             {row.statut === AbsenceStatus.Soumis && (
               <>
                 <Tooltip title="Valider">
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); validateMutation.mutate(row.id) }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      validateMutation.mutate(row.id)
+                    }}
+                  >
                     <Check size={16} />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Refuser">
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); setRefuseTarget(row) }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setRefuseTarget(row)
+                    }}
+                  >
                     <X size={16} />
                   </IconButton>
                 </Tooltip>
               </>
             )}
             {row.statut !== AbsenceStatus.Refuse && row.statut !== AbsenceStatus.Annule && (
-              <Tooltip title={row.statut === AbsenceStatus.Brouillon ? 'Supprimer le brouillon' : 'Annuler'}>
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); setCancelTarget(row) }}>
+              <Tooltip
+                title={
+                  row.statut === AbsenceStatus.Brouillon ? 'Supprimer le brouillon' : 'Annuler'
+                }
+              >
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCancelTarget(row)
+                  }}
+                >
                   <Ban size={16} />
                 </IconButton>
               </Tooltip>
@@ -175,20 +245,37 @@ export function AbsencesPage() {
     <Stack spacing={2}>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h5">Mes absences</Typography>
-        <IconButton color="primary" onClick={() => setCreateOpen(true)} aria-label="Créer une absence">
+        <IconButton
+          color="primary"
+          onClick={() => setCreateOpen(true)}
+          aria-label="Créer une absence"
+        >
           <Plus size={20} />
         </IconButton>
       </Stack>
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <KpiCard label="Jours validés (mois)" value={monthlyAvailability.data ? `${monthlyAvailability.data.joursAbsenceValidee}` : '—'} />
+          <KpiCard
+            label="Jours validés (mois)"
+            value={
+              monthlyAvailability.data ? `${monthlyAvailability.data.joursAbsenceValidee}` : '—'
+            }
+          />
         </Grid>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <KpiCard label="Jours validés (année)" value={annualAvailability.data ? `${annualAvailability.data.joursAbsenceValidee}` : '—'} />
+          <KpiCard
+            label="Jours validés (année)"
+            value={annualAvailability.data ? `${annualAvailability.data.joursAbsenceValidee}` : '—'}
+          />
         </Grid>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <KpiCard label="Taux de disponibilité (mois)" value={monthlyAvailability.data ? `${monthlyAvailability.data.tauxDisponibilite}%` : '—'} />
+          <KpiCard
+            label="Taux de disponibilité (mois)"
+            value={
+              monthlyAvailability.data ? `${monthlyAvailability.data.tauxDisponibilite}%` : '—'
+            }
+          />
         </Grid>
       </Grid>
 
@@ -198,14 +285,28 @@ export function AbsencesPage() {
           setStatut('')
         }}
       >
-        <TextField select size="small" label="Ressource" value={effectiveResourceId} onChange={(e) => setResourceId(e.target.value)} sx={{ minWidth: 200 }}>
+        <TextField
+          select
+          size="small"
+          label="Ressource"
+          value={effectiveResourceId}
+          onChange={(e) => setResourceId(e.target.value)}
+          sx={{ minWidth: 200 }}
+        >
           {(resourcesQuery.data?.items ?? []).map((r) => (
             <MenuItem key={r.id} value={r.id}>
               {r.prenom} {r.nom}
             </MenuItem>
           ))}
         </TextField>
-        <TextField select size="small" label="Statut" value={statut} onChange={(e) => setStatut(e.target.value)} sx={{ minWidth: 160 }}>
+        <TextField
+          select
+          size="small"
+          label="Statut"
+          value={statut}
+          onChange={(e) => setStatut(e.target.value)}
+          sx={{ minWidth: 160 }}
+        >
           <MenuItem value="">(tous)</MenuItem>
           <MenuItem value={String(AbsenceStatus.Brouillon)}>Brouillon</MenuItem>
           <MenuItem value={String(AbsenceStatus.Soumis)}>Soumis</MenuItem>
@@ -216,7 +317,10 @@ export function AbsencesPage() {
       </FilterBar>
 
       {!effectiveResourceId ? (
-        <EmptyState title="Sélectionnez une ressource" description="Choisissez une ressource dans le filtre ci-dessus pour afficher ses absences." />
+        <EmptyState
+          title="Sélectionnez une ressource"
+          description="Choisissez une ressource dans le filtre ci-dessus pour afficher ses absences."
+        />
       ) : (
         <DataTable
           rows={query.data?.items ?? []}
@@ -244,7 +348,11 @@ export function AbsencesPage() {
       </Modal>
 
       {editRow && (
-        <Modal open={Boolean(editRow)} title="Modifier le brouillon" onClose={() => setEditRow(null)}>
+        <Modal
+          open={Boolean(editRow)}
+          title="Modifier le brouillon"
+          onClose={() => setEditRow(null)}
+        >
           <AbsenceEditForm
             row={editRow}
             onSuccess={() => {
@@ -258,15 +366,27 @@ export function AbsencesPage() {
 
       <ConfirmDialog
         open={Boolean(cancelTarget)}
-        title={cancelTarget?.statut === AbsenceStatus.Brouillon ? 'Supprimer ce brouillon ?' : 'Annuler cette absence ?'}
-        description={cancelTarget ? `${typeLabels[cancelTarget.type]} — ${cancelTarget.dateDebut} au ${cancelTarget.dateFin}` : ''}
+        title={
+          cancelTarget?.statut === AbsenceStatus.Brouillon
+            ? 'Supprimer ce brouillon ?'
+            : 'Annuler cette absence ?'
+        }
+        description={
+          cancelTarget
+            ? `${typeLabels[cancelTarget.type]} — ${cancelTarget.dateDebut} au ${cancelTarget.dateFin}`
+            : ''
+        }
         destructive
         loading={cancelMutation.isPending}
         onConfirm={() => cancelTarget && cancelMutation.mutate(cancelTarget.id)}
         onCancel={() => setCancelTarget(null)}
       />
 
-      <Modal open={Boolean(refuseTarget)} title="Refuser cette absence" onClose={() => setRefuseTarget(null)}>
+      <Modal
+        open={Boolean(refuseTarget)}
+        title="Refuser cette absence"
+        onClose={() => setRefuseTarget(null)}
+      >
         <Stack spacing={2}>
           <TextField
             label="Motif (facultatif)"
