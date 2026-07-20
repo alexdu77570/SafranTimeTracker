@@ -27,3 +27,13 @@ public class AbsenceDecisionRequestValidator : AbstractValidator<AbsenceDecision
         RuleFor(x => x.Commentaire).MaximumLength(1000);
     }
 }
+
+public class AbsenceUpdateRequestValidator : AbstractValidator<AbsenceUpdateRequest>
+{
+    public AbsenceUpdateRequestValidator()
+    {
+        RuleFor(x => x.DateFin).GreaterThanOrEqualTo(x => x.DateDebut)
+            .WithMessage("La date de fin doit être postérieure ou égale à la date de début.");
+        RuleFor(x => x.Commentaire).MaximumLength(1000);
+    }
+}

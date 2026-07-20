@@ -111,6 +111,8 @@ Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 
 ## Lot 9 — Temps et Disponibilités
 
+> **Précision actée à la clôture du Lot 9** : « accès filtré par rôle » (Disponibilités, ci-dessous) est délivré comme un **filtrage d'affichage frontend uniquement** (filtres département/service/équipe sur des listes déjà entièrement accessibles à toute identité) — aucune nouvelle règle de sécurité serveur (garde de permission, périmètre organisationnel) n'a été introduite ce lot, cohérent avec la règle « aucune évolution backend » par défaut de cette phase (décision validée avec l'utilisateur à l'ouverture du lot, §3.6 ; détail : `docs/IMPLEMENTATION_STATUS.md`, « Nouveaux écarts constatés au Lot 9 »). La restriction par périmètre organisationnel réel reste un écart ouvert, reconduit depuis les Lots 2 à 8.
+
 - Saisie des temps (formulaire, validation de référence dynamique par type d'activité, historique, snapshot financier conditionnel).
 - Mes absences (workflow Brouillon → Soumis → Validé/Refusé/Annulé, totaux mensuel/annuel).
 - Disponibilités (vues mensuelle/hebdomadaire, calendrier coloré, accès filtré par rôle).

@@ -58,6 +58,29 @@ public class AbsenceService(IRepository<Absence> repository, IReadRepository<Set
         return entity.Adapt<AbsenceDto>();
     }
 
+    /// <summary>§23.2 "modifier tant que permis" (docs/BACKLOG_METIER.md §12) : restreint au statut
+    /// Brouillon, seul statut sans effet de bord déjà engagé (soumission, décision).</summary>
+    public async Task<AbsenceDto?> UpdateAsync(Guid id, AbsenceUpdateRequest request, CancellationToken cancellationToken = default)
+    {
+        var entity = await repository.GetByIdAsync(id, cancellationToken);
+        if (entity is null)
+        {
+            return null;
+        }
+        if (entity.Statut != AbsenceStatus.Brouillon)
+        {
+            throw new BusinessConflictException(
+                $"Une absence au statut '{entity.Statut}' ne peut plus être modifiée : seul un Brouillon le permet (cahier des charges §23.2).");
+        }
+
+        request.Adapt(entity);
+        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedBy = currentUser.Identifier;
+
+        await repository.SaveChangesAsync(cancellationToken);
+        return entity.Adapt<AbsenceDto>();
+    }
+
     /// <summary>Si le workflow de validation est désactivé (Settings.ActivationValidationAbsences),
     /// la soumission vaut validation immédiate (§23.3) : AvailabilityService n'a alors besoin de
     /// filtrer que sur Statut == Valide, sans connaître ce paramètre.</summary>

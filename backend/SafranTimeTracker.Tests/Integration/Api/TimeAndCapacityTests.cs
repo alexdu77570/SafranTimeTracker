@@ -302,6 +302,94 @@ public class TimeAndCapacityTests(SafranTimeTrackerApiFactory factory) : IClassF
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task GetTimeEntries_FilteredByActivityTypeId_ReturnsOnlyMatchingEntries()
+    {
+        // docs/BACKLOG_METIER.md §10 : filtre serveur ajouté au Lot 9 sur une action déjà existante.
+        var client = CreateClient(BernardIdentifiant);
+        var bernardId = await GetResourceIdAsync(client, "BERNARD");
+        var runTypeId = await GetActivityTypeIdAsync(client, "RUN");
+
+        var result = await client.GetFromJsonAsync<PagedResult<TimeEntryDto>>(
+            $"/api/v1/time-entries?resourceId={bernardId}&activityTypeId={runTypeId}&pageSize=100");
+
+        result!.Items.Should().NotBeEmpty();
+        result.Items.Should().OnlyContain(t => t.ActivityTypeId == runTypeId);
+    }
+
+    [Fact]
+    public async Task GetTimeEntries_FilteredByProjectId_ReturnsOnlyEntriesLinkedToThatProject()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projects = await client.GetFromJsonAsync<PagedResult<SafranTimeTracker.Application.Projects.Dtos.ProjectDto>>("/api/v1/projects?pageSize=100");
+        var projectId = projects!.Items.First(p => p.Code == "PRJ-ELM-2026").Id; // TimeEntryLegrandProjet (Lot3Seed) y est rattachée
+
+        var result = await client.GetFromJsonAsync<PagedResult<TimeEntryDto>>($"/api/v1/time-entries?projectId={projectId}&pageSize=100");
+
+        result!.Items.Should().NotBeEmpty();
+        result.Items.Should().OnlyContain(t => t.ProjectId == projectId);
+    }
+
+    [Fact]
+    public async Task GetTimeEntries_FilteredByOrderId_ReturnsOnlyEntriesLinkedToThatOrder()
+    {
+        // TimeEntryBernardIncident (Lot3Seed) est déjà rattachée à CMD-2026-0001 : pas besoin de
+        // créer une nouvelle saisie, ce qui éviterait de perturber les tests basés sur un lookup
+        // "premier élément" par ressource/type (CLAUDE.md §14, convention d'isolation des tests).
+        var client = CreateClient(BernardIdentifiant);
+        var orderId = await GetOrderIdAsync(client, "CMD-2026-0001");
+
+        var result = await client.GetFromJsonAsync<PagedResult<TimeEntryDto>>($"/api/v1/time-entries?orderId={orderId}&pageSize=100");
+
+        result!.Items.Should().NotBeEmpty();
+        result.Items.Should().OnlyContain(t => t.OrderId == orderId);
+    }
+
+    [Fact]
+    public async Task PutAbsence_OnBrouillon_UpdatesFields()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var bernardId = await GetResourceIdAsync(client, "BERNARD");
+
+        var created = await client.PostAsJsonAsync("/api/v1/absences", new AbsenceCreateRequest
+        {
+            ResourceId = bernardId, Type = AbsenceType.Conge, DateDebut = Today().AddDays(30), DateFin = Today().AddDays(30)
+        });
+        var dto = await created.Content.ReadFromJsonAsync<AbsenceDto>();
+
+        var updated = await client.PutAsJsonAsync($"/api/v1/absences/{dto!.Id}", new AbsenceUpdateRequest
+        {
+            Type = AbsenceType.Rtt, DateDebut = Today().AddDays(31), DateFin = Today().AddDays(32), DemiJournee = true, Commentaire = "Corrigé"
+        });
+
+        updated.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updatedDto = await updated.Content.ReadFromJsonAsync<AbsenceDto>();
+        updatedDto!.Type.Should().Be(AbsenceType.Rtt);
+        updatedDto.DateDebut.Should().Be(Today().AddDays(31));
+        updatedDto.DemiJournee.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PutAbsence_AfterSubmit_Returns409()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var bernardId = await GetResourceIdAsync(client, "BERNARD");
+
+        var created = await client.PostAsJsonAsync("/api/v1/absences", new AbsenceCreateRequest
+        {
+            ResourceId = bernardId, Type = AbsenceType.Conge, DateDebut = Today().AddDays(40), DateFin = Today().AddDays(40)
+        });
+        var dto = await created.Content.ReadFromJsonAsync<AbsenceDto>();
+        await client.PostAsync($"/api/v1/absences/{dto!.Id}/submit", null);
+
+        var response = await client.PutAsJsonAsync($"/api/v1/absences/{dto.Id}", new AbsenceUpdateRequest
+        {
+            Type = AbsenceType.Rtt, DateDebut = Today().AddDays(40), DateFin = Today().AddDays(40)
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
     private static DateOnly Today() => DateOnly.FromDateTime(DateTime.UtcNow);
 
     private static async Task<Guid> GetResourceIdAsync(HttpClient client, string nom)

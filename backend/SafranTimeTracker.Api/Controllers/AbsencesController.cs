@@ -13,7 +13,8 @@ namespace SafranTimeTracker.Api.Controllers;
 public class AbsencesController(
     AbsenceService service,
     IValidator<AbsenceCreateRequest> createValidator,
-    IValidator<AbsenceDecisionRequest> decisionValidator) : ControllerBase
+    IValidator<AbsenceDecisionRequest> decisionValidator,
+    IValidator<AbsenceUpdateRequest> updateValidator) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<AbsenceDto>>> GetList(
@@ -42,6 +43,21 @@ public class AbsencesController(
 
         var dto = await service.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+    }
+
+    /// <summary>§23.2 "modifier tant que permis" : restreint au statut Brouillon (409 sinon),
+    /// docs/BACKLOG_METIER.md §12.</summary>
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<AbsenceDto>> Update(Guid id, [FromBody] AbsenceUpdateRequest request, CancellationToken cancellationToken)
+    {
+        var validationResult = await updateValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validationResult.ToErrorDictionary()));
+        }
+
+        var dto = await service.UpdateAsync(id, request, cancellationToken);
+        return dto is null ? NotFound() : Ok(dto);
     }
 
     [HttpPost("{id:guid}/submit")]

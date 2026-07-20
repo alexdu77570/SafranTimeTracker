@@ -138,6 +138,52 @@ Attributs métier attendus pour une ligne de suivi budgétaire :
 
 ---
 
+## 10. Saisie des temps — filtres serveur étendus
+
+✅ **Implémenté (Lot 9).** Décision actée avec l'utilisateur à l'ouverture du Lot 9 : `GET /api/v1/time-entries` ne filtrait jusque-là que par `resourceId`/`from`/`to`, alors que le cahier des charges §19.4 exige de filtrer également par type d'activité, projet et commande.
+
+- Ajout des paramètres optionnels `activityTypeId`, `projectId`, `orderId` à l'action `GetList` **déjà existante** de `TimeEntriesController` — aucune nouvelle entité, aucune migration, aucune nouvelle règle de calcul.
+- `TimeEntry.ActivityTypeId`/`ProjectId`/`OrderId` existent déjà sur l'entité depuis le Lot 3/4 : il s'agit uniquement d'exposer un filtrage serveur sur des colonnes déjà présentes, pas d'une évolution de modèle.
+- Le filtre par « application » (§19.4) reste **hors périmètre** de cette décision : `TimeEntry` ne porte aucun `ApplicationId` (voir §11 — décision distincte, non retenue pour ce lot).
+- Filtres réellement câblés sur l'écran `/temps` (`TimeEntriesPage.tsx`, revue de clôture Lot 9) : Ressource, Type d'activité, **Projet**, **Commande**, Du/Au et **Semaine** (calcule les bornes lundi-dimanche via `weekBounds`, `lib/dateUtils.ts`, et les applique à Du/Au). Le §19.4 est donc couvert à l'exception du seul filtre « application ». **Totalisation automatique** (§19.4) également livrée : `KpiCard` sommant les heures du filtre courant sur une requête dédiée (même endpoint, `pageSize` élargi), pas un nouvel agrégat backend.
+
+---
+
+## 11. Application non rattachée à une saisie de temps — écart assumé
+
+🔎 **À clarifier** (documenté, non résolu). Le §19.1 liste « application » comme champ d'une saisie de temps ; l'entité `TimeEntry` (Lot 3) ne le porte pas — seuls `ActivityTypeId`, `ProjectId` (facultatif) et `OrderId` (facultatif) existent. Une saisie de type RUN (Incident/Change/Problem/RITM/Astreinte/Support, cahier des charges §29.4) n'a généralement pas de projet : elle ne peut donc actuellement être rattachée à aucune application, ce qui limite le filtrage/reporting « charge par application » pour ce type de saisie.
+
+- **Décision actée à l'ouverture du Lot 9** : ne pas ajouter `TimeEntry.ApplicationId` dans ce lot (Option A retenue explicitement face à l'ajout d'un champ + migration, Option B). Le formulaire de saisie des temps n'expose donc pas de sélecteur Application, et aucun filtre « par application » n'est proposé sur l'écran Saisie des temps.
+- Cet écart est **antérieur** au Lot 9 (introduit au Lot 3, jamais documenté avant cette analyse) : il n'est pas créé par ce lot, seulement constaté et volontairement non corrigé ici, pour rester dans le périmètre frontend-only de la roadmap.
+- Une correction future (ajout du champ) relèverait d'un lot dédié au modèle `TimeEntry`, avec sa propre validation — jamais anticipée ici (`CLAUDE.md` §5).
+
+---
+
+## 12. Mes absences — modification d'un brouillon
+
+✅ **Implémenté (Lot 9).** Décision actée avec l'utilisateur à l'ouverture du Lot 9 : le cahier des charges §23.2 exige de pouvoir « modifier tant que permis » une absence ; `AbsenceService`/`AbsencesController` n'exposaient jusque-là aucune opération de modification (seuls `Create`, `Submit`, `Validate`, `Refuse`, `Cancel` existaient).
+
+- Ajout de `PUT /api/v1/absences/{id}`, **restreint au statut Brouillon** (toute tentative sur un autre statut est un conflit métier 409, même principe que les autres transitions de `AbsenceService`).
+- Amélioration UX volontairement acceptée par l'utilisateur, en alternative à l'approche « annuler puis recréer » (fonctionnellement équivalente mais moins ergonomique) qui aurait autrement suffi sans toucher au backend.
+- Ne modifie ni le workflow de statuts (§23.3) ni la validation d'impact sur la capacité — la modification reste limitée aux champs de la demande elle-même (type, dates, demi-journée, commentaire), jamais au statut ou à la décision.
+
+---
+
+## Exception de gouvernance — Lot 9
+
+> **Rôle de cette section** : comme au Lot 8, documenter explicitement pourquoi deux évolutions backend ont été autorisées pendant un lot que `docs/ROADMAP.md` décrit comme « frontend only ».
+
+**Constat.** Deux écarts réels entre le cahier des charges (§19.4, §23.2) et l'API livrée aux Lots 1-6 ont été identifiés à l'ouverture du Lot 9, tous deux **validés individuellement avec l'utilisateur avant implémentation** (§10 et §12 ci-dessus) :
+
+- l'extension des filtres de `GET /api/v1/time-entries` (§10) — ajout de paramètres de requête sur une action déjà existante, sur des colonnes déjà existantes ;
+- l'ajout de `PUT /api/v1/absences/{id}` restreint au Brouillon (§12) — une nouvelle action, sur une entité déjà existante, pour un besoin explicitement exprimé par le cahier des charges et jusqu'ici non couvert.
+
+**Nature de l'exception.** Contrairement au Lot 8 (5 référentiels entièrement nouveaux), ces deux évolutions sont **ponctuelles et de portée minimale** : aucune nouvelle entité, aucune migration pour l'extension de filtres, une seule action supplémentaire restreinte à un seul statut pour l'absence. Aucune des deux n'introduit de nouveau calcul, de nouvelle donnée financière ou de nouvelle règle de sécurité.
+
+**Écart explicitement non corrigé.** Le manque de rattachement `TimeEntry` ↔ Application (§11) a été identifié dans la même analyse mais **volontairement laissé en l'état** — décision de ne pas étendre le modèle au-delà du strict nécessaire (`CLAUDE.md` §5).
+
+---
+
 ## Exception de gouvernance — Lot 8
 
 > **Rôle de cette section** : documenter explicitement une exception au processus normal de lot, pour qu'un futur développement comprenne *pourquoi* une évolution backend a été autorisée pendant un lot que `docs/ROADMAP.md` décrivait initialement comme « frontend only ». Ce n'est pas une règle métier au même titre que les sections 1 à 9 ci-dessus : c'est le compte rendu de la décision de gouvernance qui les a rendues possibles.

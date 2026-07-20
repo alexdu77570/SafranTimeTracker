@@ -36,7 +36,8 @@ public class TimeEntryService(
     ICurrentUser currentUser)
 {
     public async Task<PagedResult<TimeEntryDto>> GetListAsync(
-        PaginationQuery pagination, Guid? resourceId, DateOnly? from, DateOnly? to, CancellationToken cancellationToken = default)
+        PaginationQuery pagination, Guid? resourceId, DateOnly? from, DateOnly? to,
+        Guid? activityTypeId = null, Guid? projectId = null, Guid? orderId = null, CancellationToken cancellationToken = default)
     {
         var query = repository.Query();
         if (resourceId is not null)
@@ -50,6 +51,21 @@ public class TimeEntryService(
         if (to is not null)
         {
             query = query.Where(t => t.Date <= to);
+        }
+        // Filtres serveur additionnels (cahier des charges §19.4, docs/BACKLOG_METIER.md §10) :
+        // ActivityTypeId/ProjectId/OrderId existent déjà sur l'entité depuis les Lots 3/4, seul le
+        // filtrage était manquant.
+        if (activityTypeId is not null)
+        {
+            query = query.Where(t => t.ActivityTypeId == activityTypeId);
+        }
+        if (projectId is not null)
+        {
+            query = query.Where(t => t.ProjectId == projectId);
+        }
+        if (orderId is not null)
+        {
+            query = query.Where(t => t.OrderId == orderId);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
