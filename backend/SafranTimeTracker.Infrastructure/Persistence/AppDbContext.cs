@@ -4,7 +4,9 @@ using SafranTimeTracker.Domain.Activities;
 using SafranTimeTracker.Domain.Applications;
 using SafranTimeTracker.Domain.Auditing;
 using SafranTimeTracker.Domain.Budgets;
+using SafranTimeTracker.Domain.Clients;
 using SafranTimeTracker.Domain.Companies;
+using SafranTimeTracker.Domain.Currencies;
 using SafranTimeTracker.Domain.Imports;
 using SafranTimeTracker.Domain.Milestones;
 using SafranTimeTracker.Domain.Organisation;
@@ -12,6 +14,7 @@ using SafranTimeTracker.Domain.Orders;
 using SafranTimeTracker.Domain.Projects;
 using SafranTimeTracker.Domain.Reporting;
 using SafranTimeTracker.Domain.Resources;
+using SafranTimeTracker.Domain.Technologies;
 using SafranTimeTracker.Domain.Time;
 using SafranTimeTracker.Domain.Users;
 using SafranTimeTracker.Infrastructure.Persistence.Seed;
@@ -99,6 +102,15 @@ public class AppDbContext : DbContext
     public DbSet<ImportDiff> ImportDiffs => Set<ImportDiff>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+    // Référentiels et administration (Lot 8)
+    public DbSet<Technology> Technologies => Set<Technology>();
+    public DbSet<ApplicationTechnology> ApplicationTechnologies => Set<ApplicationTechnology>();
+    public DbSet<ResourceTechnology> ResourceTechnologies => Set<ResourceTechnology>();
+    public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ProjectType> ProjectTypes => Set<ProjectType>();
+    public DbSet<CostCenter> CostCenters => Set<CostCenter>();
+    public DbSet<Currency> Currencies => Set<Currency>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -109,5 +121,6 @@ public class AppDbContext : DbContext
         Lot4Seed.Apply(modelBuilder);
         Lot5Seed.Apply(modelBuilder);
         Lot6Seed.Apply(modelBuilder);
+        Lot8Seed.Apply(modelBuilder);
     }
 }

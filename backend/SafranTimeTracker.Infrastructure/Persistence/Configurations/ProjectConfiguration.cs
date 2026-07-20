@@ -49,5 +49,15 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
             .WithMany(s => s.Projects)
             .HasForeignKey(p => p.StatusId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.ProjectType)
+            .WithMany()
+            .HasForeignKey(p => p.ProjectTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.Client)
+            .WithMany()
+            .HasForeignKey(p => p.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

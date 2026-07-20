@@ -231,4 +231,26 @@ internal static class SeedIds
     // Lot 6 — Journal d'audit de démonstration (§28.3)
     public static readonly Guid AuditLogDemoOrderExtension = new("00000000-0000-0000-0073-000000000001");
     public static readonly Guid AuditLogDemoImport = new("00000000-0000-0000-0073-000000000002");
+
+    // Lot 8 — Technologies (docs/BACKLOG_METIER.md §5)
+    public static readonly Guid TechnologyDotNet = new("00000000-0000-0000-0080-000000000001");
+    public static readonly Guid TechnologyReact = new("00000000-0000-0000-0080-000000000002");
+    public static readonly Guid TechnologyPostgresql = new("00000000-0000-0000-0080-000000000003");
+
+    // Lot 8 — Clients (docs/BACKLOG_METIER.md §6)
+    public static readonly Guid ClientDirectionProduction = new("00000000-0000-0000-0081-000000000001");
+    public static readonly Guid ClientDirectionSupport = new("00000000-0000-0000-0081-000000000002");
+
+    // Lot 8 — Types de projet (docs/BACKLOG_METIER.md §7)
+    public static readonly Guid ProjectTypeForfait = new("00000000-0000-0000-0082-000000000001");
+    public static readonly Guid ProjectTypeRegie = new("00000000-0000-0000-0082-000000000002");
+    public static readonly Guid ProjectTypeInterne = new("00000000-0000-0000-0082-000000000003");
+
+    // Lot 8 — Centres de coûts (docs/BACKLOG_METIER.md §8)
+    public static readonly Guid CostCenterDsi = new("00000000-0000-0000-0083-000000000001");
+    public static readonly Guid CostCenterProductionApplicative = new("00000000-0000-0000-0083-000000000002");
+
+    // Lot 8 — Devises (docs/BACKLOG_METIER.md §9)
+    public static readonly Guid CurrencyEur = new("00000000-0000-0000-0084-000000000001");
+    public static readonly Guid CurrencyUsd = new("00000000-0000-0000-0084-000000000002");
 }
