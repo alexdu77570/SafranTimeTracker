@@ -14,6 +14,13 @@ public class ProjectDto
     public Guid ServiceId { get; set; }
     public Guid? TeamId { get; set; }
     public Guid StatusId { get; set; }
+
+    /// <summary>Type de projet (docs/BACKLOG_METIER.md §7, Lot 8), indépendant du statut.</summary>
+    public Guid? ProjectTypeId { get; set; }
+
+    /// <summary>Donneur d'ordre du projet (docs/BACKLOG_METIER.md §6, Lot 8).</summary>
+    public Guid? ClientId { get; set; }
+
     public DateOnly DateDebut { get; set; }
     public DateOnly DateFinPrevueInitiale { get; set; }
     public DateOnly? DateFinAjustee { get; set; }
@@ -35,6 +42,8 @@ public class ProjectCreateRequest
     public Guid DepartmentId { get; set; }
     public Guid ServiceId { get; set; }
     public Guid? TeamId { get; set; }
+    public Guid? ProjectTypeId { get; set; }
+    public Guid? ClientId { get; set; }
     public DateOnly DateDebut { get; set; }
     public DateOnly DateFinPrevueInitiale { get; set; }
     public decimal? BudgetInitial { get; set; }
@@ -50,6 +59,8 @@ public class ProjectUpdateRequest
     public string? DescriptionCourte { get; set; }
     public Guid PiloteId { get; set; }
     public Guid? TeamId { get; set; }
+    public Guid? ProjectTypeId { get; set; }
+    public Guid? ClientId { get; set; }
     public DateOnly DateFinAjustee { get; set; }
     public DateOnly? DateFinReelle { get; set; }
     public decimal? BudgetInitial { get; set; }

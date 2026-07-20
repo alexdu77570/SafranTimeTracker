@@ -6,7 +6,9 @@ using SafranTimeTracker.Application.Applications.Services;
 using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Budgets.Services;
 using SafranTimeTracker.Application.Capacity.Services;
+using SafranTimeTracker.Application.Clients.Services;
 using SafranTimeTracker.Application.Companies.Services;
+using SafranTimeTracker.Application.Currencies.Services;
 using SafranTimeTracker.Application.Financial.Services;
 using SafranTimeTracker.Application.Imports;
 using SafranTimeTracker.Application.Imports.Adapters;
@@ -18,6 +20,7 @@ using SafranTimeTracker.Application.Projects.Services;
 using SafranTimeTracker.Application.Reporting.Services;
 using SafranTimeTracker.Application.Resources.Services;
 using SafranTimeTracker.Application.Settings.Services;
+using SafranTimeTracker.Application.Technologies.Services;
 using SafranTimeTracker.Application.TimeTracking.Services;
 using SafranTimeTracker.Application.Users.Services;
 
@@ -69,6 +72,13 @@ public static class DependencyInjection
         // Audit (Lot 6, §28.3)
         services.AddScoped<AuditService>();
         services.AddScoped<AuditLogService>();
+
+        // Référentiels et administration (Lot 8, docs/BACKLOG_METIER.md §5-9)
+        services.AddScoped<TechnologyService>();
+        services.AddScoped<ClientService>();
+        services.AddScoped<ProjectTypeService>();
+        services.AddScoped<CostCenterService>();
+        services.AddScoped<CurrencyService>();
 
         // Imports (Lot 6, §27) : un adaptateur par type importable, résolus collectivement par
         // ImportService via IEnumerable<IImportAdapter> — même principe d'enregistrement multiple

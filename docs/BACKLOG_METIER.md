@@ -89,6 +89,78 @@ Attributs métier attendus pour une ligne de suivi budgétaire :
 
 ---
 
+## 5. Technologies
+
+✅ **Implémenté (Lot 8).** Référentiel administrable `Technology` (code, libellé, statut actif/archivé), sans hiérarchie ni catégorisation supplémentaire.
+
+- Une technologie peut être rattachée à une ou plusieurs Applications (`ApplicationReference`) — stack technique d'une application, visible dans le détail statistique de l'application (§ Lot 8 roadmap).
+- Une technologie peut être rattachée à une ou plusieurs Ressources (`Resource`) — compétences maîtrisées par une personne.
+- Relation many-to-many dans les deux cas, aucun impact sur le calcul financier ni sur la capacité.
+
+---
+
+## 6. Clients
+
+✅ **Implémenté (Lot 8).** `Client` est un nouvel axe, distinct de la `Company` (§12 du cahier des charges) qui reste exclusivement la société prestataire fournissant la ressource et son TJM contractuel.
+
+- Le Client représente le donneur d'ordre / bénéficiaire d'un projet (rattachement facultatif `Project.ClientId`).
+- Référentiel administrable simple (code, libellé, statut), sans incidence financière ni capacitaire — n'intervient à aucun titre dans `FinancialCalculationService`.
+- Ne remplace ni ne fusionne avec `Company` : les deux référentiels coexistent, un projet peut avoir un Client sans que cela contraigne la Société des ressources qui y travaillent.
+
+---
+
+## 7. Types de projets
+
+✅ **Implémenté (Lot 8).** `ProjectType` est un nouvel axe de classification du projet (ex. Forfait / Régie / Interne / RUN), indépendant du `ProjectStatus` existant (Lot 4 — cycle de vie Actif/Archivé du projet).
+
+- Référentiel administrable simple (code, libellé, statut), rattachement facultatif `Project.ProjectTypeId`.
+- Ne remplace pas `ProjectStatus` : un projet a toujours un statut de cycle de vie (Actif/Archivé/…) et, indépendamment, un type optionnel qui qualifie sa nature contractuelle/organisationnelle.
+
+---
+
+## 8. Centres de coûts
+
+✅ **Implémenté (Lot 8).** `CostCenter` est un axe organisationnel analytique, rattaché à `Department` et/ou `Service` (Lot 1), pas aux Commandes ni aux Budgets.
+
+- Référentiel administrable simple (code, libellé, statut).
+- Rattachement facultatif à un `Department` et/ou à un `Service`.
+- Aucun impact sur le calcul financier existant (`FinancialCalculationService`, `BudgetService`) : purement un attribut analytique organisationnel à ce stade.
+
+---
+
+## 9. Devises
+
+✅ **Implémenté (Lot 8).** Périmètre volontairement limité à un référentiel de consultation, **pas** un support multi-devises.
+
+- Référentiel administrable simple `Currency` (code ISO 4217, libellé, symbole), lecture seule pour les utilisateurs standard.
+- Aucun impact sur `FinancialCalculationService`, `ResourceTjmHistory`, `CompanyContractHistory`, `Order`, `Budget` : tous les montants restent implicitement en EUR, comme aujourd'hui (`FinancialValue` du frontend, Lot 7).
+- Un véritable support multi-devises (TJM/Budgets/Commandes/Contrats dans des devises différentes, conversion, taux de change) est explicitement **hors périmètre** du Lot 8 et mériterait son propre lot dédié s'il est un jour validé — ne jamais l'anticiper ici (`CLAUDE.md` §5 : pas d'abstraction anticipée).
+
+---
+
+## Exception de gouvernance — Lot 8
+
+> **Rôle de cette section** : documenter explicitement une exception au processus normal de lot, pour qu'un futur développement comprenne *pourquoi* une évolution backend a été autorisée pendant un lot que `docs/ROADMAP.md` décrivait initialement comme « frontend only ». Ce n'est pas une règle métier au même titre que les sections 1 à 9 ci-dessus : c'est le compte rendu de la décision de gouvernance qui les a rendues possibles.
+
+**Constat de départ.** Les référentiels `Technology`, `Client`, `ProjectType`, `CostCenter` et `Currency` (sections 5 à 9 ci-dessus) **n'existaient dans aucune version précédente du modèle** : absents du cahier des charges, absents de `docs/ROADMAP.md`, absents de `docs/BACKLOG_METIER.md` avant l'ouverture du Lot 8, et absents du code (aucune entité, aucun contrôleur, aucune migration). `docs/ROADMAP.md` décrivait la phase Lots 7-12 comme consommant exclusivement l'API déjà livrée aux Lots 1-6, sans évolution backend.
+
+**Validation avant implémentation.** Leur création a fait l'objet d'une **validation fonctionnelle explicite, un référentiel à la fois, pendant cette session, avant toute ligne de code** : pour chacun, plusieurs définitions alternatives ont été soumises (ex. « Client est-il un nouvel axe, ou une simple confusion avec Company ? », « Devises est-il un référentiel de consultation, ou un vrai support multi-devises ? ») et la définition retenue a été consignée dans les sections 5 à 9 avant d'être codée, conformément à la règle d'alimentation de `CLAUDE.md` §5.
+
+**Motif de l'exception.** Ces cinq référentiels ont été ajoutés **afin de permettre l'implémentation complète du périmètre du Lot 8** tel que demandé (fiches Ressource/Société/Application et panneau Administration incluant ces domaines) : sans backend réel, les écrans correspondants auraient dû soit être omis, soit reposer sur des données fictives côté frontend — les deux étant incompatibles avec les conventions du projet (`CLAUDE.md` §7, §17).
+
+**Nature strictement descriptive.** Les cinq référentiels sont **exclusivement des référentiels descriptifs** — classification (`Technology`, `ProjectType`), rattachement (`Client`, `CostCenter`), ou consultation (`Currency`). Aucun n'introduit de workflow, de machine d'état, de calcul dérivé ou de règle de validation métier nouvelle au-delà de l'existence du référentiel lui-même (code/libellé/statut, éventuellement un rattachement optionnel).
+
+**Aucun impact sur l'existant.** Ces cinq référentiels **n'introduisent aucune nouvelle logique métier** et **n'impactent aucun calcul financier, aucun TJM, aucun Budget, aucune Commande, aucun Contrat, ni aucun service métier existant** :
+
+- `FinancialCalculationService` (Lot 2), `ProjectPlanningCalculator` (Lot 4), `BudgetService` (Lot 5) : code inchangé, aucune de leurs méthodes ne référence l'un de ces cinq référentiels.
+- `ResourceTjmHistory`, `CompanyContractHistory`, `Order`, `Budget` : entités inchangées, aucune nouvelle colonne, aucune nouvelle règle de validation.
+- `Currency` en particulier reste un référentiel de consultation pur (§9) : tous les montants du projet restent implicitement en EUR, exactement comme avant le Lot 8 — un véritable support multi-devises est explicitement hors périmètre et non anticipé.
+- Les seuls points d'intégration avec le modèle existant sont des **clés étrangères optionnelles** (`Project.ProjectTypeId`, `Project.ClientId`) ou des **tables de jointure** (`ApplicationTechnology`, `ResourceTechnology`) : leur absence de valeur ne bloque et ne modifie aucun comportement préexistant.
+
+**Documentation volontaire de l'exception.** Cette section est ajoutée **volontairement**, en plus des sections 5 à 9, pour qu'un futur lot ou une future session ne confonde pas cette exception ponctuelle et validée avec une dérive de périmètre généralisée : la règle « aucune évolution backend » reste la règle par défaut de la phase Lots 7-12 (`docs/ROADMAP.md`) pour tout ce qui n'est pas explicitement listé ici. Toute nouvelle demande d'évolution backend dans un lot « frontend only » doit suivre le même processus — validation explicite avec l'utilisateur, consignation ici *avant* implémentation — et non se prévaloir de ce précédent sans validation propre.
+
+---
+
 ## Comment mettre à jour ce document
 
 1. Toute règle métier nouvellement validée avec le Product Owner, le Squad Leader ou un expert métier est ajoutée ici **avant** d'être implémentée, avec le statut 🕓 **Validé, non implémenté**.

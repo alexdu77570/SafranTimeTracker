@@ -750,6 +750,83 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Clients.Client", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Commentaire")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("commentaire");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("nom");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_clients");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_clients_code");
+
+                    b.ToTable("clients", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0081-000000000001"),
+                            Code = "DIR-PROD",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Nom = "Direction Production Applicative",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0081-000000000002"),
+                            Code = "DIR-SUPPORT",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Nom = "Direction Support et Exploitation",
+                            Statut = 0
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Companies.Company", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1100,6 +1177,86 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
                             StartDate = new DateOnly(2024, 1, 1),
                             Status = 0
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Currencies.Currency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeIso")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)")
+                        .HasColumnName("code_iso");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<string>("Symbole")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
+                        .HasColumnName("symbole");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_currencies");
+
+                    b.HasIndex("CodeIso")
+                        .IsUnique()
+                        .HasDatabaseName("ix_currencies_code_iso");
+
+                    b.ToTable("currencies", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0084-000000000001"),
+                            CodeIso = "EUR",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Euro",
+                            Statut = 0,
+                            Symbole = "€"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0084-000000000002"),
+                            CodeIso = "USD",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Dollar américain",
+                            Statut = 0,
+                            Symbole = "$"
                         });
                 });
 
@@ -1946,6 +2103,95 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Organisation.CostCenter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("department_id");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("service_id");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cost_centers");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_cost_centers_code");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_cost_centers_department_id");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_cost_centers_service_id");
+
+                    b.ToTable("cost_centers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0083-000000000001"),
+                            Code = "CC-DSI",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            Libelle = "Centre de coûts DSI",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0083-000000000002"),
+                            Code = "CC-PRODAPP",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            Libelle = "Centre de coûts Production Applicative",
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000001"),
+                            Statut = 0
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Organisation.Department", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2240,6 +2486,10 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("budget_initial");
 
+                    b.Property<Guid?>("ClientId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("client_id");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -2300,6 +2550,10 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("pilote_id");
 
+                    b.Property<Guid?>("ProjectTypeId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("project_type_id");
+
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("service_id");
@@ -2327,6 +2581,9 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.HasIndex("ApplicationId")
                         .HasDatabaseName("ix_projects_application_id");
 
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_projects_client_id");
+
                     b.HasIndex("Code")
                         .IsUnique()
                         .HasDatabaseName("ix_projects_code");
@@ -2336,6 +2593,9 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
 
                     b.HasIndex("PiloteId")
                         .HasDatabaseName("ix_projects_pilote_id");
+
+                    b.HasIndex("ProjectTypeId")
+                        .HasDatabaseName("ix_projects_project_type_id");
 
                     b.HasIndex("ServiceId")
                         .HasDatabaseName("ix_projects_service_id");
@@ -2354,6 +2614,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             Id = new Guid("00000000-0000-0000-0052-000000000001"),
                             ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
                             BudgetInitial = 150000.00m,
+                            ClientId = new Guid("00000000-0000-0000-0081-000000000001"),
                             Code = "PRJ-ELM-2026",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
@@ -2365,6 +2626,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             NiveauRisque = 1,
                             Nom = "Migration ELM",
                             PiloteId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            ProjectTypeId = new Guid("00000000-0000-0000-0082-000000000001"),
                             ServiceId = new Guid("00000000-0000-0000-0011-000000000004"),
                             StatusId = new Guid("00000000-0000-0000-0050-000000000001"),
                             TeamId = new Guid("00000000-0000-0000-0012-000000000002")
@@ -2625,6 +2887,87 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             Code = "ARCHIVE",
                             Libelle = "Archivé",
                             Ordre = 4
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Projects.ProjectType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_types");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_project_types_code");
+
+                    b.ToTable("project_types", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0082-000000000001"),
+                            Code = "FORFAIT",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Forfait",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0082-000000000002"),
+                            Code = "REGIE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Régie",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0082-000000000003"),
+                            Code = "INTERNE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "Interne",
+                            Statut = 0
                         });
                 });
 
@@ -3748,6 +4091,149 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             SeuilSurcharge = 100m,
                             UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             UpdatedBy = "system-seed"
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Technologies.ApplicationTechnology", b =>
+                {
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("application_id");
+
+                    b.Property<Guid>("TechnologyId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("technology_id");
+
+                    b.HasKey("ApplicationId", "TechnologyId")
+                        .HasName("pk_application_technologies");
+
+                    b.HasIndex("TechnologyId")
+                        .HasDatabaseName("ix_application_technologies_technology_id");
+
+                    b.ToTable("application_technologies", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            TechnologyId = new Guid("00000000-0000-0000-0080-000000000001")
+                        },
+                        new
+                        {
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            TechnologyId = new Guid("00000000-0000-0000-0080-000000000003")
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Technologies.ResourceTechnology", b =>
+                {
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("resource_id");
+
+                    b.Property<Guid>("TechnologyId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("technology_id");
+
+                    b.HasKey("ResourceId", "TechnologyId")
+                        .HasName("pk_resource_technologies");
+
+                    b.HasIndex("TechnologyId")
+                        .HasDatabaseName("ix_resource_technologies_technology_id");
+
+                    b.ToTable("resource_technologies", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            TechnologyId = new Guid("00000000-0000-0000-0080-000000000001")
+                        },
+                        new
+                        {
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000003"),
+                            TechnologyId = new Guid("00000000-0000-0000-0080-000000000002")
+                        });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Technologies.Technology", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Libelle")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("libelle");
+
+                    b.Property<int>("Statut")
+                        .HasColumnType("int")
+                        .HasColumnName("statut");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_technologies");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_technologies_code");
+
+                    b.ToTable("technologies", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0080-000000000001"),
+                            Code = "DOTNET",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = ".NET",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0080-000000000002"),
+                            Code = "REACT",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "React",
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0080-000000000003"),
+                            Code = "POSTGRESQL",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Libelle = "PostgreSQL",
+                            Statut = 0
                         });
                 });
 
@@ -4881,6 +5367,25 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Organisation.CostCenter", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Organisation.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_cost_centers_departments_department_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Organisation.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_cost_centers_services_service_id");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Organisation.Department", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Responsable")
@@ -4941,6 +5446,12 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_projects_application_references_application_id");
 
+                    b.HasOne("SafranTimeTracker.Domain.Clients.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_projects_clients_client_id");
+
                     b.HasOne("SafranTimeTracker.Domain.Organisation.Department", "Department")
                         .WithMany()
                         .HasForeignKey("DepartmentId")
@@ -4954,6 +5465,12 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_projects_resources_pilote_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Projects.ProjectType", "ProjectType")
+                        .WithMany()
+                        .HasForeignKey("ProjectTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_projects_project_types_project_type_id");
 
                     b.HasOne("SafranTimeTracker.Domain.Organisation.Service", "Service")
                         .WithMany()
@@ -4977,9 +5494,13 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
 
                     b.Navigation("Application");
 
+                    b.Navigation("Client");
+
                     b.Navigation("Department");
 
                     b.Navigation("Pilote");
+
+                    b.Navigation("ProjectType");
 
                     b.Navigation("Service");
 
@@ -5156,6 +5677,48 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("Resource");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Technologies.ApplicationTechnology", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Applications.ApplicationReference", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_technologies_application_references_application_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Technologies.Technology", "Technology")
+                        .WithMany("Applications")
+                        .HasForeignKey("TechnologyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_technologies_technologies_technology_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Technology");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Technologies.ResourceTechnology", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_resource_technologies_resources_resource_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Technologies.Technology", "Technology")
+                        .WithMany("Resources")
+                        .HasForeignKey("TechnologyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_resource_technologies_technologies_technology_id");
+
+                    b.Navigation("Resource");
+
+                    b.Navigation("Technology");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntry", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Activities.ActivityType", "ActivityType")
@@ -5310,6 +5873,13 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
             modelBuilder.Entity("SafranTimeTracker.Domain.Resources.Resource", b =>
                 {
                     b.Navigation("OperationalRoles");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Technologies.Technology", b =>
+                {
+                    b.Navigation("Applications");
+
+                    b.Navigation("Resources");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Time.TimeEntry", b =>

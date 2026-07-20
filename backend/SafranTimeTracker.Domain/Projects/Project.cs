@@ -1,4 +1,5 @@
 using SafranTimeTracker.Domain.Applications;
+using SafranTimeTracker.Domain.Clients;
 using SafranTimeTracker.Domain.Common;
 using SafranTimeTracker.Domain.Organisation;
 using SafranTimeTracker.Domain.Resources;
@@ -36,6 +37,14 @@ public class Project : AuditableEntity
 
     public Guid StatusId { get; set; }
     public ProjectStatus Status { get; set; } = null!;
+
+    /// <summary>Type de projet (docs/BACKLOG_METIER.md §7, Lot 8) — axe de classification indépendant du statut.</summary>
+    public Guid? ProjectTypeId { get; set; }
+    public ProjectType? ProjectType { get; set; }
+
+    /// <summary>Donneur d'ordre du projet (docs/BACKLOG_METIER.md §6, Lot 8), distinct de la société prestataire.</summary>
+    public Guid? ClientId { get; set; }
+    public Client? Client { get; set; }
 
     public DateOnly DateDebut { get; set; }
     public DateOnly DateFinPrevueInitiale { get; set; }

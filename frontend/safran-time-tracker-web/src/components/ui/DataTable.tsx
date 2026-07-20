@@ -1,4 +1,4 @@
-import { DataGrid, type GridColDef, type GridRowId, type GridValidRowModel } from '@mui/x-data-grid'
+import { DataGrid, type GridColDef, type GridRowId, type GridRowParams, type GridValidRowModel } from '@mui/x-data-grid'
 import Box from '@mui/material/Box'
 import { EmptyState } from './EmptyState'
 
@@ -17,6 +17,9 @@ interface DataTableProps<T extends GridValidRowModel> {
   loading?: boolean
   getRowId?: (row: T) => GridRowId
   emptyLabel?: string
+  /** Absent par défaut : une ligne n'est cliquable que si l'écran en a explicitement besoin
+   * (navigation vers une fiche détail, ouverture d'un dialog d'édition). */
+  onRowClick?: (params: GridRowParams<T>) => void
 }
 
 /** Tableau de données transverse (cahier des charges §8.3 : recherche, pagination, tri). Toujours
@@ -33,6 +36,7 @@ export function DataTable<T extends GridValidRowModel>({
   loading = false,
   getRowId,
   emptyLabel = 'Aucune donnée',
+  onRowClick,
 }: DataTableProps<T>) {
   return (
     <Box sx={{ width: '100%' }}>
@@ -52,10 +56,12 @@ export function DataTable<T extends GridValidRowModel>({
             onPageChange(model.page + 1)
           }
         }}
+        onRowClick={onRowClick}
         pageSizeOptions={[10, 20, 50, 100]}
         disableRowSelectionOnClick
         density="compact"
         autoHeight
+        sx={onRowClick ? { '& .MuiDataGrid-row': { cursor: 'pointer' } } : undefined}
         slots={{
           noRowsOverlay: () => <EmptyState title={emptyLabel} />,
         }}

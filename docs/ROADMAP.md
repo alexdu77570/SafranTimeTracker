@@ -101,10 +101,13 @@ Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 
 ## Lot 8 — Référentiels et Administration
 
+> **Révision de périmètre actée à l'ouverture du Lot 8** : le périmètre ci-dessous reste frontend-only sur l'API des Lots 1-7 (aucune évolution backend, conformément à la règle commune de cette phase). Cinq référentiels supplémentaires, absents du cahier des charges et validés avec le Squad Leader pendant ce lot, s'y ajoutent : **Technologies, Clients, Types de projets, Centres de coûts, Devises** (définitions et statut de validation : `docs/BACKLOG_METIER.md` §5-9). Ces cinq-là **nécessitent une évolution backend** (nouvelles entités/DTO/services/endpoints), par exception à la règle « aucune évolution backend » de cette phase — décision explicitement validée, pas une dérive de périmètre.
+
 - Ressources / Utilisateurs (fiche à 4 sections : Général, Organisation, Sécurité, Historique des TJM sous permission financière).
 - Sociétés (+ historique des contrats, confidentiel).
-- Applications (+ détail statistique).
-- Administration (13 onglets : Utilisateurs, Département, Services, Équipes, Applications, Types d'activités, Types d'absences, Types de jalons, Sociétés, Commandes, Paramètres, Permissions, Audit).
+- Applications (+ détail statistique, technologies rattachées).
+- Administration (13 onglets : Utilisateurs, Département, Services, Équipes, Applications, Types d'activités, Types d'absences, Types de jalons, Sociétés, Commandes, Paramètres, Permissions, Audit) + onglets des 5 nouveaux référentiels (Technologies, Clients, Types de projets, Centres de coûts, Devises).
+- Backend (nouveau, exception validée) : entités `Technology` (liaisons many-to-many avec `ApplicationReference` et `Resource`), `Client` (`Project.ClientId` nullable), `ProjectType` (`Project.ProjectTypeId` nullable), `CostCenter` (rattaché à `Department`/`Service`), `Currency` (référentiel de consultation, aucun impact sur `FinancialCalculationService`).
 
 ## Lot 9 — Temps et Disponibilités
 

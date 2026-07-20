@@ -12,6 +12,9 @@ namespace SafranTimeTracker.Infrastructure.Persistence.Seed;
 /// TimeEntryLegrandProjet (Lot 3) est rattachée à ProjectMigrationElm pour démontrer l'agrégation
 /// charge/coût consommés à partir d'une saisie réelle. Idempotent (HasData), dates/montants
 /// strictement déterministes.
+///
+/// ProjectMigrationElm porte désormais ProjectTypeId/ClientId (Lot 8, docs/BACKLOG_METIER.md
+/// §6-7) — complété ici plutôt que dupliqué, même convention que TimeEntryLegrandProjet ci-dessus.
 /// </summary>
 internal static class Lot4Seed
 {
@@ -78,6 +81,8 @@ internal static class Lot4Seed
                 ServiceId = SeedIds.ServiceProjets,
                 TeamId = SeedIds.TeamProjetsA,
                 StatusId = SeedIds.ProjectStatusActif,
+                ProjectTypeId = SeedIds.ProjectTypeForfait, // Lot 8, docs/BACKLOG_METIER.md §7
+                ClientId = SeedIds.ClientDirectionProduction, // Lot 8, docs/BACKLOG_METIER.md §6
                 DateDebut = new DateOnly(2024, 1, 1),
                 DateFinPrevueInitiale = new DateOnly(2024, 12, 31),
                 DateFinAjustee = new DateOnly(2025, 3, 31), // dérive planning -> risque planning (§29.5)
