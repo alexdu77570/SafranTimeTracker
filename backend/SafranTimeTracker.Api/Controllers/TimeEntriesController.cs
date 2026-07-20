@@ -25,9 +25,11 @@ public class TimeEntriesController(
     [HttpGet]
     public async Task<ActionResult<PagedResult<TimeEntryDto>>> GetList(
         [FromQuery] PaginationQuery pagination, [FromQuery] Guid? resourceId,
-        [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken cancellationToken)
+        [FromQuery] DateOnly? from, [FromQuery] DateOnly? to,
+        [FromQuery] Guid? activityTypeId, [FromQuery] Guid? projectId, [FromQuery] Guid? orderId,
+        CancellationToken cancellationToken)
     {
-        var result = await service.GetListAsync(pagination, resourceId, from, to, cancellationToken);
+        var result = await service.GetListAsync(pagination, resourceId, from, to, activityTypeId, projectId, orderId, cancellationToken);
         return Ok(result);
     }
 

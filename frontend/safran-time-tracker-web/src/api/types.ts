@@ -437,3 +437,175 @@ export interface ChargesReportDto {
   nombreVabe: number
   nombreVsr: number
 }
+
+// --- Projets (Lot 4, référence légère pour les sélecteurs Temps/Disponibilités) ---
+
+export interface ProjectDto {
+  id: string
+  nom: string
+  code: string
+  applicationId: string
+  piloteId: string
+  departmentId: string
+  serviceId: string
+  teamId: string | null
+  statusId: string
+  projectTypeId: string | null
+  clientId: string | null
+  dateDebut: string
+  dateFinPrevueInitiale: string
+  dateFinAjustee: string | null
+  dateFinReelle: string | null
+  niveauRisque: number
+  commentaire: string | null
+}
+
+// --- Temps et capacité (Lot 3, écrans Lot 9) ---
+
+export const FinancialValuationStatus = {
+  Complete: 0,
+  Incomplete: 1,
+} as const
+export type FinancialValuationStatus = (typeof FinancialValuationStatus)[keyof typeof FinancialValuationStatus]
+
+export interface TimeEntryFinancialSnapshotDto {
+  tjmPersonneSnapshot: number | null
+  sourceTjmPersonne: string | null
+  resourceTjmHistoryId: string | null
+  tjmContratSnapshot: number | null
+  sourceContrat: string | null
+  companyContractHistoryId: string | null
+  companyIdSnapshot: string | null
+  coutReelCalcule: number | null
+  coutContratCalcule: number | null
+  differentielCalcule: number | null
+  calculationDate: string
+  calculationStatus: FinancialValuationStatus
+}
+
+export interface TimeEntryDto {
+  id: string
+  resourceId: string
+  activityTypeId: string
+  projectId: string | null
+  orderId: string | null
+  date: string
+  dureeHeures: number
+  reference: string | null
+  commentaire: string | null
+  statut: ReferentialStatus
+  createdAt: string
+  createdBy: string
+  updatedAt: string | null
+  updatedBy: string | null
+  /** Absent (pas null) sans FINANCIAL_DATA_VIEW — projection faite par le service backend (CLAUDE.md §13). */
+  financialSnapshot: TimeEntryFinancialSnapshotDto | null
+}
+
+export interface TimeEntryCreateRequest {
+  resourceId: string
+  activityTypeId: string
+  projectId?: string | null
+  orderId?: string | null
+  date: string
+  dureeHeures: number
+  reference?: string | null
+  commentaire?: string | null
+}
+
+/** ResourceId volontairement non modifiable (même convention que le backend) — voir TimeEntryUpdateRequest côté API. */
+export interface TimeEntryUpdateRequest {
+  activityTypeId: string
+  projectId?: string | null
+  orderId?: string | null
+  date: string
+  dureeHeures: number
+  reference?: string | null
+  commentaire?: string | null
+}
+
+export interface TimeEntryRecalculationRequest {
+  reason: string
+}
+
+// --- Absences (Lot 3, écrans Lot 9) ---
+
+export const AbsenceType = {
+  Conge: 0,
+  Rtt: 1,
+  Maladie: 2,
+  Formation: 3,
+  Deplacement: 4,
+  Indisponible: 5,
+} as const
+export type AbsenceType = (typeof AbsenceType)[keyof typeof AbsenceType]
+
+export const AbsenceStatus = {
+  Brouillon: 0,
+  Soumis: 1,
+  Valide: 2,
+  Refuse: 3,
+  Annule: 4,
+} as const
+export type AbsenceStatus = (typeof AbsenceStatus)[keyof typeof AbsenceStatus]
+
+export interface AbsenceDto {
+  id: string
+  resourceId: string
+  type: AbsenceType
+  dateDebut: string
+  dateFin: string
+  demiJournee: boolean
+  commentaire: string | null
+  statut: AbsenceStatus
+  valideParIdentifiant: string | null
+  dateDecision: string | null
+  createdAt: string
+  createdBy: string
+}
+
+export interface AbsenceCreateRequest {
+  resourceId: string
+  type: AbsenceType
+  dateDebut: string
+  dateFin: string
+  demiJournee?: boolean
+  commentaire?: string | null
+}
+
+/** Restreint au statut Brouillon côté serveur (409 sinon, docs/BACKLOG_METIER.md §12). */
+export interface AbsenceUpdateRequest {
+  type: AbsenceType
+  dateDebut: string
+  dateFin: string
+  demiJournee?: boolean
+  commentaire?: string | null
+}
+
+export interface AbsenceDecisionRequest {
+  commentaire?: string | null
+}
+
+// --- Capacité et disponibilité (Lot 3, écran Disponibilités Lot 9) ---
+
+export interface AvailabilityResultDto {
+  resourceId: string
+  startDate: string
+  endDate: string
+  joursOuvres: number
+  joursFeries: number
+  joursAbsenceValidee: number
+  capaciteTheorique: number
+  capaciteReelle: number
+  tauxDisponibilite: number
+  chargeRunHeures: number
+  chargeHorsRunHeures: number
+}
+
+export interface HolidayCalendarDto {
+  id: string
+  date: string
+  libelle: string
+  pays: string
+  statut: ReferentialStatus
+}
