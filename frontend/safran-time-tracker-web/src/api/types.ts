@@ -53,7 +53,8 @@ export const ApplicationCriticality = {
   Elevee: 2,
   Critique: 3,
 } as const
-export type ApplicationCriticality = (typeof ApplicationCriticality)[keyof typeof ApplicationCriticality]
+export type ApplicationCriticality =
+  (typeof ApplicationCriticality)[keyof typeof ApplicationCriticality]
 
 // --- Organisation (Lot 1) ---
 
@@ -253,6 +254,63 @@ export interface MilestoneTypeCreateRequest {
   libelle: string
 }
 
+export const MilestoneStatus = {
+  AVenir: 0,
+  EnCours: 1,
+  Termine: 2,
+  Annule: 3,
+} as const
+export type MilestoneStatus = (typeof MilestoneStatus)[keyof typeof MilestoneStatus]
+
+export const MilestoneCriticality = {
+  Faible: 0,
+  Moyenne: 1,
+  Elevee: 2,
+  Critique: 3,
+} as const
+export type MilestoneCriticality = (typeof MilestoneCriticality)[keyof typeof MilestoneCriticality]
+
+export interface MilestoneDto {
+  id: string
+  nom: string
+  milestoneTypeId: string
+  projectId: string
+  applicationId: string | null
+  responsableId: string
+  datePrevue: string
+  dateReelle: string | null
+  statut: MilestoneStatus
+  criticite: MilestoneCriticality
+  commentaire: string | null
+  dependsOnMilestoneId: string | null
+  /** Dérivé (§24.2), jamais stocké : DatePrevue dépassée et statut ni Terminé ni Annulé. */
+  estEnRetard: boolean
+}
+
+export interface MilestoneCreateRequest {
+  nom: string
+  milestoneTypeId: string
+  projectId: string
+  applicationId?: string | null
+  responsableId: string
+  datePrevue: string
+  criticite?: MilestoneCriticality
+  commentaire?: string | null
+  dependsOnMilestoneId?: string | null
+}
+
+/** Ne permet pas de changer le type ni le projet, qui définissent l'identité du jalon (§24.2). */
+export interface MilestoneUpdateRequest {
+  nom: string
+  responsableId: string
+  datePrevue: string
+  dateReelle?: string | null
+  statut: MilestoneStatus
+  criticite: MilestoneCriticality
+  commentaire?: string | null
+  dependsOnMilestoneId?: string | null
+}
+
 // --- Paramètres (Lot 1) ---
 
 export interface SettingsDto {
@@ -438,13 +496,30 @@ export interface ChargesReportDto {
   nombreVsr: number
 }
 
-// --- Projets (Lot 4, référence légère pour les sélecteurs Temps/Disponibilités) ---
+// --- Projets (Lot 4, écrans Lot 10) ---
+
+export const ProjectRiskLevel = {
+  Faible: 0,
+  Moyen: 1,
+  Eleve: 2,
+} as const
+export type ProjectRiskLevel = (typeof ProjectRiskLevel)[keyof typeof ProjectRiskLevel]
+
+/** Absent (pas null) sans FINANCIAL_DATA_VIEW — projection faite par ProjectService (CLAUDE.md §13). */
+export interface ProjectFinancialSummaryDto {
+  budgetInitial: number | null
+  coutReelConsomme: number
+  coutContractuelConsomme: number
+  differentiel: number
+  budgetRestant: number | null
+}
 
 export interface ProjectDto {
   id: string
   nom: string
   code: string
   applicationId: string
+  descriptionCourte: string | null
   piloteId: string
   departmentId: string
   serviceId: string
@@ -456,8 +531,170 @@ export interface ProjectDto {
   dateFinPrevueInitiale: string
   dateFinAjustee: string | null
   dateFinReelle: string | null
-  niveauRisque: number
+  niveauRisque: ProjectRiskLevel
   commentaire: string | null
+  financialSummary: ProjectFinancialSummaryDto | null
+}
+
+export interface ProjectCreateRequest {
+  nom: string
+  code: string
+  applicationId: string
+  descriptionCourte?: string | null
+  piloteId: string
+  departmentId: string
+  serviceId: string
+  teamId?: string | null
+  projectTypeId?: string | null
+  clientId?: string | null
+  dateDebut: string
+  dateFinPrevueInitiale: string
+  budgetInitial?: number | null
+  niveauRisque?: ProjectRiskLevel
+  commentaire?: string | null
+}
+
+/** Statut non modifiable ici : archiver/réactiver sont des actions dédiées (§16.3). */
+export interface ProjectUpdateRequest {
+  nom: string
+  descriptionCourte?: string | null
+  piloteId: string
+  teamId?: string | null
+  projectTypeId?: string | null
+  clientId?: string | null
+  dateFinAjustee: string
+  dateFinReelle?: string | null
+  budgetInitial?: number | null
+  niveauRisque: ProjectRiskLevel
+  commentaire?: string | null
+}
+
+/** Référentiel de statuts de projet (§16.2, §30) — écart corrigé au Lot 10 (aucun endpoint GET n'existait). */
+export interface ProjectStatusDto {
+  id: string
+  code: string
+  libelle: string
+  ordre: number
+}
+
+/** Cahier des charges §17.2. Null sans FINANCIAL_DATA_VIEW. */
+export interface ProjectParticipantFinancialSummaryDto {
+  companyIdApplicable: string | null
+  tjmPersonneApplicable: number | null
+  tjmContratApplicable: number | null
+}
+
+export interface ProjectParticipantDto {
+  id: string
+  projectId: string
+  resourceId: string
+  operationalRoleId: string | null
+  defaultOrderId: string | null
+  dateDebut: string
+  dateFin: string | null
+  capacitePrevue: number | null
+  statut: ReferentialStatus
+  financialSummary: ProjectParticipantFinancialSummaryDto | null
+}
+
+export interface ProjectParticipantCreateRequest {
+  resourceId: string
+  operationalRoleId?: string | null
+  defaultOrderId?: string | null
+  dateDebut: string
+  dateFin?: string | null
+  capacitePrevue?: number | null
+}
+
+export const ProjectPlanVersionType = {
+  Initial: 0,
+  Ajuste: 1,
+} as const
+export type ProjectPlanVersionType =
+  (typeof ProjectPlanVersionType)[keyof typeof ProjectPlanVersionType]
+
+export const ProjectPlanVersionStatus = {
+  Active: 0,
+  Archivee: 1,
+} as const
+export type ProjectPlanVersionStatus =
+  (typeof ProjectPlanVersionStatus)[keyof typeof ProjectPlanVersionStatus]
+
+export interface ProjectPlanVersionDto {
+  id: string
+  projectId: string
+  type: ProjectPlanVersionType
+  statut: ProjectPlanVersionStatus
+  motif: string | null
+  createdAt: string
+  createdBy: string
+}
+
+export interface ProjectPlanVersionCreateRequest {
+  motif?: string | null
+}
+
+/** Motif obligatoire pour une version Ajustée (§18.3). */
+export interface ProjectPlanVersionAdjustmentRequest {
+  motif: string
+}
+
+export interface ProjectWeeklyPlanDto {
+  id: string
+  projectPlanVersionId: string
+  resourceId: string
+  weekStartDate: string
+  chargePlanifieeHeures: number
+}
+
+export interface ProjectWeeklyPlanLineRequest {
+  resourceId: string
+  weekStartDate: string
+  chargePlanifieeHeures: number
+}
+
+/** Cahier des charges §18.1, §29.5 — seul point de calcul des écarts/risques, jamais recalculé côté frontend. */
+export interface ProjectPlanningSynthesisDto {
+  projectId: string
+  chargeInitiale: number
+  chargeAjustee: number | null
+  chargeConsommee: number
+  chargeRestante: number
+  ecartCharge: number
+  deriveCharge: number
+  atterrissageCharge: number
+  derivePlanningJours: number
+  risquePlanning: boolean
+  /** Null sans FINANCIAL_DATA_VIEW. */
+  atterrissageFinancier: number | null
+  /** Null sans FINANCIAL_DATA_VIEW ou si aucun budget n'est disponible. */
+  risqueBudget: boolean | null
+}
+
+/** Vue transverse "Planning projet" (§18.2, GET /api/v1/project-planning) — une ligne par
+ * (Projet, Ressource, Semaine), entièrement agrégée côté serveur. */
+export interface ProjectPlanningRowDto {
+  projectId: string
+  resourceId: string
+  weekStartDate: string
+  chargePlanifieeInitiale: number
+  chargePlanifieeAjustee: number | null
+  chargeRealisee: number
+  ecartPrevuRealise: number
+  capaciteReelle: number
+  surcharge: boolean
+}
+
+/** Cahier des charges §17.7 : références RUN (INC/CHG/PRB/RITM/VABE/VSR) rattachées à un projet,
+ * jamais intégrées au modèle Projet lui-même (docs/BACKLOG_METIER.md §3). */
+export interface ProjectLinkedReferenceDto {
+  reference: string
+  activityTypeCode: string
+  activityTypeLibelle: string
+  nombreSaisies: number
+  chargeHeures: number
+  premiereDate: string
+  derniereDate: string
 }
 
 // --- Temps et capacité (Lot 3, écrans Lot 9) ---
@@ -466,7 +703,8 @@ export const FinancialValuationStatus = {
   Complete: 0,
   Incomplete: 1,
 } as const
-export type FinancialValuationStatus = (typeof FinancialValuationStatus)[keyof typeof FinancialValuationStatus]
+export type FinancialValuationStatus =
+  (typeof FinancialValuationStatus)[keyof typeof FinancialValuationStatus]
 
 export interface TimeEntryFinancialSnapshotDto {
   tjmPersonneSnapshot: number | null
@@ -608,4 +846,70 @@ export interface HolidayCalendarDto {
   libelle: string
   pays: string
   statut: ReferentialStatus
+}
+
+// --- Budgets (Lot 5, onglet Budget Lot 10) ---
+
+export const BudgetStatus = {
+  Actif: 0,
+  Cloture: 1,
+} as const
+export type BudgetStatus = (typeof BudgetStatus)[keyof typeof BudgetStatus]
+
+/** Ressource intégralement financière (§14) : endpoint entièrement gardé par FINANCIAL_DATA_VIEW
+ * au niveau contrôleur, aucun champ omis à la pièce. */
+export interface BudgetDto {
+  id: string
+  name: string
+  projectId: string | null
+  orderId: string | null
+  initialAmount: number
+  adjustedAmount: number
+  status: BudgetStatus
+  alertThreshold: number | null
+  startDate: string
+  endDate: string | null
+  comment: string | null
+  coutReelConsomme: number
+  coutContractuelConsomme: number
+  differentiel: number
+  montantRestant: number
+  atterrissageEstime: number
+  risqueDepassement: boolean
+}
+
+export interface BudgetCreateRequest {
+  name: string
+  projectId?: string | null
+  orderId?: string | null
+  initialAmount: number
+  alertThreshold?: number | null
+  startDate: string
+  endDate?: string | null
+  comment?: string | null
+}
+
+export interface BudgetUpdateRequest {
+  name: string
+  alertThreshold?: number | null
+  endDate?: string | null
+  comment?: string | null
+}
+
+export interface BudgetVersionDto {
+  id: string
+  budgetId: string
+  oldValue: number
+  newValue: number
+  reason: string
+  referencePiece: string | null
+  createdAt: string
+  createdBy: string
+}
+
+/** OldValue est dérivé côté service (AdjustedAmount courant), seul NewValue est saisi (§14.2). */
+export interface BudgetAdjustRequest {
+  newValue: number
+  reason: string
+  referencePiece?: string | null
 }

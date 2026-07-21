@@ -684,6 +684,45 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
                             StartDate = new DateOnly(2024, 1, 1),
                             Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0095-000000000001"),
+                            AdjustedAmount = 80000.00m,
+                            AlertThreshold = 90m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            InitialAmount = 80000.00m,
+                            Name = "Budget Refonte VTOM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000002"),
+                            StartDate = new DateOnly(2024, 2, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0095-000000000002"),
+                            AdjustedAmount = 60000.00m,
+                            AlertThreshold = 90m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            InitialAmount = 60000.00m,
+                            Name = "Budget Portail RUN ServiceNow",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            StartDate = new DateOnly(2025, 1, 1),
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0095-000000000003"),
+                            AdjustedAmount = 95000.00m,
+                            AlertThreshold = 90m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            InitialAmount = 95000.00m,
+                            Name = "Budget Refonte Portail ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000004"),
+                            StartDate = new DateOnly(2025, 2, 1),
+                            Status = 0
                         });
                 });
 
@@ -1570,6 +1609,182 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
                             ResponsableId = new Guid("00000000-0000-0000-0021-000000000003"),
                             Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000001"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 1,
+                            DatePrevue = new DateOnly(2024, 2, 5),
+                            DateReelle = new DateOnly(2024, 2, 5),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Nom = "Kick-off Refonte VTOM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000002"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000002"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 2,
+                            DatePrevue = new DateOnly(2026, 10, 1),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000009"),
+                            Nom = "GO PROD Refonte VTOM",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000002"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000003"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 1,
+                            DatePrevue = new DateOnly(2025, 1, 10),
+                            DateReelle = new DateOnly(2025, 1, 10),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Nom = "Kick-off Portail RUN ServiceNow",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000004"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000004"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 3,
+                            DatePrevue = new DateOnly(2025, 6, 1),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000006"),
+                            Nom = "GO QUAL Portail RUN ServiceNow",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000004"),
+                            Statut = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000005"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 0,
+                            DatePrevue = new DateOnly(2025, 3, 5),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Nom = "Kick-off Support ServiceNow N2",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000002"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000005"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000006"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 1,
+                            DatePrevue = new DateOnly(2024, 7, 1),
+                            DateReelle = new DateOnly(2024, 7, 3),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000002"),
+                            Nom = "Architecture Observabilité VTOM",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000003"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000006"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000007"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 2,
+                            DatePrevue = new DateOnly(2025, 5, 31),
+                            DependsOnMilestoneId = new Guid("00000000-0000-0000-0094-000000000006"),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000009"),
+                            Nom = "GO PROD Observabilité VTOM",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000003"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000006"),
+                            Statut = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000008"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 1,
+                            DatePrevue = new DateOnly(2025, 2, 10),
+                            DateReelle = new DateOnly(2025, 2, 10),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Nom = "Kick-off Refonte Portail ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000004"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000009"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 2,
+                            DatePrevue = new DateOnly(2025, 10, 15),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000003"),
+                            Nom = "VABE Refonte Portail ELM",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000004"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000010"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 0,
+                            DatePrevue = new DateOnly(2024, 1, 8),
+                            DateReelle = new DateOnly(2024, 1, 8),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000001"),
+                            Nom = "Kick-off Consolidation Référentiels",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000005"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000012"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000011"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 1,
+                            DatePrevue = new DateOnly(2024, 6, 25),
+                            DateReelle = new DateOnly(2024, 6, 25),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000009"),
+                            Nom = "GO PROD Consolidation Référentiels",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000005"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000012"),
+                            Statut = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0094-000000000012"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Criticite = 2,
+                            DatePrevue = new DateOnly(2023, 12, 10),
+                            DateReelle = new DateOnly(2023, 12, 10),
+                            MilestoneTypeId = new Guid("00000000-0000-0000-0051-000000000010"),
+                            Nom = "CAB Archive Legacy VTOM",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000006"),
+                            ResponsableId = new Guid("00000000-0000-0000-0021-000000000013"),
+                            Statut = 2
                         });
                 });
 
@@ -2649,6 +2864,125 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             ServiceId = new Guid("00000000-0000-0000-0011-000000000002"),
                             StatusId = new Guid("00000000-0000-0000-0050-000000000001"),
                             TeamId = new Guid("00000000-0000-0000-0012-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0090-000000000001"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            BudgetInitial = 60000.00m,
+                            ClientId = new Guid("00000000-0000-0000-0081-000000000002"),
+                            Code = "PRJ-SNOW-2025",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2025, 1, 1),
+                            DateFinPrevueInitiale = new DateOnly(2025, 9, 30),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Portail self-service RUN sur ServiceNow.",
+                            NiveauRisque = 2,
+                            Nom = "Portail RUN ServiceNow",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000004"),
+                            ProjectTypeId = new Guid("00000000-0000-0000-0082-000000000002"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000002"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000001"),
+                            TeamId = new Guid("00000000-0000-0000-0012-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0090-000000000002"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            BudgetInitial = 25000.00m,
+                            Code = "PRJ-SNOW-SUP-2025",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2025, 3, 1),
+                            DateFinPrevueInitiale = new DateOnly(2025, 12, 31),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Montée en compétence support niveau 2 sur ServiceNow.",
+                            NiveauRisque = 0,
+                            Nom = "Support ServiceNow N2",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000005"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000003"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0090-000000000003"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            BudgetInitial = 45000.00m,
+                            Code = "PRJ-VTOM-OBS-2024",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 6, 1),
+                            DateFinAjustee = new DateOnly(2025, 5, 31),
+                            DateFinPrevueInitiale = new DateOnly(2025, 2, 28),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Mise en place d'une supervision proactive de l'ordonnanceur.",
+                            NiveauRisque = 1,
+                            Nom = "Observabilité VTOM",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000006"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000002"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000002"),
+                            TeamId = new Guid("00000000-0000-0000-0012-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0090-000000000004"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000001"),
+                            BudgetInitial = 95000.00m,
+                            ClientId = new Guid("00000000-0000-0000-0081-000000000001"),
+                            Code = "PRJ-ELM-PORTAIL-2025",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2025, 2, 1),
+                            DateFinPrevueInitiale = new DateOnly(2025, 11, 30),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Refonte du portail utilisateur IBM ELM.",
+                            NiveauRisque = 1,
+                            Nom = "Refonte Portail ELM",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            ProjectTypeId = new Guid("00000000-0000-0000-0082-000000000001"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000001"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000001"),
+                            TeamId = new Guid("00000000-0000-0000-0012-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0090-000000000005"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000003"),
+                            BudgetInitial = 30000.00m,
+                            Code = "PRJ-REF-2024",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            DateFinPrevueInitiale = new DateOnly(2024, 6, 30),
+                            DateFinReelle = new DateOnly(2024, 6, 28),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Consolidation des référentiels applicatifs dans ServiceNow CMDB.",
+                            NiveauRisque = 0,
+                            Nom = "Consolidation Référentiels",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000012"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000004"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000003"),
+                            TeamId = new Guid("00000000-0000-0000-0012-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0090-000000000006"),
+                            ApplicationId = new Guid("00000000-0000-0000-0022-000000000002"),
+                            BudgetInitial = 15000.00m,
+                            Code = "PRJ-VTOM-LEGACY-2023",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2023, 1, 1),
+                            DateFinPrevueInitiale = new DateOnly(2023, 12, 31),
+                            DateFinReelle = new DateOnly(2023, 12, 15),
+                            DepartmentId = new Guid("00000000-0000-0000-0010-000000000001"),
+                            DescriptionCourte = "Décommissionnement de l'ancien ordonnanceur.",
+                            NiveauRisque = 0,
+                            Nom = "Archive Legacy VTOM",
+                            PiloteId = new Guid("00000000-0000-0000-0021-000000000013"),
+                            ServiceId = new Guid("00000000-0000-0000-0011-000000000002"),
+                            StatusId = new Guid("00000000-0000-0000-0050-000000000004")
                         });
                 });
 
@@ -2751,6 +3085,160 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
                             Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000001"),
+                            CapacitePrevue = 60.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000004"),
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000002"),
+                            CapacitePrevue = 40.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000009"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000003"),
+                            CapacitePrevue = 50.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000004"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000004"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000004"),
+                            CapacitePrevue = 40.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000009"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000005"),
+                            CapacitePrevue = 30.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000001"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000005"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000006"),
+                            CapacitePrevue = 20.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000010"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000007"),
+                            CapacitePrevue = 35.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000004"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000003"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000006"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000008"),
+                            CapacitePrevue = 25.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000003"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000008"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000009"),
+                            CapacitePrevue = 45.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000004"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000004"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000010"),
+                            CapacitePrevue = 35.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000004"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000012"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000011"),
+                            CapacitePrevue = 20.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000004"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000005"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000012"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000012"),
+                            CapacitePrevue = 15.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            OperationalRoleId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000005"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000013"),
+                            Statut = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0091-000000000013"),
+                            CapacitePrevue = 10.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            DateDebut = new DateOnly(2024, 1, 1),
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000006"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000013"),
+                            Statut = 0
                         });
                 });
 
@@ -2824,6 +3312,43 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             ProjectId = new Guid("00000000-0000-0000-0052-000000000001"),
                             Statut = 0,
                             Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0092-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectId = new Guid("00000000-0000-0000-0052-000000000002"),
+                            Statut = 0,
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0092-000000000002"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            Statut = 0,
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0092-000000000003"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            Motif = "Charge revue à la hausse suite au périmètre étendu (démonstration).",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000001"),
+                            Statut = 0,
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0092-000000000004"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectId = new Guid("00000000-0000-0000-0090-000000000003"),
+                            Statut = 0,
+                            Type = 0
                         });
                 });
 
@@ -3065,6 +3590,76 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                             CreatedBy = "system-seed",
                             ProjectPlanVersionId = new Guid("00000000-0000-0000-0054-000000000002"),
                             ResourceId = new Guid("00000000-0000-0000-0021-000000000002"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000001"),
+                            ChargePlanifieeHeures = 24.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000002"),
+                            ChargePlanifieeHeures = 16.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000009"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000003"),
+                            ChargePlanifieeHeures = 24.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000001"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000011"),
+                            WeekStartDate = new DateOnly(2024, 6, 17)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000004"),
+                            ChargePlanifieeHeures = 20.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000004"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000005"),
+                            ChargePlanifieeHeures = 28.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000003"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000004"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000007"),
+                            ChargePlanifieeHeures = 12.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000002"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000009"),
+                            WeekStartDate = new DateOnly(2024, 6, 10)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0093-000000000006"),
+                            ChargePlanifieeHeures = 14.00m,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system-seed",
+                            ProjectPlanVersionId = new Guid("00000000-0000-0000-0092-000000000004"),
+                            ResourceId = new Guid("00000000-0000-0000-0021-000000000006"),
                             WeekStartDate = new DateOnly(2024, 6, 10)
                         });
                 });

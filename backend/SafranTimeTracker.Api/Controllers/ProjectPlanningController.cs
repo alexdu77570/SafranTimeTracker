@@ -75,6 +75,14 @@ public class ProjectPlanningController(
         return Ok(result);
     }
 
+    [HttpGet("plan-versions/{versionId:guid}/weekly-plans")]
+    public async Task<ActionResult<IReadOnlyList<ProjectWeeklyPlanDto>>> GetWeeklyPlans(
+        Guid projectId, Guid versionId, CancellationToken cancellationToken)
+    {
+        var result = await service.GetWeeklyPlansAsync(versionId, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("planning")]
     public async Task<ActionResult<ProjectPlanningSynthesisDto>> GetSynthesis(Guid projectId, CancellationToken cancellationToken)
     {

@@ -253,4 +253,61 @@ internal static class SeedIds
     // Lot 8 — Devises (docs/BACKLOG_METIER.md §9)
     public static readonly Guid CurrencyEur = new("00000000-0000-0000-0084-000000000001");
     public static readonly Guid CurrencyUsd = new("00000000-0000-0000-0084-000000000002");
+
+    // Lot 10 — Projets supplémentaires (§16.2, §35 : jeu de démonstration enrichi ~8 projets)
+    public static readonly Guid ProjectPortailRunServiceNow = new("00000000-0000-0000-0090-000000000001");
+    public static readonly Guid ProjectSupportServiceNowN2 = new("00000000-0000-0000-0090-000000000002");
+    public static readonly Guid ProjectObservabiliteVtom = new("00000000-0000-0000-0090-000000000003");
+    public static readonly Guid ProjectRefontePortailElm = new("00000000-0000-0000-0090-000000000004");
+    public static readonly Guid ProjectConsolidationReferentiels = new("00000000-0000-0000-0090-000000000005");
+    public static readonly Guid ProjectArchiveLegacyVtom = new("00000000-0000-0000-0090-000000000006");
+
+    // Lot 10 — Participants supplémentaires (§17.2)
+    public static readonly Guid ParticipantLefevreOnVtomRefonte = new("00000000-0000-0000-0091-000000000001");
+    public static readonly Guid ParticipantNguyenOnVtomRefonte = new("00000000-0000-0000-0091-000000000002");
+    public static readonly Guid ParticipantManceronOnPortailRun = new("00000000-0000-0000-0091-000000000003");
+    public static readonly Guid ParticipantNguyenOnPortailRun = new("00000000-0000-0000-0091-000000000004");
+    public static readonly Guid ParticipantFocquenoeyOnSupportN2 = new("00000000-0000-0000-0091-000000000005");
+    public static readonly Guid ParticipantPatelOnSupportN2 = new("00000000-0000-0000-0091-000000000006");
+    public static readonly Guid ParticipantReauOnObservabilite = new("00000000-0000-0000-0091-000000000007");
+    public static readonly Guid ParticipantDurandOnObservabilite = new("00000000-0000-0000-0091-000000000008");
+    public static readonly Guid ParticipantLefevreOnRefontePortailElm = new("00000000-0000-0000-0091-000000000009");
+    public static readonly Guid ParticipantCostaOnRefontePortailElm = new("00000000-0000-0000-0091-000000000010");
+    public static readonly Guid ParticipantCostaOnConsolidation = new("00000000-0000-0000-0091-000000000011");
+    public static readonly Guid ParticipantVermaOnConsolidation = new("00000000-0000-0000-0091-000000000012");
+    public static readonly Guid ParticipantVermaOnArchiveLegacy = new("00000000-0000-0000-0091-000000000013");
+
+    // Lot 10 — Versions de planning supplémentaires (§18.3)
+    public static readonly Guid PlanVersionVtomRefonteInitial = new("00000000-0000-0000-0092-000000000001");
+    public static readonly Guid PlanVersionPortailRunInitial = new("00000000-0000-0000-0092-000000000002");
+    public static readonly Guid PlanVersionPortailRunAjuste = new("00000000-0000-0000-0092-000000000003");
+    public static readonly Guid PlanVersionObservabiliteInitial = new("00000000-0000-0000-0092-000000000004");
+
+    // Lot 10 — Lignes hebdomadaires supplémentaires (§17.3, §18.2)
+    public static readonly Guid WeeklyPlanVtomRefonteInitialLefevreW1 = new("00000000-0000-0000-0093-000000000001");
+    public static readonly Guid WeeklyPlanVtomRefonteInitialNguyenW1 = new("00000000-0000-0000-0093-000000000002");
+    public static readonly Guid WeeklyPlanVtomRefonteInitialLefevreW2 = new("00000000-0000-0000-0093-000000000003");
+    public static readonly Guid WeeklyPlanPortailRunInitialManceronW1 = new("00000000-0000-0000-0093-000000000004");
+    public static readonly Guid WeeklyPlanPortailRunAjusteManceronW1 = new("00000000-0000-0000-0093-000000000005");
+    public static readonly Guid WeeklyPlanObservabiliteInitialReauW1 = new("00000000-0000-0000-0093-000000000006");
+    public static readonly Guid WeeklyPlanPortailRunInitialNguyenW1 = new("00000000-0000-0000-0093-000000000007");
+
+    // Lot 10 — Jalons supplémentaires (§24)
+    public static readonly Guid MilestoneVtomRefonteKickoff = new("00000000-0000-0000-0094-000000000001");
+    public static readonly Guid MilestoneVtomRefonteGoProd = new("00000000-0000-0000-0094-000000000002");
+    public static readonly Guid MilestonePortailRunKickoff = new("00000000-0000-0000-0094-000000000003");
+    public static readonly Guid MilestonePortailRunGoQual = new("00000000-0000-0000-0094-000000000004");
+    public static readonly Guid MilestoneSupportN2Kickoff = new("00000000-0000-0000-0094-000000000005");
+    public static readonly Guid MilestoneObservabiliteArchitecture = new("00000000-0000-0000-0094-000000000006");
+    public static readonly Guid MilestoneObservabiliteGoProd = new("00000000-0000-0000-0094-000000000007");
+    public static readonly Guid MilestoneRefontePortailElmKickoff = new("00000000-0000-0000-0094-000000000008");
+    public static readonly Guid MilestoneRefontePortailElmVabe = new("00000000-0000-0000-0094-000000000009");
+    public static readonly Guid MilestoneConsolidationKickoff = new("00000000-0000-0000-0094-000000000010");
+    public static readonly Guid MilestoneConsolidationGoProd = new("00000000-0000-0000-0094-000000000011");
+    public static readonly Guid MilestoneArchiveLegacyCab = new("00000000-0000-0000-0094-000000000012");
+
+    // Lot 10 — Budgets supplémentaires (§14, §17.4)
+    public static readonly Guid BudgetVtomRefonte = new("00000000-0000-0000-0095-000000000001");
+    public static readonly Guid BudgetPortailRunServiceNow = new("00000000-0000-0000-0095-000000000002");
+    public static readonly Guid BudgetRefontePortailElm = new("00000000-0000-0000-0095-000000000003");
 }

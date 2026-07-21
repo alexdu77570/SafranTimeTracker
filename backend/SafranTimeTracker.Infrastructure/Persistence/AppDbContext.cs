@@ -122,5 +122,6 @@ public class AppDbContext : DbContext
         Lot5Seed.Apply(modelBuilder);
         Lot6Seed.Apply(modelBuilder);
         Lot8Seed.Apply(modelBuilder);
+        Lot10Seed.Apply(modelBuilder);
     }
 }

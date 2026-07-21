@@ -246,14 +246,17 @@ public class ImportCompleteModeTests(SafranTimeTrackerApiFactory factory) : ICla
 {
     private const string BernardIdentifiant = "s636140";
 
+    /// <summary>Lot 10 : le seed porte désormais plusieurs budgets actifs (enrichissement §35),
+    /// pas un seul — le test vérifie que le mode Complet les clôture tous, pas seulement le premier.</summary>
     [Fact]
-    public async Task Execute_BudgetsComplet_WithEmptyFile_ClosesTheSoleSeededActiveBudget()
+    public async Task Execute_BudgetsComplet_WithEmptyFile_ClosesAllSeededActiveBudgets()
     {
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add(DemoCurrentUserProvider.DemoUserHeaderName, BernardIdentifiant);
 
         var budgets = await client.GetFromJsonAsync<PagedResult<BudgetDto>>("/api/v1/budgets?pageSize=200");
-        var seededBudget = budgets!.Items.Should().ContainSingle(b => b.Status == BudgetStatus.Actif).Subject;
+        var seededActiveBudgets = budgets!.Items.Where(b => b.Status == BudgetStatus.Actif).ToList();
+        seededActiveBudgets.Should().NotBeEmpty();
 
         var form = new MultipartFormDataContent
         {
@@ -268,9 +271,12 @@ public class ImportCompleteModeTests(SafranTimeTrackerApiFactory factory) : ICla
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var batch = await response.Content.ReadFromJsonAsync<ImportBatchDto>();
-        batch!.DeleteCount.Should().Be(1);
+        batch!.DeleteCount.Should().Be(seededActiveBudgets.Count);
 
-        var reloaded = await client.GetFromJsonAsync<BudgetDto>($"/api/v1/budgets/{seededBudget.Id}");
-        reloaded!.Status.Should().Be(BudgetStatus.Cloture);
+        foreach (var seededBudget in seededActiveBudgets)
+        {
+            var reloaded = await client.GetFromJsonAsync<BudgetDto>($"/api/v1/budgets/{seededBudget.Id}");
+            reloaded!.Status.Should().Be(BudgetStatus.Cloture);
+        }
     }
 }

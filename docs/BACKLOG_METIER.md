@@ -169,6 +169,51 @@ Attributs métier attendus pour une ligne de suivi budgétaire :
 
 ---
 
+## 13. Projets — décisions actées à l'ouverture du Lot 10
+
+### Filtres et vue transverse (backend)
+
+✅ **Implémenté.**
+
+- `GET /api/v1/projects` étendu de 5 filtres optionnels (§16.1) : équipe, niveau de risque, période, alerte planning, alerte budget — évolution ponctuelle sur une action déjà existante, aucune nouvelle entité.
+- `GET /api/v1/project-planning` créé (§18.2) : vue transverse "Planning projet" agrégée entièrement côté serveur (une ligne par Projet/Ressource/Semaine), en remplacement d'une agrégation par N appels frontend — décision explicitement validée par l'utilisateur pour rester compatible avec une pagination/un tri serveur corrects.
+- `GET /api/v1/projects/{id}/plan-versions/{versionId}/weekly-plans` ajouté (§18.3) : lecture des lignes hebdomadaires, jusqu'ici en écriture seule.
+- `GET /api/v1/project-statuses` ajouté (§16.2, §30) : voir §14 ci-dessous.
+
+### « Avancement » (%)
+
+🔎 **À clarifier.** Le §16.2 liste l'avancement comme champ du projet, mais aucune formule n'est définie ailleurs dans le cahier des charges (le §29.5 ne couvre que charge/planning, le §29.6 que surcharge/sous-charge). **Décision actée à l'ouverture du Lot 10** : ne jamais l'inventer, ni côté frontend ni côté serveur — affiché « — » sur la fiche projet tant qu'aucune formule n'est validée avec le Product Owner. Une future validation devra préciser si l'avancement se déduit de la charge consommée/planifiée, des jalons franchis, ou d'une saisie manuelle dédiée.
+
+### « Commandes liées »
+
+✅ **Implémenté (dérivé, pas un champ stocké).** Le §16.2 liste "commandes liées" comme champ du projet ; `Project` ne porte aucune relation directe vers `Order`. **Décision actée à l'ouverture du Lot 10** : dérivé à l'affichage sur la fiche détail, en combinant les commandes déjà visibles via `Budget.OrderId` (`GET /budgets?projectId=`) et `ProjectParticipant.DefaultOrderId` — composition d'affichage sur des données déjà exposées, pas une nouvelle règle métier ni un nouveau champ. Pas de colonne dédiée sur la vue liste (calcul non trivial à l'échelle d'une liste paginée).
+
+### Gantt
+
+🕓 **Non retenu pour ce lot, reporté au backlog.** Un besoin de Gantt a été évoqué en dehors du cahier des charges et de `docs/ROADMAP.md`, qui ne nomment que `WeeklyPlanningGrid`/`Timeline` pour le Lot 10 (§32.2). **Décision actée à l'ouverture du Lot 10** : ne pas construire de Gantt avancé (dépendances visuelles entre tâches, glisser-déposer) ce lot — seule une `Timeline` simple (axe chronologique, sans dépendance visuelle) a été livrée pour les jalons. À valider explicitement avec le Product Owner avant tout lot futur qui l'implémenterait.
+
+### `ProjectParticipant` — pas d'action de modification
+
+✅ **Implémenté (statu quo assumé).** Le §17.2 liste des champs à afficher pour un participant, pas une action "modifier" explicite (contrairement à "créer"/formulaire de retrait déjà couverts). **Décision actée à l'ouverture du Lot 10** : ne pas ajouter d'endpoint `PUT` ni d'écran de modification — un changement de rôle/capacité/période passe par un retrait (désactivation) suivi d'un nouvel ajout. À reconsidérer si l'usage réel démontre que ce n'est pas suffisant.
+
+### Coût et reste à faire par participant
+
+🔎 **À clarifier (documenté, non résolu).** Le §17.2 liste "coût réel"/"coût contractuel"/"différentiel"/"reste à faire" comme champs du participant ; seul le TJM applicable est calculé côté backend (`ProjectParticipantFinancialSummaryDto`), jamais ces montants. **Décision actée à l'ouverture du Lot 10** : le temps consommé par participant affiché à l'écran est une agrégation frontend sur les saisies de temps déjà filtrées par permission (même principe que la totalisation automatique du Lot 9, §10 ci-dessus) — pas une nouvelle règle serveur. Le "reste à faire" en découle (capacité prévue − consommé), mais aucun coût réel/contractuel/différentiel par participant n'est calculé : cela suppose une évolution du backend (agrégation `TimeEntryFinancialSnapshot` groupée par ressource ET projet), non construite ce lot.
+
+## 14. `ProjectStatus` — endpoint `GET` manquant, corrigé
+
+✅ **Implémenté (Lot 10, Décision 10).** `ProjectStatus` est un référentiel (entité, pas un enum) au même titre que `CompanyType`/`Role` (§8 ci-dessus, écart constaté au Lot 8) : jamais d'endpoint de lecture, seules les valeurs seedées existaient. **Deux options ont été soumises à l'ouverture du Lot 10** : (a) ajouter `GET /api/v1/project-statuses` (contrôleur minimal, même forme qu'`ActivityTypesController`) ; (b) contourner comme `CompanyType`/`Role` via `knownReferentials.ts`. **Option (a) retenue explicitement par l'utilisateur** : le lot touchant déjà le backend pour d'autres raisons (§13 ci-dessus), il n'était pas justifié d'accumuler un second contournement. `CompanyType`/`Role` restent en revanche non résolus (hors périmètre de ce lot) — de même que l'écart apparenté constaté sur `OperationalRole` (§17.2, jamais discuté avec l'utilisateur, donc contourné via `knownReferentials.ts` plutôt que traité comme `ProjectStatus`).
+
+## Exception de gouvernance — Lot 10
+
+> **Rôle de cette section** : comme aux Lots 8 et 9, documenter explicitement pourquoi des évolutions backend ont été autorisées pendant un lot que `docs/ROADMAP.md` décrit comme construit sur l'API déjà livrée.
+
+**Constat.** Quatre évolutions backend ont été identifiées et validées individuellement avec l'utilisateur à l'ouverture du Lot 10, avant toute ligne de code : l'extension des filtres de `GET /api/v1/projects` (§13 ci-dessus), la création de `GET /api/v1/project-planning` (§13), la lecture des lignes hebdomadaires (§13), et l'ajout de `GET /api/v1/project-statuses` (§14).
+
+**Nature de l'exception.** Plus large que celle du Lot 9 (extension de filtres + une action) mais toujours strictement bornée : `GET /api/v1/project-planning` est le seul nouvel endpoint d'agrégation du lot, et il ne fait que composer des données/formules déjà existantes (`ProjectPlanningCalculator`, Lot 4 ; `AvailabilityService`, Lot 3) — aucune nouvelle règle de calcul, aucune nouvelle entité, aucune migration de schéma (seul le seed de démonstration a nécessité une migration de données, §13/IMPLEMENTATION_STATUS.md).
+
+**Écarts explicitement non corrigés.** L'« avancement » (%, §13), le Gantt (§13), l'`Update` de `ProjectParticipant` (§13), les coûts par participant (§13) et l'endpoint `GET` d'`OperationalRole` (§14) ont tous été identifiés dans la même analyse d'ouverture de lot mais volontairement laissés en l'état, chacun pour un motif documenté séparément ci-dessus — décision de ne pas étendre le modèle ou le périmètre au-delà du strict nécessaire (`CLAUDE.md` §5).
+
 ## Exception de gouvernance — Lot 9
 
 > **Rôle de cette section** : comme au Lot 8, documenter explicitement pourquoi deux évolutions backend ont été autorisées pendant un lot que `docs/ROADMAP.md` décrit comme « frontend only ».

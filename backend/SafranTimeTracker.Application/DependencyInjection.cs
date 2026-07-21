@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<HolidayCalendarService>();
         services.AddScoped<AvailabilityService>();
         services.AddScoped<ProjectService>();
+        services.AddScoped<ProjectStatusService>();
         services.AddScoped<ProjectParticipantService>();
         services.AddScoped<ProjectPlanningService>();
         services.AddScoped<MilestoneTypeService>();

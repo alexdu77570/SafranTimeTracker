@@ -119,6 +119,8 @@ Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 
 ## Lot 10 — Projets et Planning
 
+> **Précision actée à la clôture du Lot 10** : périmètre livré tel que décrit ci-dessous. Deux points appellent une lecture attentive : (1) « alertes surcharge/sous-charge » n'est livré que pour la surcharge (comparaison directe charge/capacité) — la sous-charge exigerait un seuil configurable absent de `Settings`, non inventé (`CLAUDE.md` §7) ; (2) la validation visuelle en navigateur (captures Playwright/Chromium, `CLAUDE.md` §20) n'a pas pu être réalisée cette session, l'accès à l'outil de navigation ayant été explicitement décliné par l'utilisateur — remplacée par une vérification directe des endpoints et du frontend servi (détail : `docs/IMPLEMENTATION_STATUS.md`). Le Gantt évoqué en dehors de ce document n'a jamais fait partie du périmètre du lot (seuls `WeeklyPlanningGrid`/`Timeline` sont nommés ci-dessous) et reste au backlog.
+
 - Projets : vue liste (filtres multiples) et détail à 7 onglets (Synthèse, Participants, Planning, Budget, Temps, Jalons, Références liées).
 - Planning projet : vue transverse tous projets, comparaison initial/ajusté/réalisé, alertes surcharge/sous-charge.
 - Composants `WeeklyPlanningGrid`, `Timeline`.

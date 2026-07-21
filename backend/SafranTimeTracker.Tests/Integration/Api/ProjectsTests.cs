@@ -232,6 +232,230 @@ public class ProjectsTests(SafranTimeTrackerApiFactory factory) : IClassFixture<
         return result!.Items.First(p => p.Code == code).Id;
     }
 
+    private static async Task<ProjectDto> GetProjectByCodeAsync(HttpClient client, string code)
+    {
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?pageSize=100");
+        return result!.Items.First(p => p.Code == code);
+    }
+
+    private static async Task<Guid> GetResourceIdAsync(HttpClient client, string nom)
+    {
+        var result = await client.GetFromJsonAsync<PagedResult<ResourceDto>>("/api/v1/resources?pageSize=100");
+        return result!.Items.First(r => r.Nom == nom).Id;
+    }
+}
+
+/// <summary>
+/// Couvre les évolutions backend du Lot 10 (§16.1 : filtres de liste étendus ; §18.2 : vue transverse
+/// "Planning projet" ; lecture des lignes hebdomadaires) sur le jeu de démonstration enrichi
+/// (Lot10Seed, §35). Classe séparée de <see cref="ProjectsTests"/> pour ne pas mélanger les
+/// assertions du Lot 4 (jeu minimal) avec celles portant sur le jeu enrichi de ce lot.
+/// </summary>
+public class ProjectPlanningLot10Tests(SafranTimeTrackerApiFactory factory) : IClassFixture<SafranTimeTrackerApiFactory>
+{
+    private const string BernardIdentifiant = "s636140"; // FINANCIAL_DATA_VIEW (Lot1Seed)
+    private const string ProjectElmCode = "PRJ-ELM-2026";
+
+    private HttpClient CreateClient(string? identifiant = null)
+    {
+        var client = factory.CreateClient();
+        if (identifiant is not null)
+        {
+            client.DefaultRequestHeaders.Add(DemoCurrentUserProvider.DemoUserHeaderName, identifiant);
+        }
+        return client;
+    }
+
+    [Fact]
+    public async Task GetProjectStatuses_ReturnsSeededStatusesOrderedByOrdre()
+    {
+        var client = CreateClient();
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectStatusDto>>("/api/v1/project-statuses?pageSize=100");
+
+        result!.Items.Should().HaveCount(4);
+        result.Items.Select(s => s.Code).Should().ContainInOrder("ACTIF", "SUSPENDU", "TERMINE", "ARCHIVE");
+    }
+
+    [Fact]
+    public async Task GetProjects_ReturnsAtLeastEightSeededProjects()
+    {
+        // §35 : jeu de démonstration minimal de 8 projets (Lot4Seed : 2, Lot10Seed : 6 supplémentaires).
+        var client = CreateClient(BernardIdentifiant);
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?pageSize=100");
+
+        result!.TotalCount.Should().BeGreaterThanOrEqualTo(8);
+    }
+
+    [Fact]
+    public async Task GetProjects_FilteredByTeamId_ReturnsOnlyMatchingProjects()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var elm = await GetProjectByCodeAsync(client, ProjectElmCode); // TeamProjetsA (Lot4Seed)
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>($"/api/v1/projects?teamId={elm.TeamId}&pageSize=100");
+
+        result!.Items.Should().NotBeEmpty();
+        result.Items.Should().OnlyContain(p => p.TeamId == elm.TeamId);
+    }
+
+    [Fact]
+    public async Task GetProjects_FilteredByNiveauRisque_ReturnsOnlyMatchingProjects()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?niveauRisque=Eleve&pageSize=100");
+
+        result!.Items.Should().Contain(p => p.Code == "PRJ-SNOW-2025"); // Portail RUN ServiceNow (Lot10Seed)
+        result.Items.Should().OnlyContain(p => p.NiveauRisque == ProjectRiskLevel.Eleve);
+    }
+
+    [Fact]
+    public async Task GetProjects_FilteredByPeriode_ExcludesProjectsOutsideRange()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        // Archive Legacy VTOM (2023, Lot10Seed) est hors de cette fenêtre 2024-2026.
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>(
+            "/api/v1/projects?from=2024-01-01&to=2026-12-31&pageSize=100");
+
+        result!.Items.Should().NotContain(p => p.Code == "PRJ-VTOM-LEGACY-2023");
+    }
+
+    [Fact]
+    public async Task GetProjects_FilteredByAlertePlanning_ReturnsOnlyProjectsWithAdjustedDateAfterInitial()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var withAlert = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?alertePlanning=true&pageSize=100");
+
+        withAlert!.Items.Should().Contain(p => p.Code == ProjectElmCode); // DateFinAjustee > DateFinPrevueInitiale (Lot4Seed)
+        withAlert.Items.Should().Contain(p => p.Code == "PRJ-VTOM-OBS-2024"); // Observabilité VTOM (Lot10Seed)
+        withAlert.Items.Should().OnlyContain(p => p.DateFinAjustee != null && p.DateFinAjustee > p.DateFinPrevueInitiale);
+
+        var withoutAlert = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?alertePlanning=false&pageSize=100");
+        withoutAlert!.Items.Should().NotContain(p => p.Code == ProjectElmCode);
+    }
+
+    [Fact]
+    public async Task GetProjects_FilteredByAlerteBudget_WithoutFinancialPermission_ReturnsEmpty()
+    {
+        // RisqueBudget dépend de données financières : sans FINANCIAL_DATA_VIEW, le filtre ne peut
+        // honnêtement retenir aucun projet plutôt que d'ignorer silencieusement le filtre demandé.
+        var client = CreateClient();
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?alerteBudget=true&pageSize=100");
+
+        result!.Items.Should().BeEmpty();
+        result.TotalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetProjects_FilteredByAlerteBudget_WithFinancialPermission_ReflectsPlanningSynthesisRisqueBudget()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        // Migration ELM a RisqueBudget = false (atterrissage ~2890 << budget ajusté 180000, cf.
+        // ProjectsTests.GetPlanningSynthesis_ForSeededProject_ReturnsExpectedChargeMetrics) : le
+        // filtre alerteBudget=false doit donc le retenir, alerteBudget=true jamais.
+        var withoutAlert = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?alerteBudget=false&pageSize=100");
+        withoutAlert!.Items.Should().Contain(p => p.Code == ProjectElmCode);
+
+        var withAlert = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?alerteBudget=true&pageSize=100");
+        withAlert!.Items.Should().NotContain(p => p.Code == ProjectElmCode);
+    }
+
+    [Fact]
+    public async Task GetWeeklyPlans_ForSeededInitialVersion_ReturnsSeededLines()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projectId = await GetProjectIdAsync(client, ProjectElmCode);
+        var versions = await client.GetFromJsonAsync<PagedResult<ProjectPlanVersionDto>>(
+            $"/api/v1/projects/{projectId}/plan-versions?pageSize=100");
+        var initialVersion = versions!.Items.Single(v => v.Type == ProjectPlanVersionType.Initial);
+
+        var lines = await client.GetFromJsonAsync<List<ProjectWeeklyPlanDto>>(
+            $"/api/v1/projects/{projectId}/plan-versions/{initialVersion.Id}/weekly-plans");
+
+        lines.Should().HaveCount(2); // Georges 20h + Legrand 10h, semaine du 2024-06-10 (Lot4Seed)
+        lines!.Sum(l => l.ChargePlanifieeHeures).Should().Be(30.00m);
+    }
+
+    [Fact]
+    public async Task GetProjectPlanningOverview_FilteredByProjectId_ReturnsWeeklyRowsForThatProjectOnly()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projectId = await GetProjectIdAsync(client, ProjectElmCode);
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>(
+            $"/api/v1/project-planning?projectId={projectId}&pageSize=100");
+
+        result!.Items.Should().NotBeEmpty();
+        result.Items.Should().OnlyContain(r => r.ProjectId == projectId);
+        result.Items.Should().Contain(r => r.ChargePlanifieeAjustee == 24.00m); // Georges, semaine du 2024-06-10 (Lot4Seed)
+    }
+
+    [Fact]
+    public async Task GetProjectPlanningOverview_ComputesChargeRealiseeFromTimeEntriesNotManualEntry()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projectId = await GetProjectIdAsync(client, ProjectElmCode);
+        var legrandId = await GetResourceIdAsync(client, "LEGRAND");
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>(
+            $"/api/v1/project-planning?projectId={projectId}&resourceId={legrandId}&pageSize=100");
+
+        // TimeEntryLegrandProjet (Lot3Seed, 7.75h, 2024-06-10) : le "réalisé" provient exclusivement
+        // de cette saisie de temps, jamais d'une troisième version saisie manuellement (§18.3).
+        var row = result!.Items.Should().ContainSingle().Subject;
+        row.ChargeRealisee.Should().Be(7.75m);
+        row.ChargePlanifieeAjustee.Should().Be(8.00m); // Lot4Seed
+        row.EcartPrevuRealise.Should().Be(7.75m - 8.00m);
+    }
+
+    [Fact]
+    public async Task GetProjectPlanningOverview_FilteredByResourceId_ReturnsRowsAcrossMultipleProjects()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var nguyenId = await GetResourceIdAsync(client, "NGUYEN"); // participant planifié sur 2 projets (Lot10Seed)
+
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>(
+            $"/api/v1/project-planning?resourceId={nguyenId}&pageSize=100");
+
+        result!.Items.Should().OnlyContain(r => r.ResourceId == nguyenId);
+        result.Items.Select(r => r.ProjectId).Distinct().Should().HaveCountGreaterThan(1);
+    }
+
+    [Fact]
+    public async Task GetProjectPlanningOverview_FilteredBySurcharge_PartitionsRowsWithoutLoss()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var all = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>("/api/v1/project-planning?pageSize=200");
+        var surcharged = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>("/api/v1/project-planning?surcharge=true&pageSize=200");
+        var notSurcharged = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>("/api/v1/project-planning?surcharge=false&pageSize=200");
+
+        all!.TotalCount.Should().Be(surcharged!.TotalCount + notSurcharged!.TotalCount);
+        // .All() plutôt que FluentAssertions .OnlyContain() : vrai vacuement si l'un des deux
+        // sous-ensembles est vide (aucune surcharge dans les données de démonstration n'est pas
+        // une anomalie — seule l'absence de perte lors du partitionnement est vérifiée ci-dessus).
+        surcharged!.Items.All(r => r.Surcharge).Should().BeTrue();
+        notSurcharged!.Items.All(r => !r.Surcharge).Should().BeTrue();
+    }
+
+    private static async Task<Guid> GetProjectIdAsync(HttpClient client, string code)
+    {
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?pageSize=100");
+        return result!.Items.First(p => p.Code == code).Id;
+    }
+
+    private static async Task<ProjectDto> GetProjectByCodeAsync(HttpClient client, string code)
+    {
+        var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?pageSize=100");
+        return result!.Items.First(p => p.Code == code);
+    }
+
     private static async Task<Guid> GetResourceIdAsync(HttpClient client, string nom)
     {
         var result = await client.GetFromJsonAsync<PagedResult<ResourceDto>>("/api/v1/resources?pageSize=100");
