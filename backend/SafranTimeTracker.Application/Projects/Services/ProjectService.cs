@@ -24,6 +24,7 @@ public class ProjectService(
     IRepository<Project> repository,
     IReadRepository<ProjectStatus> statusRepository,
     IReadRepository<TimeEntryFinancialSnapshot> snapshotRepository,
+    ProjectPlanningService planningService,
     AuditService auditService,
     ICurrentUser currentUser)
 {
@@ -32,7 +33,9 @@ public class ProjectService(
 
     public async Task<PagedResult<ProjectDto>> GetListAsync(
         PaginationQuery pagination, Guid? statusId, Guid? applicationId, Guid? piloteId,
-        Guid? departmentId, Guid? serviceId, CancellationToken cancellationToken = default)
+        Guid? departmentId, Guid? serviceId, Guid? teamId, ProjectRiskLevel? niveauRisque,
+        DateOnly? from, DateOnly? to, bool? alertePlanning, bool? alerteBudget,
+        CancellationToken cancellationToken = default)
     {
         var query = repository.Query();
         if (statusId is not null) query = query.Where(p => p.StatusId == statusId);
@@ -40,22 +43,73 @@ public class ProjectService(
         if (piloteId is not null) query = query.Where(p => p.PiloteId == piloteId);
         if (departmentId is not null) query = query.Where(p => p.DepartmentId == departmentId);
         if (serviceId is not null) query = query.Where(p => p.ServiceId == serviceId);
-
-        var totalCount = await query.CountAsync(cancellationToken);
-        var entities = await query
-            .OrderBy(p => p.Nom)
-            .Skip((pagination.Page - 1) * pagination.PageSize)
-            .Take(pagination.PageSize)
-            .ToListAsync(cancellationToken);
-
-        var hasFinancialAccess = currentUser.HasPermission(PermissionCodes.FinancialDataView);
-        var items = new List<ProjectDto>(entities.Count);
-        foreach (var entity in entities)
+        if (teamId is not null) query = query.Where(p => p.TeamId == teamId);
+        if (niveauRisque is not null) query = query.Where(p => p.NiveauRisque == niveauRisque);
+        // "Période" (§16.1) : projets dont l'intervalle [DateDebut, date de fin de référence] intersecte [from, to].
+        if (from is not null) query = query.Where(p => (p.DateFinAjustee ?? p.DateFinPrevueInitiale) >= from);
+        if (to is not null) query = query.Where(p => p.DateDebut <= to);
+        if (alertePlanning is not null)
         {
-            items.Add(await ToDtoAsync(entity, hasFinancialAccess, cancellationToken));
+            // Risque planning (§29.5) = date ajustée postérieure à la date initiale : traduisible
+            // directement en SQL, contrairement à "alerte budget" ci-dessous (ProjectPlanningCalculator
+            // réutilisé tel quel, même prédicat que ProjectPlanningService.GetSynthesisAsync).
+            query = alertePlanning.Value
+                ? query.Where(p => p.DateFinAjustee != null && p.DateFinAjustee > p.DateFinPrevueInitiale)
+                : query.Where(p => p.DateFinAjustee == null || p.DateFinAjustee <= p.DateFinPrevueInitiale);
         }
 
-        return new PagedResult<ProjectDto> { Items = items, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = totalCount };
+        var hasFinancialAccess = currentUser.HasPermission(PermissionCodes.FinancialDataView);
+
+        if (alerteBudget is null)
+        {
+            var totalCount = await query.CountAsync(cancellationToken);
+            var entities = await query
+                .OrderBy(p => p.Nom)
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToListAsync(cancellationToken);
+
+            var items = new List<ProjectDto>(entities.Count);
+            foreach (var entity in entities)
+            {
+                items.Add(await ToDtoAsync(entity, hasFinancialAccess, cancellationToken));
+            }
+
+            return new PagedResult<ProjectDto> { Items = items, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = totalCount };
+        }
+
+        // "Alerte budget" (§16.1) dépend de l'atterrissage financier (ProjectPlanningCalculator, §29.5,
+        // réutilisé sans duplication via ProjectPlanningService.GetSynthesisAsync) : non traduisible en
+        // prédicat SQL (agrégation planning + snapshots financiers), donc matérialisation du candidat
+        // filtré puis pagination en mémoire, sur le total réellement filtré (pas seulement la page
+        // courante) — jeu de projets de taille modeste (données de démonstration).
+        if (!hasFinancialAccess)
+        {
+            // RisqueBudget est toujours absent sans FINANCIAL_DATA_VIEW (même principe que
+            // FinancialSummary, CLAUDE.md §13) : le filtre ne peut honnêtement retenir aucun projet
+            // plutôt que d'ignorer silencieusement le filtre demandé.
+            return new PagedResult<ProjectDto> { Items = [], Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = 0 };
+        }
+
+        var candidates = await query.OrderBy(p => p.Nom).ToListAsync(cancellationToken);
+        var matched = new List<Project>(candidates.Count);
+        foreach (var candidate in candidates)
+        {
+            var synthesis = await planningService.GetSynthesisAsync(candidate.Id, cancellationToken);
+            if (synthesis?.RisqueBudget == alerteBudget.Value)
+            {
+                matched.Add(candidate);
+            }
+        }
+
+        var page = matched.Skip((pagination.Page - 1) * pagination.PageSize).Take(pagination.PageSize).ToList();
+        var pageItems = new List<ProjectDto>(page.Count);
+        foreach (var entity in page)
+        {
+            pageItems.Add(await ToDtoAsync(entity, hasFinancialAccess, cancellationToken));
+        }
+
+        return new PagedResult<ProjectDto> { Items = pageItems, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = matched.Count };
     }
 
     public async Task<ProjectDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -171,11 +225,4 @@ public class ProjectService(
         };
     }
 
-    /// <summary>Réutilisé par ProjectPlanningService pour le risque budget (§29.5) — même filtre
-    /// que BuildFinancialSummaryAsync, exposé séparément pour éviter de dupliquer la requête
-    /// d'agrégation dans un autre service.</summary>
-    public async Task<decimal> GetCoutReelConsommeAsync(Guid projectId, CancellationToken cancellationToken = default) =>
-        await snapshotRepository.Query()
-            .Where(s => s.TimeEntry.ProjectId == projectId)
-            .SumAsync(s => s.CoutReelCalcule ?? 0, cancellationToken);
 }

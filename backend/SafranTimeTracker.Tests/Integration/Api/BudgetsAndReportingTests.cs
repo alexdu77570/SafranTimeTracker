@@ -259,12 +259,15 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         var withoutPermission = CreateClient();
 
         var withFinancial = await withPermission.GetFromJsonAsync<DashboardDto>("/api/v1/reporting/dashboard");
-        withFinancial!.Operational.ProjetsActifs.Should().Be(2); // Migration ELM + Refonte VTOM (Lot4Seed)
+        // Migration ELM + Refonte VTOM (Lot4Seed) + Portail RUN ServiceNow + Support ServiceNow N2 +
+        // Refonte Portail ELM (Lot10Seed, enrichissement §35) — Observabilité VTOM est Suspendu,
+        // Consolidation Référentiels Terminé, Archive Legacy VTOM Archivé : les 3 ne comptent pas ici.
+        withFinancial!.Operational.ProjetsActifs.Should().Be(5);
         withFinancial.Financial.Should().NotBeNull();
 
         var withoutFinancial = await withoutPermission.GetFromJsonAsync<DashboardDto>("/api/v1/reporting/dashboard");
         withoutFinancial!.Financial.Should().BeNull();
-        withoutFinancial.Operational.ProjetsActifs.Should().Be(2);
+        withoutFinancial.Operational.ProjetsActifs.Should().Be(5);
     }
 
     [Fact]

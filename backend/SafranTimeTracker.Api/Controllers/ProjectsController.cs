@@ -4,6 +4,7 @@ using SafranTimeTracker.Api.Extensions;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Projects.Dtos;
 using SafranTimeTracker.Application.Projects.Services;
+using SafranTimeTracker.Domain.Projects;
 
 namespace SafranTimeTracker.Api.Controllers;
 
@@ -21,9 +22,14 @@ public class ProjectsController(
     public async Task<ActionResult<PagedResult<ProjectDto>>> GetList(
         [FromQuery] PaginationQuery pagination, [FromQuery] Guid? statusId, [FromQuery] Guid? applicationId,
         [FromQuery] Guid? piloteId, [FromQuery] Guid? departmentId, [FromQuery] Guid? serviceId,
+        [FromQuery] Guid? teamId, [FromQuery] ProjectRiskLevel? niveauRisque,
+        [FromQuery] DateOnly? from, [FromQuery] DateOnly? to,
+        [FromQuery] bool? alertePlanning, [FromQuery] bool? alerteBudget,
         CancellationToken cancellationToken)
     {
-        var result = await service.GetListAsync(pagination, statusId, applicationId, piloteId, departmentId, serviceId, cancellationToken);
+        var result = await service.GetListAsync(
+            pagination, statusId, applicationId, piloteId, departmentId, serviceId,
+            teamId, niveauRisque, from, to, alertePlanning, alerteBudget, cancellationToken);
         return Ok(result);
     }
 
