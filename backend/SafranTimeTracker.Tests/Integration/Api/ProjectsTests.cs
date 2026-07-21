@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using SafranTimeTracker.Api.Security;
+using SafranTimeTracker.Application.Applications.Dtos;
 using SafranTimeTracker.Application.Common.Dtos;
 using SafranTimeTracker.Application.Milestones.Dtos;
 using SafranTimeTracker.Application.Projects.Dtos;
@@ -183,6 +184,23 @@ public class ProjectsTests(SafranTimeTrackerApiFactory factory) : IClassFixture<
         result.Items.Should().Contain(m => m.Nom == "GO PROD Migration ELM");
         result.Items.Should().NotContain(m => m.Nom == "Kick-off Migration ELM"); // Terminé -> jamais en retard
         result.Items.Should().NotContain(m => m.Nom == "CAB Migration ELM"); // date future
+    }
+
+    /// <summary>Lot 11, §24.3 "filtre application" : paramètre optionnel ajouté à une action déjà
+    /// existante (même précédent que les filtres étendus des Lots 9/10), aucune nouvelle entité.</summary>
+    [Fact]
+    public async Task GetMilestones_FilteredByApplicationId_ReturnsOnlyMatchingApplication()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var applications = await client.GetFromJsonAsync<PagedResult<ApplicationReferenceDto>>(
+            "/api/v1/applications?pageSize=100");
+        var appId = applications!.Items.Single(a => a.Nom == "VTOM").Id;
+
+        var result = await client.GetFromJsonAsync<PagedResult<MilestoneDto>>(
+            $"/api/v1/milestones?applicationId={appId}&pageSize=100");
+
+        result!.Items.Should().HaveCount(5);
+        result.Items.Should().OnlyContain(m => m.ApplicationId == appId);
     }
 
     [Fact]

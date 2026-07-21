@@ -86,6 +86,19 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         (await reopened.Content.ReadFromJsonAsync<OrderDto>())!.StatusId.Should().Be(activeStatusId);
     }
 
+    /// <summary>Lot 11, décision 2 : même écart qu'CompanyType/Role (Lot 8), corrigé ici comme
+    /// ProjectStatus (Lot 10) plutôt que contourné via knownReferentials.ts.</summary>
+    [Fact]
+    public async Task GetOrderStatuses_ReturnsSeededStatusesOrderedByOrdre()
+    {
+        var client = CreateClient();
+
+        var result = await client.GetFromJsonAsync<PagedResult<OrderStatusDto>>("/api/v1/order-statuses?pageSize=100");
+
+        result!.Items.Should().HaveCount(5);
+        result.Items.Select(s => s.Code).Should().ContainInOrder("BROUILLON", "ACTIVE", "SUSPENDUE", "CONSOMMEE", "CLOTUREE");
+    }
+
     [Fact]
     public async Task PostOrderExtension_IncreasesAdjustedBudgetAndEndDate_AndIsBlockedOnClosedOrder()
     {
@@ -278,6 +291,34 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         var response = await client.GetAsync("/api/v1/reporting/financial");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    /// <summary>Lot 11, décision 3 : ventilation mensuelle (§14.3 "consommation mensuelle"), calculée
+    /// côté backend à partir des mêmes TimeEntryFinancialSnapshot que DifferentielParProjet/ParCommande/
+    /// ParSociete/ParRessource (aucune duplication de logique financière).</summary>
+    [Fact]
+    public async Task GetFinancialReport_ReturnsMonthlyConsumption_ForPeriodContainingSnapshot()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var resourceId = await GetResourceIdAsync(client, "BERNARD"); // société interne, TJM 650€ (Lot2Seed)
+        var activityTypeId = await GetActivityTypeIdAsync(client, "INCIDENT");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var created = await client.PostAsJsonAsync("/api/v1/time-entries", new TimeEntryCreateRequest
+        {
+            ResourceId = resourceId,
+            ActivityTypeId = activityTypeId,
+            Date = today, // le délai de modification (§19.4) bloque toute date trop ancienne
+            DureeHeures = 7.75m, // = 1 jour à 7.75h/jour (HeuresParJour, Lot1Seed) -> coutReel = 650,00 €
+            Reference = "INC0009998"
+        });
+        created.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var report = await client.GetFromJsonAsync<FinancialReportDto>("/api/v1/reporting/financial");
+
+        var currentMonth = report!.ConsommationMensuelle.Should().ContainSingle(m => m.Annee == today.Year && m.Mois == today.Month).Subject;
+        currentMonth.CoutReel.Should().BeGreaterOrEqualTo(650.00m);
+        report.ConsommationMensuelle.Select(m => (m.Annee, m.Mois)).Should().OnlyHaveUniqueItems();
     }
 
     [Fact]

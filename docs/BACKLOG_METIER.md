@@ -43,6 +43,8 @@ Demande d'achat → Commande → Réceptions partielles → Clôture
 
 🕓 **Validé, non implémenté.** Les champs ci-dessous décrivent un besoin métier plus détaillé que le modèle de pilotage budgétaire actuel (simple enveloppe consommé/reste/atterrissage, sans détail par ligne de commande/société/intervenant). Ce besoin reste à réconcilier avec le modèle existant lors d'un lot dédié — cette section ne préjuge pas de la façon dont il sera implémenté (nouvelle entité, extension du modèle Commande, ou vue agrégée).
 
+**Décision actée à l'ouverture du Lot 11 (décision 1)** : le Lot 11 (écran Budgets) reste explicitement sur le modèle `Budget`/`BudgetVersion` existant (conforme au §14.1/§14.2 du cahier des charges) — le modèle détaillé par ligne décrit ci-dessous n'a **pas** été construit ce lot, ni anticipé sous aucune forme (aucun champ, aucune entité). Cette section reste 🕓, en attente d'un futur lot explicitement dédié à cette réconciliation.
+
 Attributs métier attendus pour une ligne de suivi budgétaire :
 
 - Budget annuel (ex. « Métier 2025 », « Métier 2026 », ...) — un budget est rattaché à un exercice, pas seulement à une période libre.
@@ -249,6 +251,36 @@ Attributs métier attendus pour une ligne de suivi budgétaire :
 - Les seuls points d'intégration avec le modèle existant sont des **clés étrangères optionnelles** (`Project.ProjectTypeId`, `Project.ClientId`) ou des **tables de jointure** (`ApplicationTechnology`, `ResourceTechnology`) : leur absence de valeur ne bloque et ne modifie aucun comportement préexistant.
 
 **Documentation volontaire de l'exception.** Cette section est ajoutée **volontairement**, en plus des sections 5 à 9, pour qu'un futur lot ou une future session ne confonde pas cette exception ponctuelle et validée avec une dérive de périmètre généralisée : la règle « aucune évolution backend » reste la règle par défaut de la phase Lots 7-12 (`docs/ROADMAP.md`) pour tout ce qui n'est pas explicitement listé ici. Toute nouvelle demande d'évolution backend dans un lot « frontend only » doit suivre le même processus — validation explicite avec l'utilisateur, consignation ici *avant* implémentation — et non se prévaloir de ce précédent sans validation propre.
+
+---
+
+## 15. Commandes, Budgets et Jalons — décisions actées à l'ouverture du Lot 11
+
+### Décision 1 — Modèle Budget
+
+Voir §2 ci-dessus : le modèle détaillé par ligne budgétaire (société prestataire, intervenant, DDA, PR, code SAP, numéro de commande, montant réceptionné ventilé par mois) reste hors périmètre du Lot 11, explicitement reporté à un futur lot dédié.
+
+### Décision 2 — `OrderStatus` — endpoint `GET` manquant, corrigé
+
+✅ **Implémenté.** `OrderStatus` (5 statuts de commande, §13.2) avait la même lacune que `CompanyType`/`Role` (Lot 8, contournés) et que `ProjectStatus` avant sa correction (Lot 10, Décision 10) : jamais d'endpoint de lecture, seules les valeurs seedées existaient. **Option retenue explicitement par l'utilisateur** : un vrai endpoint (`GET /api/v1/order-statuses`, réplique exacte du pattern `ProjectStatusesController`) plutôt qu'un contournement via `knownReferentials.ts` — la Commande devient cette fois un écran CRUD complet piloté par ce statut (boutons de transition contextuels), ce qui justifie un référentiel réel. `CompanyType`/`Role`/`OperationalRole` restent en revanche non résolus (hors périmètre de ce lot).
+
+### Décision 3 — Consommation mensuelle (§14.3)
+
+✅ **Implémenté.** `GET /api/v1/reporting/financial` (`FinancialReportDto`, Lot 5) couvrait déjà différentiel global/par projet/par commande/par société/par ressource, besoins de rallonge et commandes à renouveler, mais pas de ventilation mensuelle exigée par §14.3. **Option retenue** : extension minimale de `FinancialReportDto`/`ReportingService.GetFinancialReportAsync` (nouveau `ConsommationMensuelle`, même style de `GroupBy` que les listes `DifferentielParX` déjà présentes, sur les mêmes `TimeEntryFinancialSnapshot` déjà chargés) — aucune nouvelle entité, aucune migration, aucune duplication de logique financière. Un mois n'apparaît que s'il porte au moins une saisie valorisée sur la période demandée.
+
+### Décision 4 — Filtre Application sur les Jalons (§24.3)
+
+✅ **Implémenté.** `GET /api/v1/milestones` ne filtrait que par `projectId`/`responsableId`/`statut`/`enRetard` ; §24.3 exige aussi un filtre par application. **Option retenue** : paramètre optionnel `applicationId` ajouté à l'action `GetList` déjà existante (`MilestoneService.GetListAsync`), même précédent que les extensions de filtres des Lots 9/10 — aucune nouvelle entité, filtre serveur (pas de filtrage frontend sur une liste déjà récupérée).
+
+## Exception de gouvernance — Lot 11
+
+> **Rôle de cette section** : comme aux Lots 8, 9 et 10, documenter explicitement pourquoi des évolutions backend ont été autorisées pendant un lot que `docs/ROADMAP.md` décrit comme construit sur l'API déjà livrée.
+
+**Constat.** Trois évolutions backend ont été identifiées et validées individuellement avec l'utilisateur à l'ouverture du Lot 11, avant toute ligne de code : l'ajout de `GET /api/v1/order-statuses` (Décision 2), l'extension de `FinancialReportDto` avec la consommation mensuelle (Décision 3), et l'extension du filtre `applicationId` sur `GET /api/v1/milestones` (Décision 4).
+
+**Nature de l'exception.** Strictement bornée, du même ordre que les Lots 9/10 : un nouveau contrôleur de lecture seule répliquant un pattern déjà existant (Décision 2), une extension d'agrégation réutilisant des données déjà chargées sans nouvelle règle de calcul (Décision 3), et un paramètre de filtre supplémentaire sur une action déjà existante (Décision 4). Aucune nouvelle entité, aucune migration.
+
+**Décision explicitement déclinée.** Le modèle Budget détaillé par ligne (Décision 1, §2) a été identifié dans la même analyse d'ouverture de lot mais **volontairement non construit** — décision de ne pas étendre le modèle au-delà du strict nécessaire (`CLAUDE.md` §5), reporté à un futur lot dédié.
 
 ---
 
