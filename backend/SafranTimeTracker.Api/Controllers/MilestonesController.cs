@@ -18,9 +18,10 @@ public class MilestonesController(
     [HttpGet]
     public async Task<ActionResult<PagedResult<MilestoneDto>>> GetList(
         [FromQuery] PaginationQuery pagination, [FromQuery] Guid? projectId, [FromQuery] Guid? responsableId,
-        [FromQuery] MilestoneStatus? statut, [FromQuery] bool? enRetard, CancellationToken cancellationToken)
+        [FromQuery] MilestoneStatus? statut, [FromQuery] bool? enRetard, [FromQuery] Guid? applicationId,
+        CancellationToken cancellationToken)
     {
-        var result = await service.GetListAsync(pagination, projectId, responsableId, statut, enRetard, cancellationToken);
+        var result = await service.GetListAsync(pagination, projectId, responsableId, statut, enRetard, applicationId, cancellationToken);
         return Ok(result);
     }
 

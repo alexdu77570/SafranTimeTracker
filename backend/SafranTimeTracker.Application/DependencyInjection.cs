@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<TeamService>();
         services.AddScoped<CompanyService>();
         services.AddScoped<OrderService>();
+        services.AddScoped<OrderStatusService>();
         services.AddScoped<OrderReceiptService>();
         services.AddScoped<ResourceService>();
         services.AddScoped<UserService>();

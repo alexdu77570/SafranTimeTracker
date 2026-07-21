@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -7,18 +6,16 @@ import Chip from '@mui/material/Chip'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
-import Tab from '@mui/material/Tab'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
-import Tabs from '@mui/material/Tabs'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
-import { useMemo, useState, type SyntheticEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { fetchApplications } from '../../../api/endpoints/applications'
 import { fetchBudgets } from '../../../api/endpoints/budgets'
@@ -51,8 +48,11 @@ import {
 import { PermissionCodes } from '../../../auth/permissionCodes'
 import { PermissionGuard } from '../../../auth/PermissionGuard'
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
+import { DetailPageHeader } from '../../../components/ui/DetailPageHeader'
+import { DetailTabs } from '../../../components/ui/DetailTabs'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { FinancialValue } from '../../../components/ui/FinancialValue'
+import { KpiBand } from '../../../components/ui/KpiBand'
 import { KpiCard } from '../../../components/ui/KpiCard'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
@@ -170,46 +170,32 @@ export function ProjectDetailPage() {
     { label: 'Références liées' },
   ]
 
-  const handleTabChange = (_: SyntheticEvent, value: number) => setTab(value)
-
   return (
     <Stack spacing={2}>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Stack>
-          <Typography variant="h5">{project.nom}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {project.code}
-          </Typography>
-        </Stack>
-        <Button variant="outlined" onClick={() => setEditOpen(true)}>
-          Modifier
-        </Button>
-      </Stack>
+      <DetailPageHeader
+        title={project.nom}
+        subtitle={project.code}
+        actions={
+          <Button variant="outlined" onClick={() => setEditOpen(true)}>
+            Modifier
+          </Button>
+        }
+      />
 
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-          <KpiCard
-            label="Budget initial"
-            value={
-              project.financialSummary ? `${project.financialSummary.budgetInitial ?? '—'} €` : '—'
-            }
-          />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-          <KpiCard
-            label="Temps consommé"
-            value={synthesis ? `${synthesis.chargeConsommee} h` : '—'}
-          />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-          <KpiCard label="Avancement" value="—" />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-          <KpiCard label="Participants" value={String(participantsQuery.data?.totalCount ?? 0)} />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-          <KpiCard label="Jalons" value={String(milestonesQuery.data?.totalCount ?? 0)} />
-        </Grid>
+      <KpiBand
+        items={[
+          {
+            label: 'Budget initial',
+            value: project.financialSummary
+              ? `${project.financialSummary.budgetInitial ?? '—'} €`
+              : '—',
+          },
+          { label: 'Temps consommé', value: synthesis ? `${synthesis.chargeConsommee} h` : '—' },
+          { label: 'Avancement', value: '—' },
+          { label: 'Participants', value: String(participantsQuery.data?.totalCount ?? 0) },
+          { label: 'Jalons', value: String(milestonesQuery.data?.totalCount ?? 0) },
+        ]}
+      >
         <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Stack spacing={0.5}>
             <Typography variant="body2" color="text.secondary">
@@ -224,28 +210,16 @@ export function ProjectDetailPage() {
             </Stack>
           </Stack>
         </Grid>
-      </Grid>
+      </KpiBand>
 
-      <Box>
-        <Tabs
-          value={tab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ mb: 2 }}
-        >
-          {tabs.map((t) => (
-            <Tab key={t.label} label={t.label} />
-          ))}
-        </Tabs>
-        {tab === 0 && <SynthesisTab project={project} synthesis={synthesis} labels={labels} />}
-        {tab === 1 && <ParticipantsTab projectId={projectId} />}
-        {tab === 2 && <PlanningTab projectId={projectId} labels={labels} />}
-        {tab === 3 && <BudgetTab projectId={projectId} />}
-        {tab === 4 && <TimeTab projectId={projectId} labels={labels} />}
-        {tab === 5 && <MilestonesTab projectId={projectId} labels={labels} />}
-        {tab === 6 && <LinkedReferencesTab projectId={projectId} />}
-      </Box>
+      <DetailTabs labels={tabs.map((t) => t.label)} value={tab} onChange={setTab} />
+      {tab === 0 && <SynthesisTab project={project} synthesis={synthesis} labels={labels} />}
+      {tab === 1 && <ParticipantsTab projectId={projectId} />}
+      {tab === 2 && <PlanningTab projectId={projectId} labels={labels} />}
+      {tab === 3 && <BudgetTab projectId={projectId} />}
+      {tab === 4 && <TimeTab projectId={projectId} labels={labels} />}
+      {tab === 5 && <MilestonesTab projectId={projectId} labels={labels} />}
+      {tab === 6 && <LinkedReferencesTab projectId={projectId} />}
 
       <Modal
         open={editOpen}

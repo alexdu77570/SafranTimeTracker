@@ -127,6 +127,8 @@ Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 
 ## Lot 11 — Commandes, Budgets et Jalons
 
+> **Précision actée à la clôture du Lot 11** : périmètre livré tel que décrit ci-dessous, sur la base de trois évolutions backend ponctuelles validées avant implémentation (`GET /order-statuses`, consommation mensuelle du reporting financier, filtre `applicationId` des jalons — détail : `docs/BACKLOG_METIER.md` §15). Le modèle budgétaire détaillé par ligne évoqué dans `docs/BACKLOG_METIER.md` §2 (société prestataire, intervenant, DDA, PR, code SAP) n'a explicitement **pas** été construit ce lot — décision actée à l'ouverture du lot, reportée à un futur lot dédié ; l'écran Budgets reste sur le modèle `Budget`/`BudgetVersion` existant, conforme au §14.1/§14.2 du cahier des charges.
+
 - Commandes (CRUD, machine d'état à 5 statuts, rallonges, réceptions partielles — Lot 6).
 - Budgets (indicateurs, versions/ajustements historisés, `BudgetGauge`).
 - Jalons (timeline, calendrier, tableau, compteur à 30 jours, mise en évidence des retards).

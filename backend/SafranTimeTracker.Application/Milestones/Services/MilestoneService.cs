@@ -16,12 +16,13 @@ public class MilestoneService(IRepository<Milestone> repository, AuditService au
 {
     public async Task<PagedResult<MilestoneDto>> GetListAsync(
         PaginationQuery pagination, Guid? projectId, Guid? responsableId, MilestoneStatus? statut, bool? enRetard,
-        CancellationToken cancellationToken = default)
+        Guid? applicationId = null, CancellationToken cancellationToken = default)
     {
         var query = repository.Query();
         if (projectId is not null) query = query.Where(m => m.ProjectId == projectId);
         if (responsableId is not null) query = query.Where(m => m.ResponsableId == responsableId);
         if (statut is not null) query = query.Where(m => m.Statut == statut);
+        if (applicationId is not null) query = query.Where(m => m.ApplicationId == applicationId);
 
         var totalCount = await query.CountAsync(cancellationToken);
         var entities = await query

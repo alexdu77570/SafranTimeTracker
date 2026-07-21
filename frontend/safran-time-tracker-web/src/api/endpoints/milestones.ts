@@ -13,6 +13,9 @@ export interface MilestoneListParams extends PaginationQuery {
   responsableId?: string
   statut?: MilestoneStatus
   enRetard?: boolean
+  /** §24.3 "filtre application" (Lot 11, décision 4) : paramètre optionnel ajouté à une action déjà
+   * existante, même précédent que les extensions de filtres des Lots 9/10. */
+  applicationId?: string
 }
 
 export async function fetchMilestones(

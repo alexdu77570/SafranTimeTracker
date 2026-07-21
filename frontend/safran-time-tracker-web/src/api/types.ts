@@ -199,7 +199,25 @@ export interface CompanyContractHistoryDto {
   updatedBy: string | null
 }
 
-// --- Commandes (Lot 1/5/6) ---
+// --- Commandes (Lot 1/5/6, écran Lot 11) ---
+
+export interface OrderStatusDto {
+  id: string
+  code: string
+  libelle: string
+  ordre: number
+}
+
+/** §13.2 : consommation en jours, coûts réel/contractuel consommés, différentiel, reste financier
+ * et reste en jours — absent (pas null) sans FINANCIAL_DATA_VIEW, comme ProjectDto.FinancialSummary. */
+export interface OrderFinancialSummaryDto {
+  consommationJours: number
+  coutReelConsomme: number
+  coutContractuelConsomme: number
+  differentiel: number
+  restFinancier: number
+  restJours: number | null
+}
 
 export interface OrderDto {
   id: string
@@ -218,6 +236,91 @@ export interface OrderDto {
   seuilAlerte: number | null
   commentaire: string | null
   authorizedResourceIds: string[]
+  financialSummary: OrderFinancialSummaryDto | null
+}
+
+export interface OrderCreateRequest {
+  reference: string
+  libelle: string
+  companyId: string
+  projectId?: string | null
+  budgetFinancierInitial: number
+  budgetJoursInitial?: number | null
+  dateDebut: string
+  dateFinInitiale: string
+  seuilAlerte?: number | null
+  commentaire?: string | null
+  authorizedResourceIds?: string[]
+}
+
+/** Budget/jours initiaux, date de fin initiale et statut ne sont pas modifiables ici : les
+ * rallonges et les actions de transition de statut dédiées en tiennent lieu (§13.2/§13.3). */
+export interface OrderUpdateRequest {
+  libelle: string
+  projectId?: string | null
+  seuilAlerte?: number | null
+  commentaire?: string | null
+  authorizedResourceIds?: string[]
+}
+
+/** Réouverture d'une commande clôturée (§13.4) : motif obligatoire. */
+export interface OrderReopenRequest {
+  motif: string
+}
+
+/** §13.3 : rallonge, augmente le budget ajusté, conserve le budget initial, historique jamais
+ * modifié. ExtensionDate/PreviousEndDate sont dérivés côté service (date du jour, date de fin
+ * ajustée courante) — seuls montant/jours ajoutés, nouvelle date de fin et motif sont saisis. */
+export interface OrderExtensionDto {
+  id: string
+  orderId: string
+  extensionDate: string
+  amountAdded: number
+  daysAdded: number | null
+  previousEndDate: string
+  newEndDate: string
+  reason: string
+  comment: string | null
+  createdAt: string
+  createdBy: string
+}
+
+export interface OrderExtensionCreateRequest {
+  amountAdded: number
+  daysAdded?: number | null
+  newEndDate: string
+  reason: string
+  comment?: string | null
+}
+
+/** Réception partielle (règle métier validée Lot 6) : append-only, aucun DTO de mise à jour — une
+ * correction se fait par une nouvelle réception, éventuellement à montant/jours négatifs. */
+export interface OrderReceiptDto {
+  id: string
+  orderId: string
+  receiptDate: string
+  receivedAmount: number | null
+  receivedDays: number | null
+  reason: string | null
+  comment: string | null
+  createdAt: string
+  createdBy: string
+}
+
+/** Exactement l'un des deux (receivedAmount/receivedDays) doit être renseigné, jamais les deux. */
+export interface OrderReceiptCreateRequest {
+  receiptDate: string
+  receivedAmount?: number | null
+  receivedDays?: number | null
+  reason?: string | null
+  comment?: string | null
+}
+
+export interface OrderReceiptSummaryDto {
+  totalReceivedAmount: number
+  totalReceivedDays: number
+  remainingReceivableAmount: number
+  remainingReceivableDays: number | null
 }
 
 // --- Temps et capacité (Lot 3) ---
@@ -494,6 +597,89 @@ export interface ChargesReportDto {
   nombreRitm: number
   nombreVabe: number
   nombreVsr: number
+}
+
+/** §25.1 : toujours renvoyés, aucune donnée financière. */
+export interface DashboardOperationalKpisDto {
+  tempsSaisisHeures: number
+  capaciteTheorique: number
+  capaciteReelle: number
+  tauxDisponibilite: number
+  chargeRunHeures: number
+  chargeHorsRunHeures: number
+  incidentsOuverts: number
+  changesEnCours: number
+  problemsOuverts: number
+  ritmEnCours: number
+  projetsActifs: number
+  jalonsEnRetard: number
+  ressourcesSurchargees: number
+  ressourcesSousChargees: number
+}
+
+/** §25.2 : visible uniquement avec FINANCIAL_DATA_VIEW. */
+export interface DashboardFinancialKpisDto {
+  budgetInitialTotal: number
+  budgetAjusteTotal: number
+  coutReelTotal: number
+  coutContractuelTotal: number
+  differentielGlobal: number
+  budgetRestant: number
+  commandesARisque: number
+  projetsSousFinances: number
+  atterrissageEstime: number
+}
+
+export interface DashboardDto {
+  periodFrom: string
+  periodTo: string
+  operational: DashboardOperationalKpisDto
+  financial: DashboardFinancialKpisDto | null
+}
+
+/** §26.2 : ressource intégralement financière (gardée par FINANCIAL_DATA_VIEW au niveau action).
+ * "Commandes à renouveler" et "besoins de rallonge" sont des simplifications documentées côté
+ * backend (fenêtre fixe de 30 jours, reste financier négatif ou sous le seuil d'alerte). */
+export interface FinancialReportDifferentialDto {
+  id: string
+  nom: string
+  coutReel: number
+  coutContractuel: number
+  differentiel: number
+}
+
+export interface FinancialReportOrderAlertDto {
+  orderId: string
+  reference: string
+  budgetFinancierAjuste: number
+  coutReelConsomme: number
+  dateFinAjustee: string | null
+}
+
+/** §14.3 "consommation mensuelle" (Lot 11, décision 3) : un mois n'est présent que s'il porte au
+ * moins une saisie valorisée sur la période demandée. */
+export interface FinancialReportMonthlyConsumptionDto {
+  annee: number
+  mois: number
+  coutReel: number
+  coutContractuel: number
+  differentiel: number
+}
+
+export interface FinancialReportDto {
+  periodFrom: string
+  periodTo: string
+  differentielGlobal: number
+  budgetRestant: number
+  atterrissageEstime: number
+  differentielParProjet: FinancialReportDifferentialDto[]
+  differentielParCommande: FinancialReportDifferentialDto[]
+  differentielParSociete: FinancialReportDifferentialDto[]
+  differentielParRessource: FinancialReportDifferentialDto[]
+  consommationMensuelle: FinancialReportMonthlyConsumptionDto[]
+  besoinsRallonge: FinancialReportOrderAlertDto[]
+  commandesARenouveler: FinancialReportOrderAlertDto[]
+  sourcesMontants: string[]
 }
 
 // --- Projets (Lot 4, écrans Lot 10) ---

@@ -230,6 +230,7 @@ public class ReportingService(
             .Where(s => s.TimeEntry.Date >= from && s.TimeEntry.Date <= to && s.TimeEntry.Statut == ReferentialStatus.Actif)
             .Select(s => new
             {
+                s.TimeEntry.Date,
                 s.TimeEntry.ProjectId,
                 s.TimeEntry.OrderId,
                 s.TimeEntry.ResourceId,
@@ -289,6 +290,19 @@ public class ReportingService(
             .Select(g => new FinancialReportDifferentialDto { Id = g.Id, Nom = resourceNames.GetValueOrDefault(g.Id, g.Id.ToString()), CoutReel = g.CoutReel, CoutContractuel = g.CoutContrat, Differentiel = g.Differentiel })
             .OrderByDescending(d => Math.Abs(d.Differentiel)).ToList();
 
+        var parMois = snapshots
+            .GroupBy(s => new { s.Date.Year, s.Date.Month })
+            .Select(g => new FinancialReportMonthlyConsumptionDto
+            {
+                Annee = g.Key.Year,
+                Mois = g.Key.Month,
+                CoutReel = g.Sum(s => s.CoutReel),
+                CoutContractuel = g.Sum(s => s.CoutContrat),
+                Differentiel = g.Sum(s => s.Differentiel)
+            })
+            .OrderBy(m => m.Annee).ThenBy(m => m.Mois)
+            .ToList();
+
         var budgetAjusteTotal = await budgetRepository.Query().SumAsync(b => (decimal?)b.AdjustedAmount, cancellationToken) ?? 0m;
         var besoinsRallonge = await BuildOrderAlertsAsync(a => a.RestFinancier < 0, cancellationToken);
         var renewalThreshold = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(30);
@@ -313,6 +327,7 @@ public class ReportingService(
             DifferentielParCommande = parCommande,
             DifferentielParSociete = parSociete,
             DifferentielParRessource = parRessource,
+            ConsommationMensuelle = parMois,
             BesoinsRallonge = besoinsRallonge,
             CommandesARenouveler = commandesARenouveler,
             SourcesMontants = sources

@@ -18,6 +18,18 @@ public class FinancialReportOrderAlertDto
     public DateOnly? DateFinAjustee { get; set; }
 }
 
+/// <summary>Cahier des charges §14.3 : "consommation mensuelle" de la page Budgets. Un mois n'est
+/// présent que s'il porte au moins une saisie valorisée sur la période demandée (pas de mois à
+/// zéro généré artificiellement).</summary>
+public class FinancialReportMonthlyConsumptionDto
+{
+    public int Annee { get; set; }
+    public int Mois { get; set; }
+    public decimal CoutReel { get; set; }
+    public decimal CoutContractuel { get; set; }
+    public decimal Differentiel { get; set; }
+}
+
 /// <summary>
 /// Cahier des charges §26.2 : ressource intégralement financière, gardée par FINANCIAL_DATA_VIEW
 /// au niveau contrôleur (même principe que BudgetDto). "Commandes à renouveler" (fenêtre fixe de 30
@@ -37,6 +49,7 @@ public class FinancialReportDto
     public IReadOnlyList<FinancialReportDifferentialDto> DifferentielParCommande { get; set; } = [];
     public IReadOnlyList<FinancialReportDifferentialDto> DifferentielParSociete { get; set; } = [];
     public IReadOnlyList<FinancialReportDifferentialDto> DifferentielParRessource { get; set; } = [];
+    public IReadOnlyList<FinancialReportMonthlyConsumptionDto> ConsommationMensuelle { get; set; } = [];
 
     public IReadOnlyList<FinancialReportOrderAlertDto> BesoinsRallonge { get; set; } = [];
     public IReadOnlyList<FinancialReportOrderAlertDto> CommandesARenouveler { get; set; } = [];
