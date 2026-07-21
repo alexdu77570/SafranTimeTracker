@@ -8,9 +8,11 @@ export default defineConfig({
   server: {
     // En développement, le frontend appelle toujours une URL relative (/api/v1, cf. CLAUDE.md §4) ;
     // ce proxy évite tout problème CORS local en redirigeant vers l'API ASP.NET Core.
+    // Port aligné sur backend/SafranTimeTracker.Api/Properties/launchSettings.json (profil "http"),
+    // seule référence de port réellement maintenue par le projet (aucun script ni doc ne référence 5297).
     proxy: {
       '/api': {
-        target: 'http://localhost:5297',
+        target: 'http://localhost:5215',
         changeOrigin: true,
       },
     },

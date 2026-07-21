@@ -585,6 +585,52 @@ export interface ReportingFilterQuery {
   operationalRoleId?: string
 }
 
+/** §26.3 : exports réels CSV/Excel/PDF, jamais de simples boutons simulés. */
+export const ExportFormat = {
+  Csv: 0,
+  Excel: 1,
+  Pdf: 2,
+} as const
+export type ExportFormat = (typeof ExportFormat)[keyof typeof ExportFormat]
+
+export interface ChargesTopEntryDto {
+  id: string
+  nom: string
+  chargeHeures: number
+}
+
+export interface ChargesResourceAlertDto {
+  resourceId: string
+  nom: string
+  chargeHeures: number
+  capaciteReelle: number
+}
+
+/** §21.3 "courbe mensuelle" / §25.3 "évolution mensuelle" (Lot 12, décision 1). */
+export interface ChargesMonthlyEvolutionDto {
+  annee: number
+  mois: number
+  chargeTotaleHeures: number
+  chargeRunHeures: number
+  chargeHorsRunHeures: number
+}
+
+/** §21.3 "heatmap de charge" (`WorkloadHeatmap`, Lot 12, décision 1). */
+export interface ChargesHeatmapEntryDto {
+  resourceId: string
+  nom: string
+  weekStartDate: string
+  chargeHeures: number
+}
+
+/** §21.2/§21.3/§25.3 "prévu vs réalisé" à l'échelle du portefeuille filtré (Lot 12, décision 3). */
+export interface ChargesPlanComparisonDto {
+  /** Null si le filtre porte sur une commande ou un type d'activité — non calculable à ce niveau
+   * de granularité (la planification ne connaît pas ces dimensions), jamais approché à zéro. */
+  chargePrevue: number | null
+  chargeRealisee: number
+}
+
 export interface ChargesReportDto {
   periodFrom: string
   periodTo: string
@@ -597,6 +643,170 @@ export interface ChargesReportDto {
   nombreRitm: number
   nombreVabe: number
   nombreVsr: number
+  topApplications: ChargesTopEntryDto[]
+  topUtilisateurs: ChargesTopEntryDto[]
+  topProjets: ChargesTopEntryDto[]
+  topCommandes: ChargesTopEntryDto[]
+  ressourcesSurchargees: ChargesResourceAlertDto[]
+  ressourcesSousChargees: ChargesResourceAlertDto[]
+  evolutionMensuelle: ChargesMonthlyEvolutionDto[]
+  heatmap: ChargesHeatmapEntryDto[]
+  prevuVsRealise: ChargesPlanComparisonDto
+}
+
+/** §26.1 : aucune donnée financière, accessible sans permission dédiée. */
+export interface OperationalReportGroupDto {
+  id: string
+  nom: string
+  chargeHeures: number
+}
+
+export interface OperationalReportMilestoneDto {
+  id: string
+  nom: string
+  projectId: string
+  datePrevue: string
+}
+
+export interface OperationalReportCapacityDto {
+  resourceId: string
+  nom: string
+  capaciteTheorique: number
+  capaciteReelle: number
+  tauxDisponibilite: number
+}
+
+export interface OperationalReportDto {
+  periodFrom: string
+  periodTo: string
+  chargeParEquipe: OperationalReportGroupDto[]
+  chargeParService: OperationalReportGroupDto[]
+  chargeParDepartement: OperationalReportGroupDto[]
+  consommationParProjet: ChargesTopEntryDto[]
+  consommationParCommande: ChargesTopEntryDto[]
+  jalonsEnRetard: OperationalReportMilestoneDto[]
+  ressourcesSurchargees: ChargesResourceAlertDto[]
+  ressourcesSousUtilisees: ChargesResourceAlertDto[]
+  capaciteEtDisponibilite: OperationalReportCapacityDto[]
+}
+
+// --- Imports (Lot 6, écran Lot 12) ---
+
+/** §27.1 : les 16 types importables, dans l'ordre exact du backend (enum non stringifié — valeurs
+ * numériques par défaut System.Text.Json, même convention que MilestoneStatus/ProjectRiskLevel). */
+export const ImportEntityType = {
+  Resources: 0,
+  Users: 1,
+  Companies: 2,
+  ResourceCompanyAssignments: 3,
+  ResourceTjmHistories: 4,
+  CompanyContractHistories: 5,
+  Projects: 6,
+  Budgets: 7,
+  Orders: 8,
+  ProjectParticipants: 9,
+  Plannings: 10,
+  TimeEntries: 11,
+  Absences: 12,
+  Milestones: 13,
+  Applications: 14,
+  Organisation: 15,
+} as const
+export type ImportEntityType = (typeof ImportEntityType)[keyof typeof ImportEntityType]
+
+export const ImportMode = {
+  Ajout: 0,
+  MiseAJour: 1,
+  Complet: 2,
+} as const
+export type ImportMode = (typeof ImportMode)[keyof typeof ImportMode]
+
+export const ImportBatchStatus = {
+  Previsualise: 0,
+  Simule: 1,
+  Confirme: 2,
+  Echoue: 3,
+} as const
+export type ImportBatchStatus = (typeof ImportBatchStatus)[keyof typeof ImportBatchStatus]
+
+export const ImportDiffType = {
+  Ajout: 0,
+  Modification: 1,
+  Suppression: 2,
+  Inchange: 3,
+  Erreur: 4,
+} as const
+export type ImportDiffType = (typeof ImportDiffType)[keyof typeof ImportDiffType]
+
+export interface ImportTypeMetadataDto {
+  type: ImportEntityType
+  expectedHeaders: string[]
+  supportedModes: ImportMode[]
+}
+
+/** §27.3 étapes 1-4 : détection encodage/séparateur déjà faite côté serveur (CsvFileParser), avant
+ * tout mapping. `expectedHeaders` sert uniquement à un affichage lecture seule (docs/BACKLOG_METIER.md
+ * §16, décision 4 — pas de réassociation interactive des colonnes). */
+export interface ImportPreviewDto {
+  detectedHeaders: string[]
+  expectedHeaders: string[]
+  lineCount: number
+  sampleRows: Record<string, string>[]
+}
+
+export interface FieldChangeDto {
+  fieldName: string
+  oldValue: string | null
+  newValue: string | null
+}
+
+export interface ImportRowResultDto {
+  rowNumber: number
+  entityId: string | null
+  diffType: ImportDiffType
+  errorMessage: string | null
+  changes: FieldChangeDto[]
+}
+
+/** §27.3 étapes 5-9 : aucune persistance (§27.4 "ne pas modifier les données avant confirmation"). */
+export interface ImportSimulationDto {
+  lineCount: number
+  addCount: number
+  updateCount: number
+  unchangedCount: number
+  deleteCount: number
+  errorCount: number
+  rows: ImportRowResultDto[]
+}
+
+export interface ImportBatchDto {
+  id: string
+  type: ImportEntityType
+  source: string
+  importDate: string
+  userId: string
+  mode: ImportMode
+  fileName: string
+  lineCount: number
+  addCount: number
+  updateCount: number
+  deleteCount: number
+  errorCount: number
+  status: ImportBatchStatus
+  errors: string | null
+  checksum: string
+  previousBatchId: string | null
+}
+
+export interface ImportDiffDto {
+  id: string
+  importBatchId: string
+  entityType: string
+  entityId: string | null
+  diffType: ImportDiffType
+  fieldName: string | null
+  oldValue: string | null
+  newValue: string | null
 }
 
 /** §25.1 : toujours renvoyés, aucune donnée financière. */

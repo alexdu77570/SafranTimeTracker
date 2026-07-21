@@ -284,6 +284,44 @@ Voir §2 ci-dessus : le modèle détaillé par ligne budgétaire (société pres
 
 ---
 
+## 16. Charges, Tableau de bord, Reporting et Imports — décisions actées à l'ouverture du Lot 12
+
+### Décision 1 — Évolution mensuelle et heatmap de charge (§21.3, §25.3)
+
+✅ **Implémenté.** `ChargesReportDto` ne portait aucune dimension temporelle (courbe mensuelle, §21.3) ni matricielle (heatmap, `WorkloadHeatmap` nommé par `docs/ROADMAP.md`) — seuls des totaux globaux et des top N existaient. **Option retenue** : deux nouvelles listes sur le DTO existant, `EvolutionMensuelle` (heures totales/RUN/hors RUN par mois) et `Heatmap` (heures par ressource × semaine, même granularité que `WeeklyPlanningGrid`, Lot 10), calculées dans `ReportingService.GetChargesReportAsync` par un `GroupBy` sur les mêmes saisies déjà chargées pour cette méthode — même style que la consommation mensuelle financière (Lot 11, Décision 3). Aucune nouvelle entité, aucune migration.
+
+### Décision 2 — Export dédié du rapport opérationnel (§26.1, §26.3)
+
+✅ **Implémenté.** Le rapport opérationnel (§26.1 : charge par équipe/service/département, jalons en retard, capacité et disponibilité) a un contenu distinct des Charges (§21) ; seuls `/reporting/charges/export` et `/reporting/financial/export` existaient. **Option retenue** : `ReportingService.GetOperationalTableAsync` + `GET /reporting/operational/export`, même pattern minimal que les deux exports déjà existants (Lot 5) — aucune nouvelle logique de calcul, le moteur d'export générique (`ExportService`) reste inchangé.
+
+### Décision 3 — Capacité vs réalisé et Prévu vs réalisé à l'échelle du portefeuille (§21.2/§21.3/§25.3)
+
+**Capacité vs réalisé : composé côté frontend, aucune évolution backend.** `DashboardOperationalKpisDto` (`GetDashboardAsync`, Lot 5) calcule déjà `CapaciteTheorique`/`CapaciteReelle`/`ChargeRunHeures`/`ChargeHorsRunHeures` comme des totaux agrégés sur le périmètre filtré — des scalaires déjà calculés, pas une liste à paginer. Les écrans Charges et Tableau de bord réutilisent tel quel `GET /reporting/dashboard` pour ce graphique.
+
+**Prévu vs réalisé : ✅ implémenté, agrégation backend dédiée — justification explicite (demande de l'utilisateur avant développement).** Contrairement à la capacité, aucun agrégat de charge planifiée (`ProjectWeeklyPlan`) n'existait dans `ReportingService` avant ce lot. Une composition frontend a été explicitement écartée pour 4 raisons vérifiées avant implémentation :
+1. **Aucune donnée déjà exposée à réutiliser** : recherche exhaustive dans `ReportingService.cs`, aucune référence à `ProjectWeeklyPlan`/charge planifiée avant ce lot.
+2. **Parité des filtres** : la seule agrégation de planning existante (`GET /project-planning`, Lot 10) filtre par `projectId/resourceId/serviceId/departmentId/teamId/from/to/surcharge` — aucun `applicationId`/`orderId`/`activityTypeId`/`operationalRoleId`, alors que ce sont précisément des filtres de Charges (§21.1). Une composition frontend aurait dû rejoindre manuellement ces dimensions, dupliquant la logique de jointure déjà présente dans `ReportingService.GetChargesReportAsync` côté « réalisé ».
+3. **Agrégation sur données paginées, pas une liste déjà chargée** : `GET /project-planning` renvoie un `PagedResult` (une ligne par projet × ressource × semaine) — contrairement aux petites listes entièrement chargées (8 projets, 15 jalons) qui justifiaient une composition frontend aux Lots 9-11, sommer un total de portefeuille aurait exigé de récupérer toutes les pages, contournant la pagination serveur.
+4. **Localité de la règle métier** : `ProjectPlanningService.GetOverviewAsync` code en dur la règle « seule la version Ajustée Active compte » — cette règle vit à un seul endroit (`CLAUDE.md` §5) ; l'appliquer à l'échelle du portefeuille filtré appartient à côté de sa définition existante, pas reconstruite côté frontend.
+
+Nouvelle méthode `ReportingService` agrégeant `ChargePlanifieeInitiale`/`ChargePlanifieeAjustee` (version Ajustée Active uniquement, même règle que `ProjectPlanningService`) sur tous les projets du périmètre filtré, comparée à la charge réalisée déjà calculée (`ChargeTotaleHeures`). Aucune nouvelle entité, aucune migration.
+
+### Décision 4 — Mapping de colonnes de l'assistant d'import (§27.3 étape 5)
+
+✅ **Confirmé, aucun changement.** Le Lot 6 avait différé la construction d'un mapping interactif (aucun écran n'existait alors pour le remettre en cause) : les en-têtes CSV doivent correspondre exactement aux noms de propriété du DTO cible (`CsvRequestBinder.Bind<T>`). **Décision reconfirmée explicitement à l'ouverture du Lot 12** (premier lot construisant réellement l'écran) : le mapping reste en lecture seule (affichage des en-têtes détectés vs attendus, `ImportPreviewDto`, déjà exposé), sans glisser-déposer ni réassociation de colonnes. `CsvRequestBinder`/`ImportService` restent inchangés.
+
+## Exception de gouvernance — Lot 12
+
+> **Rôle de cette section** : comme aux Lots 8 à 11, documenter explicitement pourquoi des évolutions backend ont été autorisées pendant un lot que `docs/ROADMAP.md` décrit comme construit sur l'API déjà livrée.
+
+**Constat.** Trois évolutions backend ont été identifiées et validées individuellement avec l'utilisateur à l'ouverture du Lot 12, avant toute ligne de code : l'extension de `ChargesReportDto` avec l'évolution mensuelle et la heatmap (Décision 1), l'ajout de `GET /reporting/operational/export` (Décision 2), et l'agrégation dédiée « Prévu vs réalisé » (Décision 3).
+
+**Nature de l'exception.** La plus substantielle des quatre derniers lots sur le point « Prévu vs réalisé » (nouvelle méthode d'agrégation multi-projets, justifiée explicitement ci-dessus après une demande directe de vérification de l'utilisateur avant tout développement) ; les deux autres restent du même ordre que les Lots 9-11 (extension d'un DTO existant par `GroupBy`, nouvel export répliquant un pattern déjà en place). Aucune nouvelle entité, aucune migration dans les trois cas.
+
+**Décision explicitement révisée en cours d'analyse.** « Capacité vs réalisé » avait initialement été bundlée avec « Prévu vs réalisé » dans la même question de validation ; une vérification plus poussée demandée par l'utilisateur a montré que l'agrégat existait déjà (`DashboardOperationalKpisDto`) — la recommandation a été corrigée avant tout développement pour ne construire que ce qui est réellement nécessaire (`CLAUDE.md` §5).
+
+---
+
 ## Comment mettre à jour ce document
 
 1. Toute règle métier nouvellement validée avec le Product Owner, le Squad Leader ou un expert métier est ajoutée ici **avant** d'être implémentée, avec le statut 🕓 **Validé, non implémenté**.

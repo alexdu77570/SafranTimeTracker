@@ -40,6 +40,7 @@ public class ReportingService(
     IReadRepository<Service> serviceRepository,
     IReadRepository<Team> teamRepository,
     IReadRepository<SettingsEntity> settingsRepository,
+    IReadRepository<ProjectWeeklyPlan> weeklyPlanRepository,
     AvailabilityService availabilityService,
     ICurrentUser currentUser)
 {
@@ -54,7 +55,7 @@ public class ReportingService(
     {
         var (from, to) = ResolvePeriod(filter);
         var entries = await BuildFilteredQuery(filter, from, to)
-            .Select(t => new { t.ResourceId, t.ActivityTypeId, t.ProjectId, t.OrderId, t.Reference, t.DureeHeures })
+            .Select(t => new { t.ResourceId, t.ActivityTypeId, t.ProjectId, t.OrderId, t.Reference, t.DureeHeures, t.Date })
             .ToListAsync(cancellationToken);
 
         var activityTypes = await LoadActivityTypesAsync(entries.Select(e => e.ActivityTypeId), cancellationToken);
@@ -67,6 +68,40 @@ public class ReportingService(
         var topCommandes = await BuildTopOrdersAsync(entries.Select(e => (e.OrderId, e.DureeHeures)), cancellationToken);
         var topUtilisateurs = await BuildTopResourcesAsync(entries.Select(e => (e.ResourceId, e.DureeHeures)), cancellationToken);
         var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(filter, entries.Select(e => (e.ResourceId, e.DureeHeures)), from, to, cancellationToken);
+
+        var evolutionMensuelle = entries
+            .GroupBy(e => new { e.Date.Year, e.Date.Month })
+            .Select(g => new ChargesMonthlyEvolutionDto
+            {
+                Annee = g.Key.Year,
+                Mois = g.Key.Month,
+                ChargeTotaleHeures = g.Sum(e => e.DureeHeures),
+                ChargeRunHeures = g.Where(e => activityTypes.GetValueOrDefault(e.ActivityTypeId)?.IsRun == true).Sum(e => e.DureeHeures),
+                ChargeHorsRunHeures = g.Where(e => activityTypes.GetValueOrDefault(e.ActivityTypeId)?.IsRun != true).Sum(e => e.DureeHeures)
+            })
+            .OrderBy(m => m.Annee).ThenBy(m => m.Mois)
+            .ToList();
+
+        var heatmapGroups = entries
+            .GroupBy(e => (e.ResourceId, WeekStart: GetWeekStart(e.Date)))
+            .Select(g => (g.Key.ResourceId, g.Key.WeekStart, ChargeHeures: g.Sum(e => e.DureeHeures)))
+            .ToList();
+        var heatmapResourceIds = heatmapGroups.Select(g => g.ResourceId).Distinct().ToList();
+        var heatmapResourceNames = await resourceRepository.Query()
+            .Where(r => heatmapResourceIds.Contains(r.Id))
+            .ToDictionaryAsync(r => r.Id, r => $"{r.Prenom} {r.Nom}", cancellationToken);
+        var heatmap = heatmapGroups
+            .Select(g => new ChargesHeatmapEntryDto
+            {
+                ResourceId = g.ResourceId,
+                Nom = heatmapResourceNames.GetValueOrDefault(g.ResourceId, g.ResourceId.ToString()),
+                WeekStartDate = g.WeekStart,
+                ChargeHeures = g.ChargeHeures
+            })
+            .OrderBy(h => h.WeekStartDate).ThenBy(h => h.Nom)
+            .ToList();
+
+        var prevuVsRealise = await BuildPlanComparisonAsync(filter, from, to, chargeTotale, cancellationToken);
 
         return new ChargesReportDto
         {
@@ -86,7 +121,10 @@ public class ReportingService(
             TopProjets = topProjets,
             TopCommandes = topCommandes,
             RessourcesSurchargees = surcharges,
-            RessourcesSousChargees = sousCharges
+            RessourcesSousChargees = sousCharges,
+            EvolutionMensuelle = evolutionMensuelle,
+            Heatmap = heatmap,
+            PrevuVsRealise = prevuVsRealise
         };
     }
 
@@ -407,6 +445,32 @@ public class ReportingService(
         };
     }
 
+    /// <summary>§26.1/§26.3 (Lot 12, décision 2) : contenu distinct de Charges (§21) — charge par
+    /// équipe/service/département, jalons en retard, capacité et disponibilité — même moteur
+    /// d'export générique que GetChargesTableAsync/GetFinancialDifferentialsTableAsync (Lot 5),
+    /// aucune nouvelle logique de calcul.</summary>
+    public async Task<ReportingTableDto> GetOperationalTableAsync(ReportingFilterQuery filter, CancellationToken cancellationToken = default)
+    {
+        var report = await GetOperationalReportAsync(filter, cancellationToken);
+        var rows = new List<string[]>();
+        rows.AddRange(report.ChargeParEquipe.Select(e => new[] { "Équipe", e.Nom, e.ChargeHeures.ToString("0.##"), "" }));
+        rows.AddRange(report.ChargeParService.Select(e => new[] { "Service", e.Nom, e.ChargeHeures.ToString("0.##"), "" }));
+        rows.AddRange(report.ChargeParDepartement.Select(e => new[] { "Département", e.Nom, e.ChargeHeures.ToString("0.##"), "" }));
+        rows.AddRange(report.ConsommationParProjet.Select(e => new[] { "Projet", e.Nom, e.ChargeHeures.ToString("0.##"), "" }));
+        rows.AddRange(report.ConsommationParCommande.Select(e => new[] { "Commande", e.Nom, e.ChargeHeures.ToString("0.##"), "" }));
+        rows.AddRange(report.JalonsEnRetard.Select(m => new[] { "Jalon en retard", m.Nom, m.DatePrevue.ToString("yyyy-MM-dd"), "" }));
+        rows.AddRange(report.RessourcesSurchargees.Select(r => new[] { "Ressource surchargée", r.Nom, r.ChargeHeures.ToString("0.##"), r.CapaciteReelle.ToString("0.##") }));
+        rows.AddRange(report.RessourcesSousUtilisees.Select(r => new[] { "Ressource sous-utilisée", r.Nom, r.ChargeHeures.ToString("0.##"), r.CapaciteReelle.ToString("0.##") }));
+        rows.AddRange(report.CapaciteEtDisponibilite.Select(c => new[] { "Capacité", c.Nom, c.CapaciteReelle.ToString("0.##"), $"{c.TauxDisponibilite:0.##}%" }));
+
+        return new ReportingTableDto
+        {
+            Title = $"Rapport opérationnel du {report.PeriodFrom:yyyy-MM-dd} au {report.PeriodTo:yyyy-MM-dd}",
+            Columns = ["Dimension", "Nom", "Valeur", "Détail"],
+            Rows = rows
+        };
+    }
+
     private static (DateOnly From, DateOnly To) ResolvePeriod(ReportingFilterQuery filter) =>
         ReportingPeriodResolver.Resolve(filter.PeriodType, filter.ReferenceDate, filter.CustomFrom, filter.CustomTo);
 
@@ -498,6 +562,55 @@ public class ReportingService(
         }
 
         return (surcharges, sousCharges);
+    }
+
+    /// <summary>Lundi de la semaine contenant <paramref name="date"/> — même formule que
+    /// ReportingPeriodResolver (jamais dupliquée avec un calcul différent).</summary>
+    private static DateOnly GetWeekStart(DateOnly date)
+    {
+        var daysSinceMonday = ((int)date.DayOfWeek + 6) % 7;
+        return date.AddDays(-daysSinceMonday);
+    }
+
+    /// <summary>§21.2/§21.3/§25.3 "prévu vs réalisé" (Lot 12, décision 3, docs/BACKLOG_METIER.md §16) :
+    /// agrégation dédiée sur ProjectWeeklyPlan, jamais recalculée à partir d'une liste paginée
+    /// (GET /project-planning, Lot 10, reste la vue détaillée par projet/ressource/semaine). Null si
+    /// le filtre porte sur une dimension que la planification ne connaît pas (commande, type
+    /// d'activité) : la charge planifiée n'est jamais approchée à zéro dans ce cas.</summary>
+    private async Task<ChargesPlanComparisonDto> BuildPlanComparisonAsync(
+        ReportingFilterQuery filter, DateOnly from, DateOnly to, decimal chargeRealisee, CancellationToken cancellationToken)
+    {
+        if (filter.OrderId is not null || filter.ActivityTypeId is not null)
+        {
+            return new ChargesPlanComparisonDto { ChargePrevue = null, ChargeRealisee = chargeRealisee };
+        }
+
+        var query = weeklyPlanRepository.Query()
+            .Where(w => w.ProjectPlanVersion.Statut == ProjectPlanVersionStatus.Active
+                && w.WeekStartDate >= from && w.WeekStartDate <= to);
+
+        if (filter.ProjectId is not null) query = query.Where(w => w.ProjectPlanVersion.ProjectId == filter.ProjectId);
+        if (filter.ApplicationId is not null) query = query.Where(w => w.ProjectPlanVersion.Project.ApplicationId == filter.ApplicationId);
+        if (filter.ResourceId is not null) query = query.Where(w => w.ResourceId == filter.ResourceId);
+        if (filter.DepartmentId is not null) query = query.Where(w => w.Resource.DepartmentId == filter.DepartmentId);
+        if (filter.ServiceId is not null) query = query.Where(w => w.Resource.ServiceId == filter.ServiceId);
+        if (filter.TeamId is not null) query = query.Where(w => w.Resource.TeamId == filter.TeamId);
+        if (filter.OperationalRoleId is not null) query = query.Where(w => w.Resource.OperationalRoles.Any(o => o.OperationalRoleId == filter.OperationalRoleId));
+
+        var rawLines = await query
+            .Select(w => new { ProjectId = w.ProjectPlanVersion.ProjectId, w.ResourceId, w.WeekStartDate, w.ProjectPlanVersion.Type, w.ChargePlanifieeHeures })
+            .ToListAsync(cancellationToken);
+
+        // Initiale et Ajustée (Active) peuvent coexister à la même clé (Projet, Ressource, Semaine) —
+        // même regroupement que ProjectPlanningService.GetOverviewAsync (Lot 10), jamais dupliqué avec
+        // une règle différente : Ajustée si présente, sinon Initiale.
+        var chargePrevue = rawLines
+            .GroupBy(l => (l.ProjectId, l.ResourceId, l.WeekStartDate))
+            .Sum(g => g.Any(l => l.Type == ProjectPlanVersionType.Ajuste)
+                ? g.Where(l => l.Type == ProjectPlanVersionType.Ajuste).Sum(l => l.ChargePlanifieeHeures)
+                : g.Where(l => l.Type == ProjectPlanVersionType.Initial).Sum(l => l.ChargePlanifieeHeures));
+
+        return new ChargesPlanComparisonDto { ChargePrevue = chargePrevue, ChargeRealisee = chargeRealisee };
     }
 
     private async Task<List<ChargesTopEntryDto>> BuildTopApplicationsAsync(IEnumerable<(Guid? ProjectId, decimal Heures)> entries, CancellationToken cancellationToken)

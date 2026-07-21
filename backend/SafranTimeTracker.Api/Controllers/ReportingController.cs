@@ -66,6 +66,18 @@ public class ReportingController(ReportingService reportingService, ExportServic
         return File(result.Content, result.ContentType, result.FileName);
     }
 
+    /// <summary>§26.1/§26.3 (Lot 12) : contenu distinct de /charges/export (charge par
+    /// équipe/service/département, jalons en retard, capacité et disponibilité), aucune donnée
+    /// financière — pas de garde de permission, comme /charges/export.</summary>
+    [HttpGet("operational/export")]
+    public async Task<IActionResult> ExportOperational(
+        [FromQuery] ReportingFilterQuery filter, [FromQuery] ExportFormat format, CancellationToken cancellationToken)
+    {
+        var table = await reportingService.GetOperationalTableAsync(filter, cancellationToken);
+        var result = await exportService.ExportAsync(table, format, "Operationnel", filter, containsFinancialData: false, cancellationToken);
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
     [HttpGet("financial/export")]
     [RequirePermission(PermissionCodes.FinancialDataView)]
     public async Task<IActionResult> ExportFinancial(

@@ -265,6 +265,70 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         result.TopProjets.Should().Contain(p => p.Nom == "Migration ELM");
     }
 
+    /// <summary>Lot 12, décision 1 : évolution mensuelle et heatmap, mêmes saisies déjà chargées par
+    /// GetChargesReportAsync, aucune nouvelle requête.</summary>
+    [Fact]
+    public async Task GetCharges_ReturnsMonthlyEvolutionAndHeatmap_ForSeededTimeEntry()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projectId = await GetProjectIdAsync(client, ProjectElmCode);
+
+        var result = await client.GetFromJsonAsync<ChargesReportDto>(
+            $"/api/v1/reporting/charges?projectId={projectId}&periodType=Personnalisee&customFrom=2024-01-01&customTo=2025-12-31");
+
+        result!.EvolutionMensuelle.Should().ContainSingle(m => m.Annee == 2024 && m.Mois == 6 && m.ChargeTotaleHeures == 7.75m);
+        result.Heatmap.Should().ContainSingle(h => h.WeekStartDate == new DateOnly(2024, 6, 10) && h.Nom.Contains("LEGRAND"));
+    }
+
+    /// <summary>Lot 12, décision 3 : agrégation dédiée "prévu vs réalisé" (docs/BACKLOG_METIER.md
+    /// §16) — Ajustée (24 + 8 = 32h) prime sur Initiale (20 + 10 = 30h) pour Migration ELM, semaine
+    /// du 2024-06-10 (Lot4Seed).</summary>
+    [Fact]
+    public async Task GetCharges_ReturnsPlanComparison_UsingAdjustedVersionWhenActive()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projectId = await GetProjectIdAsync(client, ProjectElmCode);
+
+        var result = await client.GetFromJsonAsync<ChargesReportDto>(
+            $"/api/v1/reporting/charges?projectId={projectId}&periodType=Personnalisee&customFrom=2024-01-01&customTo=2025-12-31");
+
+        result!.PrevuVsRealise.ChargePrevue.Should().Be(32.00m);
+        result.PrevuVsRealise.ChargeRealisee.Should().Be(result.ChargeTotaleHeures);
+    }
+
+    /// <summary>Lot 12, décision 3 : non calculable au niveau commande/type d'activité (la
+    /// planification ne connaît pas ces dimensions) — jamais approché à zéro.</summary>
+    [Fact]
+    public async Task GetCharges_ReturnsNullPlanComparison_WhenFilteredByOrderOrActivityType()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var activityTypeId = await GetActivityTypeIdAsync(client, "INCIDENT");
+
+        var result = await client.GetFromJsonAsync<ChargesReportDto>(
+            $"/api/v1/reporting/charges?activityTypeId={activityTypeId}&periodType=Personnalisee&customFrom=2024-01-01&customTo=2025-12-31");
+
+        result!.PrevuVsRealise.ChargePrevue.Should().BeNull();
+    }
+
+    /// <summary>Lot 12, décision 2 : export réel du rapport opérationnel, même moteur générique que
+    /// Charges/Financier (Lot 5) — aucune nouvelle logique de calcul.</summary>
+    [Theory]
+    [InlineData(ExportFormat.Csv, "text/csv")]
+    [InlineData(ExportFormat.Excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    [InlineData(ExportFormat.Pdf, "application/pdf")]
+    public async Task ExportOperational_ReturnsRealNonEmptyContentInRequestedFormat(ExportFormat format, string expectedContentType)
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var response = await client.GetAsync(
+            $"/api/v1/reporting/operational/export?format={format}&periodType=Personnalisee&customFrom=2024-01-01&customTo=2025-12-31");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be(expectedContentType);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        bytes.Should().NotBeEmpty();
+    }
+
     [Fact]
     public async Task GetDashboard_ReturnsOperationalKpisAlways_AndFinancialOnlyWithPermission()
     {

@@ -133,6 +133,8 @@ Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 - Budgets (indicateurs, versions/ajustements historisés, `BudgetGauge`).
 - Jalons (timeline, calendrier, tableau, compteur à 30 jours, mise en évidence des retards).
 
+> **Précision actée à la clôture du Lot 12** : périmètre livré tel que décrit ci-dessous, sur la base de trois évolutions backend ponctuelles (évolution mensuelle et heatmap sur `GET /reporting/charges`, export du rapport opérationnel, comparaison Prévu vs réalisé). Cette dernière a fait l'objet d'une réserve explicite de l'utilisateur avant tout développement : l'agrégation « Capacité vs réalisé », initialement recommandée côté backend au même titre que « Prévu vs réalisé », a été **révisée en cours d'analyse** vers une composition entièrement frontend (donnée déjà exposée par `DashboardOperationalKpisDto`, Lot 5) — seule « Prévu vs réalisé » justifiait un réel besoin backend (détail complet des 4 raisons : `docs/BACKLOG_METIER.md` §16). « Assistant en 12 étapes » ci-dessous se lit comme les 7 écrans successifs de l'`ImportWizard` (Type → Mode → Fichier → Aperçu → Simulation → Confirmation → Compte rendu), qui recouvrent le pipeline Preview/Simulate/Execute du §27.3 — la roadmap ne prescrivait pas un compte d'étapes littéral.
+
 ## Lot 12 — Charges, Tableau de bord, Reporting et Imports
 
 - Charges (filtres, indicateurs, graphiques dont `WorkloadHeatmap`).
