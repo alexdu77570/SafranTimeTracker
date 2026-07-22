@@ -384,7 +384,10 @@ describe('TimeEntriesPage', () => {
     const confirmButton = screen.getByRole('button', { name: 'Recalculer' })
     expect(confirmButton).toBeDisabled()
 
-    await user.type(screen.getByLabelText('Motif'), 'Correction du TJM')
+    // fireEvent.change plutôt que user.type (CI, Lot 13) : le test vérifie que le motif renseigné
+    // active le bouton, pas le comportement frappe par frappe — évite de simuler 18 frappes
+    // clavier sur un runner GitHub partagé plus lent.
+    fireEvent.change(screen.getByLabelText('Motif'), { target: { value: 'Correction du TJM' } })
     await waitFor(() => expect(confirmButton).not.toBeDisabled())
     await user.click(confirmButton)
 

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DemoTestProviders } from '../../../test/testUtils'
@@ -321,7 +321,12 @@ describe('AbsencesPage', () => {
 
     expect(screen.getByRole('button', { name: 'Valider' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Refuser' }))
-    await user.type(screen.getByLabelText('Motif (facultatif)'), 'Charge insuffisante')
+    // fireEvent.change plutôt que user.type (CI, Lot 13) : évite de simuler 20 frappes clavier sur
+    // un runner GitHub partagé plus lent, sans changer le comportement testé (champ facultatif
+    // sans validation par frappe).
+    fireEvent.change(screen.getByLabelText('Motif (facultatif)'), {
+      target: { value: 'Charge insuffisante' },
+    })
     await user.click(screen.getByRole('button', { name: 'Confirmer le refus' }))
 
     await waitFor(() =>
