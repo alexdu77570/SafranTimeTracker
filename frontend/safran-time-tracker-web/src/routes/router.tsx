@@ -7,12 +7,16 @@ import { ApplicationDetailPage } from './pages/applications/ApplicationDetailPag
 import { ApplicationsListPage } from './pages/applications/ApplicationsListPage'
 import { AvailabilityPage } from './pages/availability/AvailabilityPage'
 import { BudgetsListPage } from './pages/budgets/BudgetsListPage'
+import { ChargesPage } from './pages/charges/ChargesPage'
 import { CompaniesListPage } from './pages/companies/CompaniesListPage'
 import { CompanyDetailPage } from './pages/companies/CompanyDetailPage'
+import { DashboardPage } from './pages/dashboard/DashboardPage'
+import { ImportsPage } from './pages/imports/ImportsPage'
 import { MilestonesListPage } from './pages/milestones/MilestonesListPage'
 import { OrderDetailPage } from './pages/orders/OrderDetailPage'
 import { OrdersListPage } from './pages/orders/OrdersListPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
+import { ReportingPage } from './pages/reporting/ReportingPage'
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
 import { ProjectPlanningPage } from './pages/projects/ProjectPlanningPage'
 import { ProjectsListPage } from './pages/projects/ProjectsListPage'
@@ -28,9 +32,11 @@ import { TimeEntriesPage } from './pages/timeEntries/TimeEntriesPage'
  * (liste + fiche détail) et Administration. Lot 9 : Temps, Mes absences, Disponibilités. Lot 10 :
  * Projets (liste + fiche détail à 7 onglets) et Planning projet (vue transverse). Lot 11 :
  * Commandes (liste + fiche détail à 5 onglets), Budgets (indicateurs + lignes) et Jalons (vue
- * transverse tableau/timeline/calendrier).
+ * transverse tableau/timeline/calendrier). Lot 12 : Tableau de bord (index route), Charges,
+ * Reporting (opérationnel + financier, exports réels) et Imports (assistant + historique).
  */
 const screenOverrides: Record<string, React.ReactNode> = {
+  '/': <DashboardPage />,
   '/ressources': <ResourcesListPage />,
   '/societes': <CompaniesListPage />,
   '/applications': <ApplicationsListPage />,
@@ -43,6 +49,9 @@ const screenOverrides: Record<string, React.ReactNode> = {
   '/commandes': <OrdersListPage />,
   '/budgets': <BudgetsListPage />,
   '/jalons': <MilestonesListPage />,
+  '/charges': <ChargesPage />,
+  '/reporting': <ReportingPage />,
+  '/imports': <ImportsPage />,
 }
 
 const children: RouteObject[] = navigation.map((entry) => ({
