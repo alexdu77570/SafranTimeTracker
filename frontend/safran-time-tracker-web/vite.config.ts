@@ -21,5 +21,19 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'cobertura'],
+      // Seuils initiaux (Lot 13), fixés en dessous de la mesure réelle au moment de leur
+      // introduction (statements 72,6 % / branches 71,6 % / functions 64,3 % / lines 72,2 %) pour
+      // laisser une marge de bruit de mesure — objectif de les relever progressivement, jamais de
+      // les baisser sans justification écrite ici.
+      thresholds: {
+        statements: 65,
+        branches: 60,
+        functions: 55,
+        lines: 65,
+      },
+    },
   },
 })

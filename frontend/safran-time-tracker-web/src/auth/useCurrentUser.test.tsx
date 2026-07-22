@@ -23,6 +23,7 @@ vi.mock('../api/endpoints/users', () => ({
         roleId: 'role-1',
         accesGlobal: false,
         permissionIds: ['perm-audit'],
+        effectivePermissionCodes: ['AUDIT_VIEW'],
       },
     ],
     page: 1,
@@ -31,15 +32,14 @@ vi.mock('../api/endpoints/users', () => ({
   })),
 }))
 
-vi.mock('../api/endpoints/permissions', () => ({
-  fetchPermissions: vi.fn(async () => ({
-    items: [
-      { id: 'perm-audit', code: 'AUDIT_VIEW', libelle: 'Consultation audit', description: null },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
+vi.mock('../api/endpoints/auth', () => ({
+  createDemoSession: vi.fn(async () => ({
+    userId: 'user-1',
+    identifiant: 's636140',
+    expiresAt: '2026-01-01T00:00:00Z',
+    isPersistent: false,
   })),
+  revokeDemoSession: vi.fn(async () => undefined),
 }))
 
 afterEach(() => {
@@ -57,7 +57,7 @@ describe('useCurrentUser', () => {
     expect(result.current.hasPermission('AUDIT_VIEW')).toBe(false)
   })
 
-  it('resolves the matching user and joins permissionIds to permission codes', async () => {
+  it('resolves the matching user and reads its effective permission codes', async () => {
     setStoredIdentifiant('s636140')
 
     const { result } = renderHook(() => useCurrentUser(), { wrapper: DemoTestProviders })

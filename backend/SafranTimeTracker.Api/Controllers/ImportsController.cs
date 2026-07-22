@@ -44,6 +44,11 @@ public class ImportExecuteForm
 [RequirePermission(PermissionCodes.ImportExecute)]
 public class ImportsController(ImportService service, ICurrentUser currentUser) : ControllerBase
 {
+    /// <summary>Limite de taille des fichiers importés (Lot 13, sécurisation API) : 10 Mo, largement
+    /// au-delà des CSV de démonstration (§27), pour éviter qu'un fichier volumineux ne consomme la
+    /// mémoire du serveur.</summary>
+    private const long ImportMaxUploadBytes = 10 * 1024 * 1024;
+
     private static readonly HashSet<ImportEntityType> FinancialTypes =
     [
         ImportEntityType.ResourceTjmHistories,
@@ -80,6 +85,7 @@ public class ImportsController(ImportService service, ICurrentUser currentUser) 
     }
 
     [HttpPost("preview")]
+    [RequestSizeLimit(ImportMaxUploadBytes)]
     public async Task<ActionResult<ImportPreviewDto>> Preview([FromForm] ImportPreviewForm form, CancellationToken cancellationToken)
     {
         var financialCheck = EnsureFinancialAccessIfNeeded(form.Type);
@@ -93,6 +99,7 @@ public class ImportsController(ImportService service, ICurrentUser currentUser) 
     }
 
     [HttpPost("simulate")]
+    [RequestSizeLimit(ImportMaxUploadBytes)]
     public async Task<ActionResult<ImportSimulationDto>> Simulate([FromForm] ImportSimulateForm form, CancellationToken cancellationToken)
     {
         var financialCheck = EnsureFinancialAccessIfNeeded(form.Type);
@@ -107,6 +114,7 @@ public class ImportsController(ImportService service, ICurrentUser currentUser) 
     }
 
     [HttpPost("execute")]
+    [RequestSizeLimit(ImportMaxUploadBytes)]
     public async Task<ActionResult<ImportBatchDto>> Execute([FromForm] ImportExecuteForm form, CancellationToken cancellationToken)
     {
         var financialCheck = EnsureFinancialAccessIfNeeded(form.Type);
@@ -122,6 +130,7 @@ public class ImportsController(ImportService service, ICurrentUser currentUser) 
 
     /// <summary>§27.4 : import SharePoint simulé — même pipeline, source figée à "SharePoint".</summary>
     [HttpPost("sharepoint/execute")]
+    [RequestSizeLimit(ImportMaxUploadBytes)]
     public async Task<ActionResult<ImportBatchDto>> ExecuteSharePoint([FromForm] ImportSimulateForm form, CancellationToken cancellationToken)
     {
         var financialCheck = EnsureFinancialAccessIfNeeded(form.Type);

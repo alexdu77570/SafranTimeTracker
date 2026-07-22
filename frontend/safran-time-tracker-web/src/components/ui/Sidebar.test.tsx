@@ -5,6 +5,16 @@ import { DemoTestProviders } from '../../test/testUtils'
 import { setStoredIdentifiant } from '../../auth/demoIdentityStorage'
 import { Sidebar } from './Sidebar'
 
+vi.mock('../../api/endpoints/auth', () => ({
+  createDemoSession: vi.fn(async () => ({
+    userId: 'user-1',
+    identifiant: 's636140',
+    expiresAt: '2026-01-01T00:00:00Z',
+    isPersistent: false,
+  })),
+  revokeDemoSession: vi.fn(async () => undefined),
+}))
+
 vi.mock('../../api/endpoints/users', () => ({
   fetchUsers: vi.fn(async () => ({
     items: [
@@ -23,6 +33,7 @@ vi.mock('../../api/endpoints/users', () => ({
         roleId: 'role-1',
         accesGlobal: false,
         permissionIds: ['perm-financial'],
+        effectivePermissionCodes: ['FINANCIAL_DATA_VIEW'],
       },
     ],
     page: 1,

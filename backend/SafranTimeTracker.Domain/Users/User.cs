@@ -32,4 +32,5 @@ public class User : AuditableEntity
     public string? SecurityLastModifiedBy { get; set; }
 
     public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
+    public ICollection<UserSession> UserSessions { get; set; } = new List<UserSession>();
 }

@@ -71,6 +71,16 @@ vi.mock('../../../api/endpoints/organisation', () => ({
     totalCount: 1,
   })),
 }))
+vi.mock('../../../api/endpoints/auth', () => ({
+  createDemoSession: vi.fn(async () => ({
+    userId: 'user-1',
+    identifiant: 's636140',
+    expiresAt: '2026-01-01T00:00:00Z',
+    isPersistent: false,
+  })),
+  revokeDemoSession: vi.fn(async () => undefined),
+}))
+
 vi.mock('../../../api/endpoints/users', () => ({
   fetchUsers: vi.fn(async () => ({
     items: [
@@ -89,6 +99,7 @@ vi.mock('../../../api/endpoints/users', () => ({
         roleId: 'role-1',
         accesGlobal: true,
         permissionIds: [],
+        effectivePermissionCodes: [],
       },
     ],
     page: 1,

@@ -84,9 +84,9 @@ Modèle à deux niveaux indépendants (voir `CLAUDE.md` §17) :
 1. **Rôle applicatif** : Ingénieur, Responsable Service, Responsable Département, Administrateur.
 2. **Permissions complémentaires**, dont au minimum `FINANCIAL_DATA_VIEW`.
 
-L'autorisation effective combine rôle, permissions, département, service, équipe, propriété de la donnée et statut de l'utilisateur. Elle est implémentée côté API via des policies ASP.NET Core combinant ces axes — jamais par filtrage a posteriori côté frontend.
+L'autorisation effective combine rôle et permissions (modèle RBAC, Lot 13 : `RolePermission` accorde des permissions par défaut au rôle, `UserPermission.Effect` complète ou retire des exceptions individuelles, calcul centralisé dans `PermissionResolutionService`) — jamais par filtrage a posteriori côté frontend. **Implémentation réelle** : un filtre MVC dédié (`RequirePermissionAttribute`), volontairement découplé du système `Authorization`/policies natif d'ASP.NET Core pour rester indépendant de tout mécanisme d'authentification concret (CLAUDE.md §10, §17) — pas des policies ASP.NET Core au sens strict du framework. Département/service/équipe/propriété de la donnée restent hors périmètre (`docs/BACKLOG_METIER.md` §18, Décision 3, report explicite).
 
-L'authentification de démonstration (MVP) doit être remplaçable sans refonte du modèle d'autorisation par : Active Directory, LDAP, OpenID Connect, ou un SSO d'entreprise.
+L'authentification de démonstration (MVP) doit être remplaçable sans refonte du modèle d'autorisation par : Active Directory, LDAP, OpenID Connect, ou un SSO d'entreprise. **Depuis le Lot 13**, une session serveur réelle existe (`IAuthenticationProvider`/`DemoAuthenticationProvider`, cookie HttpOnly opaque, `UserSession` persistée) — l'abstraction reste `ICurrentUser`/`IAuthenticationProvider`, remplaçable sans toucher aux contrôleurs, services ou règles d'autorisation.
 
 ## 5. Configuration et environnements
 

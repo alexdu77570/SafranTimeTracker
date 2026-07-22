@@ -37,7 +37,12 @@ export interface UserDto {
   resourceId: string | null
   roleId: string
   accesGlobal: boolean
+  /** Exceptions individuelles à la matrice du rôle (octrois uniquement) — voir
+   * `effectivePermissionCodes` pour le résultat consolidé (rôle + exceptions, Lot 13). */
   permissionIds: string[]
+  /** Permissions réellement actives (rôle + exceptions individuelles) — seule source fiable pour
+   * `PermissionGuard`, jamais une barrière de sécurité en soi (CLAUDE.md §17). */
+  effectivePermissionCodes: string[]
 }
 
 export interface PermissionDto {
@@ -45,6 +50,21 @@ export interface PermissionDto {
   code: string
   libelle: string
   description: string | null
+}
+
+/** Authentification simulée sessionnée (Lot 13). `rememberMe` existe dans le contrat dès ce lot
+ * pour que le modèle de session n'ait jamais besoin d'être retouché quand la fonctionnalité
+ * "se souvenir de moi" sera exposée à l'écran — aucune interface ne l'envoie encore à `true`. */
+export interface AuthSessionRequest {
+  identifiant: string
+  rememberMe?: boolean
+}
+
+export interface AuthSessionDto {
+  userId: string
+  identifiant: string
+  expiresAt: string
+  isPersistent: boolean
 }
 
 export const ApplicationCriticality = {

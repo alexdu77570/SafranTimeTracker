@@ -11,6 +11,15 @@ Le découpage du cahier des charges (§40) ne prévoyait aucun lot dédié à la
 
 Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 
+## Révision de la roadmap (à l'ouverture du Lot 13)
+
+L'ancien **Lot 13 — Industrialisation** (tests élargis, optimisation, documentation d'exploitation, revue de sécurité, sauvegarde/restauration, packaging portable) ne nommait ni authentification, ni session, ni modèle RBAC, ni CI/CD par leur nom — seule la ligne « Sécurité (revue complète) » s'en rapprochait. Le périmètre explicitement demandé à l'ouverture de ce lot (authentification simulée sessionnée, autorisation RBAC, sécurisation de l'API, pipeline GitHub Actions, qualité, préparation multi-utilisateur) dépasse cette description et constitue un sujet à part entière, distinct du packaging/déploiement. La roadmap est donc révisée une seconde fois, décision actée à l'ouverture du Lot 13 :
+
+- le **Lot 13** est redéfini pour couvrir authentification/sessions/RBAC/sécurisation API/CI-CD/qualité (détail ci-dessous) ;
+- l'ancien contenu du Lot 13 (packaging, déploiement, sauvegarde/restauration, documentation d'exploitation) est conservé intégralement mais renuméroté **Lot 14**.
+
+Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
+
 ## Règle commune à tous les lots
 
 **Un lot n'est terminé que lorsqu'il produit une version compilable, testée réellement et démontrable.** On ne démarre pas le lot suivant tant que ce critère n'est pas satisfait. Aucune fonctionnalité d'un lot ultérieur n'est anticipée dans un lot antérieur.
@@ -146,7 +155,17 @@ Les Lots 0 à 6 ne sont pas modifiés par cette révision.
 
 # Phase — Industrialisation
 
-## Lot 13 — Industrialisation (ancien Lot 7)
+> **Précision actée à l'ouverture du Lot 13** : périmètre redéfini par rapport à la description originale du cahier des charges §40 (voir « Révision de la roadmap » ci-dessus) — authentification/sessions/RBAC/sécurisation API/CI-CD/qualité plutôt que packaging/déploiement, repoussés au Lot 14.
+
+## Lot 13 — Authentification, RBAC, Sécurisation API, CI/CD et Qualité
+
+- Authentification simulée sessionnée (§6.5) : session serveur (`UserSession`, cookie HttpOnly), sans mot de passe ni JWT définitif ni écran de connexion réel — `IAuthenticationProvider` remplaçable par un futur provider LDAP/OIDC/AD sans refonte.
+- Modèle RBAC (§6.1) : `RolePermission` (permissions par défaut du rôle), `UserPermission.Effect` (octroi/retrait individuel), calcul centralisé des permissions effectives.
+- Sécurisation de l'API : en-têtes de sécurité, CORS à crédentials, limitation de débit, limite de taille de requête sur les imports.
+- Pipeline GitHub Actions (build, tests, couverture backend et frontend), sans SonarQube/SonarCloud ni Docker ce lot — structure prête à les accueillir sans refonte.
+- Périmètre organisationnel (département/service/équipe/propriété de la donnée, §6.3) : explicitement reporté à un lot dédié, non construit ici.
+
+## Lot 14 — Industrialisation (ancien Lot 13, ancien Lot 7)
 
 - Tests (couverture élargie, non-régression).
 - Optimisation.

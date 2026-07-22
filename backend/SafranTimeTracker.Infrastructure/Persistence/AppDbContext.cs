@@ -46,6 +46,8 @@ public class AppDbContext : DbContext
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
 
     // Ressources
     public DbSet<Resource> Resources => Set<Resource>();
@@ -123,5 +125,6 @@ public class AppDbContext : DbContext
         Lot6Seed.Apply(modelBuilder);
         Lot8Seed.Apply(modelBuilder);
         Lot10Seed.Apply(modelBuilder);
+        Lot13Seed.Apply(modelBuilder);
     }
 }

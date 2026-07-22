@@ -14,4 +14,5 @@ public class Role
     public int Ordre { get; set; }
 
     public ICollection<User> Users { get; set; } = new List<User>();
+    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }
