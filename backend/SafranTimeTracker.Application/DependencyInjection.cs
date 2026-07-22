@@ -7,6 +7,7 @@ using SafranTimeTracker.Application.Audit.Services;
 using SafranTimeTracker.Application.Budgets.Services;
 using SafranTimeTracker.Application.Capacity.Services;
 using SafranTimeTracker.Application.Clients.Services;
+using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Application.Companies.Services;
 using SafranTimeTracker.Application.Currencies.Services;
 using SafranTimeTracker.Application.Financial.Services;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<ResourceService>();
         services.AddScoped<UserService>();
         services.AddScoped<PermissionService>();
+        services.AddScoped<PermissionResolutionService>();
         services.AddScoped<ApplicationReferenceService>();
         services.AddScoped<SettingsService>();
         services.AddScoped<ResourceTjmHistoryService>();

@@ -5317,6 +5317,62 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Users.RolePermission", b =>
+                {
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("role_id");
+
+                    b.Property<Guid>("PermissionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("permission_id");
+
+                    b.HasKey("RoleId", "PermissionId")
+                        .HasName("pk_role_permissions");
+
+                    b.HasIndex("PermissionId")
+                        .HasDatabaseName("ix_role_permissions_permission_id");
+
+                    b.ToTable("role_permissions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000001")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000002")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000003")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000004")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000005")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000006")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            PermissionId = new Guid("00000000-0000-0000-0002-000000000007")
+                        });
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5637,6 +5693,10 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("permission_id");
 
+                    b.Property<int>("Effect")
+                        .HasColumnType("int")
+                        .HasColumnName("effect");
+
                     b.Property<DateTime>("GrantedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("granted_at");
@@ -5660,6 +5720,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000001"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5667,6 +5728,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000002"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000001"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5674,6 +5736,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000002"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5681,6 +5744,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000003"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5688,6 +5752,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000004"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5695,6 +5760,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000005"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5702,6 +5768,7 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000006"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         },
@@ -5709,9 +5776,53 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         {
                             UserId = new Guid("00000000-0000-0000-0020-000000000001"),
                             PermissionId = new Guid("00000000-0000-0000-0002-000000000007"),
+                            Effect = 0,
                             GrantedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrantedBy = "system-seed"
                         });
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Users.UserSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsPersistent")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_persistent");
+
+                    b.Property<DateTime>("LastActivityAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("last_activity_at");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_sessions");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_user_sessions_expires_at");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_sessions_user_id");
+
+                    b.ToTable("user_sessions", (string)null);
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Absences.Absence", b =>
@@ -6363,6 +6474,27 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                     b.Navigation("TimeEntry");
                 });
 
+            modelBuilder.Entity("SafranTimeTracker.Domain.Users.RolePermission", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Users.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permissions_permissions_permission_id");
+
+                    b.HasOne("SafranTimeTracker.Domain.Users.Role", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permissions_roles_role_id");
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.User", b =>
                 {
                     b.HasOne("SafranTimeTracker.Domain.Resources.Resource", "Resource")
@@ -6400,6 +6532,18 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
                         .HasConstraintName("fk_user_permissions_users_user_id");
 
                     b.Navigation("Permission");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SafranTimeTracker.Domain.Users.UserSession", b =>
+                {
+                    b.HasOne("SafranTimeTracker.Domain.Users.User", "User")
+                        .WithMany("UserSessions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_sessions_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -6484,17 +6628,23 @@ namespace SafranTimeTracker.Migrations.SqlServer.Migrations
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.Permission", b =>
                 {
+                    b.Navigation("RolePermissions");
+
                     b.Navigation("UserPermissions");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.Role", b =>
                 {
+                    b.Navigation("RolePermissions");
+
                     b.Navigation("Users");
                 });
 
             modelBuilder.Entity("SafranTimeTracker.Domain.Users.User", b =>
                 {
                     b.Navigation("UserPermissions");
+
+                    b.Navigation("UserSessions");
                 });
 #pragma warning restore 612, 618
         }

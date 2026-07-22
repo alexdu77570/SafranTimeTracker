@@ -42,22 +42,55 @@ vi.mock('../../../api/endpoints/companies', () => ({
   })),
 }))
 
+vi.mock('../../../api/endpoints/auth', () => ({
+  createDemoSession: vi.fn(async () => ({
+    userId: 'user-1',
+    identifiant: 's636140',
+    expiresAt: '2026-01-01T00:00:00Z',
+    isPersistent: false,
+  })),
+  revokeDemoSession: vi.fn(async () => undefined),
+}))
+
 vi.mock('../../../api/endpoints/users', () => ({
   fetchUsers: vi.fn(async () => ({
     items: [
       {
-        id: 'user-1', nom: 'Bernard', prenom: 'Alexandre', identifiant: 's636140', email: 'a@safran.com', telephone: null,
-        statut: 0, dateArrivee: '2024-01-01', dateSortie: null, commentaire: null, resourceId: null, roleId: 'role-1',
-        accesGlobal: false, permissionIds: ['perm-financial'],
+        id: 'user-1',
+        nom: 'Bernard',
+        prenom: 'Alexandre',
+        identifiant: 's636140',
+        email: 'a@safran.com',
+        telephone: null,
+        statut: 0,
+        dateArrivee: '2024-01-01',
+        dateSortie: null,
+        commentaire: null,
+        resourceId: null,
+        roleId: 'role-1',
+        accesGlobal: false,
+        permissionIds: ['perm-financial'],
+        effectivePermissionCodes: ['FINANCIAL_DATA_VIEW'],
       },
     ],
-    page: 1, pageSize: 100, totalCount: 1,
+    page: 1,
+    pageSize: 100,
+    totalCount: 1,
   })),
 }))
 vi.mock('../../../api/endpoints/permissions', () => ({
   fetchPermissions: vi.fn(async () => ({
-    items: [{ id: 'perm-financial', code: 'FINANCIAL_DATA_VIEW', libelle: 'Données financières', description: null }],
-    page: 1, pageSize: 100, totalCount: 1,
+    items: [
+      {
+        id: 'perm-financial',
+        code: 'FINANCIAL_DATA_VIEW',
+        libelle: 'Données financières',
+        description: null,
+      },
+    ],
+    page: 1,
+    pageSize: 100,
+    totalCount: 1,
   })),
 }))
 
@@ -85,7 +118,9 @@ describe('CompanyDetailPage', () => {
     renderPage()
 
     expect(await screen.findByText('Externe Conseil')).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText('Donnée financière non accessible.')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByText('Donnée financière non accessible.')).toBeInTheDocument(),
+    )
     expect(screen.queryByText('CTR-001')).not.toBeInTheDocument()
   })
 

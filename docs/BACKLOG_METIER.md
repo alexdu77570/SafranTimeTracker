@@ -320,6 +320,49 @@ Nouvelle méthode `ReportingService` agrégeant `ChargePlanifieeInitiale`/`Charg
 
 **Décision explicitement révisée en cours d'analyse.** « Capacité vs réalisé » avait initialement été bundlée avec « Prévu vs réalisé » dans la même question de validation ; une vérification plus poussée demandée par l'utilisateur a montré que l'agrégat existait déjà (`DashboardOperationalKpisDto`) — la recommandation a été corrigée avant tout développement pour ne construire que ce qui est réellement nécessaire (`CLAUDE.md` §5).
 
+## 18. Authentification, RBAC, Sécurisation API, CI/CD et Qualité — décisions actées à l'ouverture du Lot 13
+
+### Décision 1 — Authentification simulée sessionnée (cahier des charges §6.5)
+
+✅ **Implémenté.** Le mécanisme reposait entièrement sur l'en-tête `X-Demo-User`, rejoué sur chaque requête, falsifiable par construction (aucun secret, aucune signature). **Décision validée par l'utilisateur** : rester sur une identité simulée (aucun mot de passe, aucun compte local, aucun JWT définitif, aucun écran de connexion réel, aucune intégration LDAP/AD réelle ce lot), mais introduire une vraie session serveur.
+
+- `IAuthenticationProvider` (Application, `Common/Security/`) : cycle de vie de session (`CreateSessionAsync`/`RevokeSessionAsync`/`ResolveSessionAsync`/`ResolveDirectIdentifierAsync`), seule abstraction connue du reste de l'application — même principe que `ICurrentUser`.
+- `DemoAuthenticationProvider` (Api, composition root) : implémentation de démonstration, seule à connaître le mécanisme concret.
+- `UserSession` (Domain) : session persistée en base (`Id` = jeton opaque, `UserId`, `IsPersistent`, `CreatedAt`, `LastActivityAt`, `ExpiresAt`, `RevokedAt`). **`IsPersistent` conçu dès ce lot** pour porter la distinction session navigateur / session persistante ("se souvenir de moi") sans migration supplémentaire quand cette fonctionnalité sera exposée à l'écran — jamais actionnée aujourd'hui (toujours `false` à la création, aucune case à cocher construite).
+- `AuthController` (`POST`/`DELETE /api/v1/auth/sessions`) : pose/efface un cookie HttpOnly, `SameSite=Strict`, `Secure` hors Development, portant uniquement le jeton de session (jamais de données métier dans le cookie).
+- `IdentityResolutionMiddleware` : résout l'identité une seule fois par requête (cookie, puis repli sur l'en-tête si autorisé) et calcule les permissions effectives, dépose le résultat dans `HttpContext.Items` — `DemoCurrentUserProvider` (implémentation d'`ICurrentUser`, forme inchangée) le lit de façon synchrone, sans jamais bloquer sur une tâche asynchrone.
+- **Façade de compatibilité des tests existants** : `Authentication:AllowDirectDemoHeader` (config, `true` en Development/Test uniquement, `false` en Qualification/Production) permet à l'en-tête `X-Demo-User` de continuer à résoudre une identité sans passer par une session — les 194 tests d'intégration existants (`CreateClient(identifiant)`) fonctionnent sans aucune modification.
+
+### Décision 2 — Modèle RBAC (cahier des charges §6.1)
+
+✅ **Implémenté.** `Role` (référentiel) et `Permission`/`UserPermission` (octroi individuel) coexistaient sans lien structurel — le rôle d'un utilisateur n'avait aucun effet sur ses droits, contrairement au modèle à deux niveaux attendu ("rôle applicatif + permissions complémentaires").
+
+- `RolePermission` (Domain, nouvelle jointure `RoleId`/`PermissionId`) : permissions accordées par défaut à un rôle.
+- `UserPermission.Effect` (nouvelle colonne, enum `UserPermissionEffect.Grant`/`Revoke`, `Grant = 0` pour que les lignes historiques des Lots 1/5/6 restent des octrois sans migration de données) : une exception individuelle peut désormais compléter (`Grant`) ou retirer (`Revoke`) un droit, priment toujours sur le rôle.
+- `PermissionResolutionService` (Application, `Common/Security/`) : calcul centralisé et déterministe — `effectives = (permissions du rôle) ∪ (octrois individuels) − (retraits individuels)`. Réutilisé par la résolution d'`ICurrentUser` et par `UserService` (octroi/retrait, `UserDto.EffectivePermissionCodes`).
+- **Compatibilité vérifiée avant implémentation** (demande explicite) : matrice `RolePermission` dérivée des affectations déjà seedées, sans en modifier une seule — `ADMINISTRATEUR` reçoit les 7 permissions (Bernard, seul administrateur seedé, les détient déjà toutes individuellement) ; les trois autres rôles (`RESPONSABLE_DEPARTEMENT`, `RESPONSABLE_SERVICE`, `INGENIEUR`) ne reçoivent aucune permission de rôle — le seul utilisateur `RESPONSABLE_DEPARTEMENT` (Legrand, `FINANCIAL_DATA_VIEW`) reste une exception individuelle plutôt qu'une règle de rôle inventée à partir d'un unique point de données (voir `Lot13Seed.cs`).
+- `UserService.GrantPermissionAsync`/`RevokePermissionAsync` (§28.3) rendus RBAC-conscients : un octroi est en conflit si la permission est déjà **effective** (rôle ou individuelle), pas seulement si une ligne individuelle existe déjà ; un retrait qui laisserait la permission effective via le rôle matérialise une ligne de retrait explicite plutôt qu'un simple retrait d'octroi individuel. Même contrat HTTP qu'avant (`POST`/`DELETE /api/v1/users/{id}/permissions/{code}`), sémantique interne enrichie.
+
+### Décision 3 — Périmètre organisationnel : reporté (cahier des charges §6.3)
+
+**Explicitement différé.** Département/service/équipe/propriété de la donnée/périmètre métier/visibilité organisationnelle restent hors périmètre de ce lot — aucune règle partielle ou implicite introduite, pour ne jamais donner un faux sentiment de sécurité. Écart reconduit depuis le Lot 2, à traiter dans un lot dédié après validation fonctionnelle avec le Product Owner.
+
+### Décision 4 — Pipeline GitHub Actions et qualité
+
+✅ **Implémenté.** `.github/workflows/ci.yml` — deux jobs (`backend`, `frontend`), déclenchés sur `pull_request`/`push` vers `main`, plus `workflow_call` pour être invocable par un futur workflow de déploiement sans duplication. Backend : restauration/build/tests avec couverture (`dotnet test --collect:"XPlat Code Coverage"`), seuils vérifiés par `scripts/ci/check-backend-coverage.ps1` (projets `SafranTimeTracker.Migrations.*` explicitement exclus — code généré EF Core, fausserait la mesure). Frontend : `npm ci`, contrôle TypeScript, lint, tests avec couverture (seuils déclarés dans `vite.config.ts`, `@vitest/coverage-v8`), build. Rapports de couverture publiés comme artefacts GitHub Actions. **Aucun SonarQube/SonarCloud** (décision explicite de l'utilisateur), **aucun secret applicatif**, structure pensée pour accueillir plus tard Sonar (un pas d'analyse après les rapports déjà produits), Docker (un job séparé consommant les mêmes builds) et un déploiement DEV/QUAL/PROD (`cd.yml` distinct invoquant `ci.yml` via `workflow_call`) sans réorganisation — détail dans les commentaires du fichier lui-même.
+
+### Sécurisation de l'API (périmètre initial du Lot 13, hors des 4 décisions ci-dessus)
+
+En-têtes de sécurité (HSTS hors Development, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Content-Security-Policy: default-src 'none'` — l'API ne sert que du JSON), CORS étendu à `AllowCredentials()` (nécessaire au cookie de session, compatible avec `WithOrigins` explicites — jamais combiné à `AllowAnyOrigin`), limitation de débit native .NET (`Microsoft.AspNetCore.RateLimiting`, fenêtre fixe, ciblée sur `POST /auth/sessions`), limite de taille de requête sur les 4 endpoints d'upload d'import (10 Mo, Lot 6). Aucune extension de `[RequirePermission]` aux contrôleurs non gardés aujourd'hui (référentiels, projets, ressources, etc.) — non demandée, proche du périmètre organisationnel explicitement reporté (Décision 3).
+
+## Exception de gouvernance — Lot 13
+
+> **Rôle de cette section** : comme aux Lots 8 à 12, documenter explicitement pourquoi des évolutions backend ont été autorisées pendant un lot que `docs/ROADMAP.md` (« Industrialisation ») ne décrivait, avant ce lot, que par « Sécurité (revue complète) » et « Tests (couverture élargie) » — sans nommer authentification, session, RBAC ni CI/CD.
+
+**Constat.** Le périmètre réellement demandé par l'utilisateur à l'ouverture du Lot 13 (authentification, sessions, autorisation/rôles/permissions, sécurisation API, GitHub Actions, CI/CD, qualité, préparation multi-utilisateur) dépasse la description alors présente dans `docs/ROADMAP.md`. Quatre décisions d'architecture ont été validées explicitement avant tout développement (ci-dessus), avec des ajustements supplémentaires validés dans un second temps : `IAuthenticationProvider`/`DemoAuthenticationProvider` (nommage générique plutôt que "simulé"), modèle `UserSession` compatible dès ce lot avec la distinction session navigateur/persistante, structure CI extensible pour Sonar/Docker/déploiement sans refonte.
+
+**Nature de l'exception.** Deux nouvelles entités (`UserSession`, `RolePermission`) et une colonne additionnelle (`UserPermission.Effect`) — une migration schéma réelle, contrairement aux Lots 9-12 qui n'étendaient que des DTO/services sur des entités déjà existantes. Compensée par une vérification de compatibilité explicite avant implémentation (Décision 2) garantissant qu'aucun utilisateur seedé ne perd ou ne gagne d'accès effectif.
+
 ---
 
 ## Comment mettre à jour ce document

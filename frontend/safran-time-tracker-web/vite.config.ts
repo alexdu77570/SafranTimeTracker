@@ -21,5 +21,28 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
+    // Filet de sécurité (Lot 13, CI/CD) : le runner GitHub Actions partagé, avec l'instrumentation
+    // de couverture active, s'est montré sensiblement plus lent que les machines de développement
+    // sur des tests d'interaction utilisateur denses (plusieurs user.type()/user.click()
+    // successifs) — plusieurs tests différents ont dépassé le défaut Vitest (5000ms) à des
+    // exécutions CI distinctes. Les cas identifiés comme réellement lents ont été corrigés
+    // individuellement (fireEvent.change à la place de user.type sur les champs texte non soumis
+    // à une validation par frappe) ; ce timeout élargi reste une marge de sécurité pour le reste de
+    // la suite, pas un substitut à ces corrections ciblées.
+    testTimeout: 10000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'cobertura'],
+      // Seuils initiaux (Lot 13), fixés en dessous de la mesure réelle au moment de leur
+      // introduction (statements 72,6 % / branches 71,6 % / functions 64,3 % / lines 72,2 %) pour
+      // laisser une marge de bruit de mesure — objectif de les relever progressivement, jamais de
+      // les baisser sans justification écrite ici.
+      thresholds: {
+        statements: 65,
+        branches: 60,
+        functions: 55,
+        lines: 65,
+      },
+    },
   },
 })

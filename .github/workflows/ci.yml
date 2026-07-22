@@ -1,0 +1,105 @@
+# Pipeline d'intégration continue (Lot 13, docs/BACKLOG_METIER.md §18 Décision 4).
+#
+# Structure pensée pour ne jamais nécessiter de refonte quand les besoins suivants apparaîtront
+# (aucun n'est construit dans ce fichier — seule la structure les anticipe) :
+#   - SonarQube/SonarCloud : un pas d'analyse s'ajouterait à la fin de chaque job existant
+#     (backend/frontend), juste après la production du rapport de couverture déjà généré ici
+#     (coverage.cobertura.xml / cobertura-coverage.xml) — aucun nouveau job, aucune réorganisation.
+#   - Docker : un job `docker` séparé, avec `needs: [backend, frontend]`, consommant les mêmes
+#     artefacts de build sans dépendre de leur détail interne.
+#   - Déploiement DEV/QUAL/PROD : un workflow `cd.yml` distinct, déclenché sur tag ou manuellement,
+#     qui invoque ce fichier via `workflow_call` (déclencheur déjà présent ci-dessous) comme porte de
+#     qualité avant tout déploiement, puis ajoute ses propres jobs d'environnement
+#     (`environment: Qualification` / `Production`, avec approbations GitHub natives).
+#
+# Volontairement absent de ce lot : SonarQube/SonarCloud (décision actée, aucune dépendance externe
+# payante non validée), Docker, déploiement — voir docs/BACKLOG_METIER.md §18.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_call:
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore backend/SafranTimeTracker.slnx
+
+      - name: Build
+        run: dotnet build backend/SafranTimeTracker.slnx --no-restore --configuration Release
+
+      - name: Test with coverage
+        run: >
+          dotnet test backend/SafranTimeTracker.slnx --no-build --configuration Release
+          --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Check coverage thresholds
+        shell: pwsh
+        run: ./scripts/ci/check-backend-coverage.ps1 -CoverageDirectory ./coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: coverage/**/coverage.cobertura.xml
+          retention-days: 30
+
+  frontend:
+    name: Frontend (Vite/React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/safran-time-tracker-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/safran-time-tracker-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc -b
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/safran-time-tracker-web/coverage
+          retention-days: 30

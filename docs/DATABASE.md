@@ -45,7 +45,7 @@ Les entités C# sont nommées en `PascalCase`. Le mapping physique (tables, colo
 ## 4. Inventaire des entités (cahier des charges §30)
 
 ### Sécurité et organisation
-`User`, `Role`, `Permission`, `UserPermission`, `OperationalRole`, `Department`, `Service`, `Team`.
+`User`, `Role`, `Permission`, `UserPermission` (porte désormais `Effect` — `Grant`/`Revoke`, Lot 13), `RolePermission` (permissions par défaut d'un rôle, Lot 13, modèle RBAC), `UserSession` (session serveur simulée, Lot 13 — `IsPersistent` distingue une session navigateur d'une session persistante, "se souvenir de moi" non exposée à l'écran), `OperationalRole`, `Department`, `Service`, `Team`.
 
 ### Ressources et capacité
 `Resource`, `ResourceCapacityPeriod`, `ResourceTjmHistory`.

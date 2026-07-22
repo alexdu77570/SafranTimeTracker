@@ -17,7 +17,18 @@ public class UserDto
     public Guid? ResourceId { get; set; }
     public Guid RoleId { get; set; }
     public bool AccesGlobal { get; set; }
+
+    /// <summary>Exceptions individuelles à la matrice du rôle (octrois uniquement — les retraits
+    /// individuels n'apparaissent pas ici, voir <see cref="EffectivePermissionCodes"/> pour le
+    /// résultat consolidé). Conservé tel quel depuis le Lot 1 pour ne pas changer le contrat des
+    /// écrans d'administration existants.</summary>
     public IReadOnlyList<Guid> PermissionIds { get; set; } = [];
+
+    /// <summary>Permissions réellement actives pour cet utilisateur (rôle + exceptions
+    /// individuelles, <c>PermissionResolutionService</c>, Lot 13) — seule source fiable pour piloter
+    /// un affichage conditionnel côté frontend (<c>PermissionGuard</c>), jamais une barrière de
+    /// sécurité en soi (CLAUDE.md §17).</summary>
+    public IReadOnlyList<string> EffectivePermissionCodes { get; set; } = [];
 }
 
 public class UserCreateRequest

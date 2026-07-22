@@ -26,6 +26,7 @@ public class UserService(
     IReadRepository<Role> roleRepository,
     IReadRepository<Permission> permissionRepository,
     IRepository<UserPermission> userPermissionRepository,
+    PermissionResolutionService permissionResolutionService,
     AuditService auditService,
     ICurrentUser currentUser)
 {
@@ -52,11 +53,25 @@ public class UserService(
             .ProjectToType<UserDto>()
             .ToListAsync(cancellationToken);
 
+        // Calcul RBAC par utilisateur (13 utilisateurs de démonstration à ce jour) : même principe
+        // d'acceptabilité N+1 que la capacité par ressource du Lot 9, non anticipé au-delà.
+        foreach (var item in items)
+        {
+            item.EffectivePermissionCodes = await permissionResolutionService.GetEffectivePermissionCodesAsync(item.Id, cancellationToken);
+        }
+
         return new PagedResult<UserDto> { Items = items, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = totalCount };
     }
 
-    public Task<UserDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        repository.Query().Where(u => u.Id == id).ProjectToType<UserDto>().FirstOrDefaultAsync(cancellationToken);
+    public async Task<UserDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var dto = await repository.Query().Where(u => u.Id == id).ProjectToType<UserDto>().FirstOrDefaultAsync(cancellationToken);
+        if (dto is not null)
+        {
+            dto.EffectivePermissionCodes = await permissionResolutionService.GetEffectivePermissionCodesAsync(dto.Id, cancellationToken);
+        }
+        return dto;
+    }
 
     public async Task<UserDto> CreateAsync(UserCreateRequest request, CancellationToken cancellationToken = default)
     {
@@ -81,7 +96,7 @@ public class UserService(
         await repository.AddAsync(entity, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
     }
 
     /// <summary>§28.3 "modification d'un utilisateur". Identifiant/rôle/permissions exclus, voir
@@ -102,7 +117,7 @@ public class UserService(
         await auditService.RecordAsync(AuditActions.Update, nameof(User), id, oldValue, entity.Adapt<UserDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
     }
 
     /// <summary>§28.3 "désactivation d'un utilisateur". Statut plutôt que suppression physique
@@ -131,7 +146,7 @@ public class UserService(
             new { Statut = ReferentialStatus.Actif }, new { entity.Statut }, cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
     }
 
     public async Task<UserDto?> ReactivateAsync(Guid id, CancellationToken cancellationToken = default)
@@ -156,7 +171,7 @@ public class UserService(
             new { Statut = ReferentialStatus.Inactif }, new { entity.Statut }, cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
     }
 
     /// <summary>§28.3 "changement de rôle" / "promotion ou retrait Administrateur". Le motif est
@@ -200,10 +215,16 @@ public class UserService(
             action, nameof(User), id, new { RoleId = oldRoleId }, new { entity.RoleId }, request.Motif, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
     }
 
-    /// <summary>§28.3 "changement de permission".</summary>
+    /// <summary>§28.3 "changement de permission" (modèle RBAC, Lot 13) : octroie une exception
+    /// individuelle. Si le rôle de l'utilisateur accorde déjà effectivement cette permission (via
+    /// <see cref="RolePermission"/> ou un octroi individuel existant), l'action est un conflit — la
+    /// notion de "déjà accordée" se lit désormais sur le résultat effectif
+    /// (<see cref="PermissionResolutionService"/>), pas sur la seule existence d'une ligne
+    /// individuelle. Si une ligne de retrait individuel existe pour cette permission, elle est
+    /// remplacée par un octroi explicite (garantit l'accès quel que soit le rôle).</summary>
     public async Task<UserDto?> GrantPermissionAsync(Guid id, string permissionCode, CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetByIdAsync(id, cancellationToken);
@@ -215,16 +236,30 @@ public class UserService(
         var permission = await permissionRepository.Query().FirstOrDefaultAsync(p => p.Code == permissionCode, cancellationToken)
             ?? throw new BusinessConflictException($"La permission '{permissionCode}' n'existe pas.");
 
-        var alreadyGranted = await userPermissionRepository.Query()
-            .AnyAsync(up => up.UserId == id && up.PermissionId == permission.Id, cancellationToken);
-        if (alreadyGranted)
+        var effectiveCodes = await permissionResolutionService.GetEffectivePermissionCodesAsync(id, cancellationToken);
+        var existingEffect = await userPermissionRepository.Query()
+            .Where(up => up.UserId == id && up.PermissionId == permission.Id)
+            .Select(up => (UserPermissionEffect?)up.Effect)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingEffect != UserPermissionEffect.Revoke
+            && effectiveCodes.Contains(permissionCode, StringComparer.OrdinalIgnoreCase))
         {
             throw new BusinessConflictException("Cette permission est déjà accordée à cet utilisateur.");
         }
 
+        if (existingEffect is not null)
+        {
+            // Remplace la ligne existante (retrait individuel) par un octroi explicite : deux
+            // instances EF Core distinctes ne peuvent pas être suivies simultanément pour la même
+            // clé, on vide donc le suivi de la suppression avant d'ajouter la nouvelle ligne.
+            await userPermissionRepository.RemoveAsync(new UserPermission { UserId = id, PermissionId = permission.Id }, cancellationToken);
+            await userPermissionRepository.SaveChangesAsync(cancellationToken);
+        }
+
         var now = DateTime.UtcNow;
         await userPermissionRepository.AddAsync(
-            new UserPermission { UserId = id, PermissionId = permission.Id, GrantedAt = now, GrantedBy = currentUser.Identifier },
+            new UserPermission { UserId = id, PermissionId = permission.Id, Effect = UserPermissionEffect.Grant, GrantedAt = now, GrantedBy = currentUser.Identifier },
             cancellationToken);
 
         entity.SecurityLastModifiedAt = now;
@@ -234,14 +269,17 @@ public class UserService(
             AuditActions.PermissionGranted, nameof(User), id, null, new { PermissionCode = permissionCode }, cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
     }
 
-    /// <summary>§28.3 "changement de permission". Retrait d'une permission financière soumis au
-    /// même garde-fou de principe que le rôle Administrateur (CLAUDE.md §17) : appliqué ici via la
-    /// permission dédiée <c>USER_ADMINISTRATION</c> exigée côté contrôleur, pas de vérification de
-    /// "dernier détenteur" supplémentaire (contrairement au rôle Administrateur, une permission
-    /// complémentaire n'est jamais la seule porte d'entrée de l'application).</summary>
+    /// <summary>§28.3 "changement de permission" (modèle RBAC, Lot 13). Retrait d'une permission
+    /// financière soumis au même garde-fou de principe que le rôle Administrateur (CLAUDE.md §17) :
+    /// appliqué ici via la permission dédiée <c>USER_ADMINISTRATION</c> exigée côté contrôleur, pas
+    /// de vérification de "dernier détenteur" supplémentaire (contrairement au rôle Administrateur,
+    /// une permission complémentaire n'est jamais la seule porte d'entrée de l'application). Si le
+    /// rôle accorde encore la permission après la suppression d'un éventuel octroi individuel, une
+    /// ligne de retrait explicite est matérialisée — un simple retrait de l'octroi individuel ne
+    /// suffit pas à retirer un accès qui provient du rôle.</summary>
     public async Task<UserDto?> RevokePermissionAsync(Guid id, string permissionCode, CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetByIdAsync(id, cancellationToken);
@@ -253,16 +291,34 @@ public class UserService(
         var permission = await permissionRepository.Query().FirstOrDefaultAsync(p => p.Code == permissionCode, cancellationToken)
             ?? throw new BusinessConflictException($"La permission '{permissionCode}' n'existe pas.");
 
-        var exists = await userPermissionRepository.Query()
-            .AnyAsync(up => up.UserId == id && up.PermissionId == permission.Id, cancellationToken);
-        if (!exists)
+        var effectiveCodes = await permissionResolutionService.GetEffectivePermissionCodesAsync(id, cancellationToken);
+        if (!effectiveCodes.Contains(permissionCode, StringComparer.OrdinalIgnoreCase))
         {
             throw new BusinessConflictException("Cette permission n'est pas accordée à cet utilisateur.");
         }
 
-        await userPermissionRepository.RemoveAsync(new UserPermission { UserId = id, PermissionId = permission.Id }, cancellationToken);
+        var rolePermissionCodes = await permissionResolutionService.GetRolePermissionCodesAsync(entity.RoleId, cancellationToken);
+        var roleGrantsIt = rolePermissionCodes.Contains(permissionCode, StringComparer.OrdinalIgnoreCase);
+
+        var existingEffect = await userPermissionRepository.Query()
+            .Where(up => up.UserId == id && up.PermissionId == permission.Id)
+            .Select(up => (UserPermissionEffect?)up.Effect)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingEffect is not null)
+        {
+            await userPermissionRepository.RemoveAsync(new UserPermission { UserId = id, PermissionId = permission.Id }, cancellationToken);
+            await userPermissionRepository.SaveChangesAsync(cancellationToken);
+        }
 
         var now = DateTime.UtcNow;
+        if (roleGrantsIt)
+        {
+            await userPermissionRepository.AddAsync(
+                new UserPermission { UserId = id, PermissionId = permission.Id, Effect = UserPermissionEffect.Revoke, GrantedAt = now, GrantedBy = currentUser.Identifier },
+                cancellationToken);
+        }
+
         entity.SecurityLastModifiedAt = now;
         entity.SecurityLastModifiedBy = currentUser.Identifier;
 
@@ -270,7 +326,14 @@ public class UserService(
             AuditActions.PermissionRevoked, nameof(User), id, new { PermissionCode = permissionCode }, null, cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Adapt<UserDto>();
+        return await ToDtoAsync(entity, cancellationToken);
+    }
+
+    private async Task<UserDto> ToDtoAsync(User entity, CancellationToken cancellationToken)
+    {
+        var dto = entity.Adapt<UserDto>();
+        dto.EffectivePermissionCodes = await permissionResolutionService.GetEffectivePermissionCodesAsync(entity.Id, cancellationToken);
+        return dto;
     }
 
     private async Task<bool> IsAdministrateurRoleAsync(Guid roleId, CancellationToken cancellationToken) =>

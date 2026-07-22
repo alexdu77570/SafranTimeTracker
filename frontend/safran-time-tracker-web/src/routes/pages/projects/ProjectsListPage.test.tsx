@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -106,6 +106,16 @@ vi.mock('../../../api/endpoints/projectTypes', () => ({
 vi.mock('../../../api/endpoints/clients', () => ({
   fetchClients: vi.fn(async () => ({ items: [], page: 1, pageSize: 50, totalCount: 0 })),
 }))
+vi.mock('../../../api/endpoints/auth', () => ({
+  createDemoSession: vi.fn(async () => ({
+    userId: 'user-1',
+    identifiant: 's636140',
+    expiresAt: '2026-01-01T00:00:00Z',
+    isPersistent: false,
+  })),
+  revokeDemoSession: vi.fn(async () => undefined),
+}))
+
 vi.mock('../../../api/endpoints/users', () => ({
   fetchUsers: vi.fn(async () => ({
     items: [
@@ -124,6 +134,7 @@ vi.mock('../../../api/endpoints/users', () => ({
         roleId: 'role-1',
         accesGlobal: true,
         permissionIds: ['perm-financial'],
+        effectivePermissionCodes: ['FINANCIAL_DATA_VIEW'],
       },
     ],
     page: 1,
@@ -266,8 +277,11 @@ describe('ProjectsListPage', () => {
     await user.click(screen.getByRole('button', { name: 'Créer un projet' }))
     const dialog = await screen.findByRole('dialog')
 
-    await user.type(within(dialog).getByLabelText('Nom'), 'Nouveau projet')
-    await user.type(within(dialog).getByLabelText('Code'), 'PRJ-TEST-2026')
+    // fireEvent.change plutôt que user.type (CI, Lot 13) : évite de simuler 47 frappes clavier
+    // successives sur un runner GitHub partagé plus lent, sans changer le comportement testé (le
+    // formulaire reste un champ contrôlé standard, sans validation dépendante de la frappe).
+    fireEvent.change(within(dialog).getByLabelText('Nom'), { target: { value: 'Nouveau projet' } })
+    fireEvent.change(within(dialog).getByLabelText('Code'), { target: { value: 'PRJ-TEST-2026' } })
     await user.click(within(dialog).getByLabelText('Application'))
     await user.click(await screen.findByRole('option', { name: 'IBM ELM' }))
     await user.click(within(dialog).getByLabelText('Pilote'))
@@ -276,8 +290,12 @@ describe('ProjectsListPage', () => {
     await user.click(await screen.findByRole('option', { name: 'DSI' }))
     await user.click(within(dialog).getByLabelText('Service'))
     await user.click(await screen.findByRole('option', { name: 'Production applicative' }))
-    await user.type(within(dialog).getByLabelText('Date de début'), '2026-01-01')
-    await user.type(within(dialog).getByLabelText('Date de fin prévue initiale'), '2026-12-31')
+    fireEvent.change(within(dialog).getByLabelText('Date de début'), {
+      target: { value: '2026-01-01' },
+    })
+    fireEvent.change(within(dialog).getByLabelText('Date de fin prévue initiale'), {
+      target: { value: '2026-12-31' },
+    })
 
     fetchProjects.mockClear()
     await user.click(within(dialog).getByRole('button', { name: 'Créer' }))

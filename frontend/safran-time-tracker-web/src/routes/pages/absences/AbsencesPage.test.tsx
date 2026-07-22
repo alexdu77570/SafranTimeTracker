@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DemoTestProviders } from '../../../test/testUtils'
@@ -69,6 +69,16 @@ vi.mock('../../../api/endpoints/resources', () => ({
     totalCount: 1,
   })),
 }))
+vi.mock('../../../api/endpoints/auth', () => ({
+  createDemoSession: vi.fn(async () => ({
+    userId: 'user-1',
+    identifiant: 's636140',
+    expiresAt: '2026-01-01T00:00:00Z',
+    isPersistent: false,
+  })),
+  revokeDemoSession: vi.fn(async () => undefined),
+}))
+
 vi.mock('../../../api/endpoints/users', () => ({
   fetchUsers: vi.fn(async () => ({
     items: [
@@ -87,6 +97,7 @@ vi.mock('../../../api/endpoints/users', () => ({
         roleId: 'role-1',
         accesGlobal: true,
         permissionIds: [],
+        effectivePermissionCodes: [],
       },
     ],
     page: 1,
@@ -310,7 +321,12 @@ describe('AbsencesPage', () => {
 
     expect(screen.getByRole('button', { name: 'Valider' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Refuser' }))
-    await user.type(screen.getByLabelText('Motif (facultatif)'), 'Charge insuffisante')
+    // fireEvent.change plutôt que user.type (CI, Lot 13) : évite de simuler 20 frappes clavier sur
+    // un runner GitHub partagé plus lent, sans changer le comportement testé (champ facultatif
+    // sans validation par frappe).
+    fireEvent.change(screen.getByLabelText('Motif (facultatif)'), {
+      target: { value: 'Charge insuffisante' },
+    })
     await user.click(screen.getByRole('button', { name: 'Confirmer le refus' }))
 
     await waitFor(() =>
