@@ -10,9 +10,9 @@ using SafranTimeTracker.Domain.Common;
 
 namespace SafranTimeTracker.Api.Controllers;
 
-/// <summary>Les actions de sécurité (modification, désactivation, changement de rôle, octroi/retrait
-/// de permission — cahier des charges §28.3) sont gardées par USER_ADMINISTRATION (CLAUDE.md §17) ;
-/// la consultation et la création restent ouvertes, inchangées depuis le Lot 1.</summary>
+/// <summary>Les actions de sécurité (création, modification, désactivation, changement de rôle,
+/// octroi/retrait de permission — cahier des charges §28.3) sont gardées par USER_ADMINISTRATION
+/// (CLAUDE.md §17) ; seule la consultation reste ouverte, inchangée depuis le Lot 1.</summary>
 [ApiController]
 [Route("api/v1/users")]
 public class UsersController(
@@ -37,6 +37,7 @@ public class UsersController(
     }
 
     [HttpPost]
+    [RequirePermission(PermissionCodes.UserAdministration)]
     public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateRequest request, CancellationToken cancellationToken)
     {
         var validationResult = await createValidator.ValidateAsync(request, cancellationToken);

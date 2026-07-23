@@ -50,6 +50,42 @@ public class Lot6SecurityAndOrdersTests(SafranTimeTrackerApiFactory factory) : I
     }
 
     [Fact]
+    public async Task CreateUser_WithoutUserAdministration_Returns403()
+    {
+        var adminClient = CreateClient(BernardIdentifiant);
+        var roleId = await GetUserRoleIdAsync(adminClient, "MISHRA");
+
+        var client = CreateClient(LegrandIdentifiant);
+        var identifiant = $"test-{Guid.NewGuid():N}"[..20];
+
+        var response = await client.PostAsJsonAsync("/api/v1/users", new UserCreateRequest
+        {
+            Nom = "TEST", Prenom = "Utilisateur", Identifiant = identifiant, Email = $"{identifiant}@example.com",
+            DateArrivee = new DateOnly(2024, 1, 1), RoleId = roleId
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateUser_WithoutAnyIdentity_Returns403()
+    {
+        var adminClient = CreateClient(BernardIdentifiant);
+        var roleId = await GetUserRoleIdAsync(adminClient, "BERNARD"); // rôle Administrateur : le cas le plus sensible
+
+        var client = CreateClient(); // aucun en-tête X-Demo-User, aucune session — appelant totalement anonyme
+        var identifiant = $"test-{Guid.NewGuid():N}"[..20];
+
+        var response = await client.PostAsJsonAsync("/api/v1/users", new UserCreateRequest
+        {
+            Nom = "TEST", Prenom = "Utilisateur", Identifiant = identifiant, Email = $"{identifiant}@example.com",
+            DateArrivee = new DateOnly(2024, 1, 1), RoleId = roleId, PermissionIds = []
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task UpdateUser_WithUserAdministration_Returns200AndPersists()
     {
         var client = CreateClient(BernardIdentifiant);
