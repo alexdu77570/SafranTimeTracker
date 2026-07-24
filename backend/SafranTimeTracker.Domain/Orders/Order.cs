@@ -38,6 +38,11 @@ public class Order : AuditableEntity
     public decimal? SeuilAlerte { get; set; }
     public string? Commentaire { get; set; }
 
+    /// <summary>Jeton de concurrence optimiste géré applicativement (CLAUDE.md §11, sous-lot 14.2
+    /// de l'audit du Lot 14 — entité explicitement nommée « sensible » sans en porter un jusqu'ici),
+    /// même principe que <c>ResourceTjmHistory.ConcurrencyStamp</c>/<c>CompanyContractHistory.ConcurrencyStamp</c>.</summary>
+    public Guid ConcurrencyStamp { get; set; } = Guid.NewGuid();
+
     public ICollection<OrderAuthorizedResource> AuthorizedResources { get; set; } = new List<OrderAuthorizedResource>();
     public ICollection<OrderExtension> Extensions { get; set; } = new List<OrderExtension>();
     public ICollection<OrderReceipt> Receipts { get; set; } = new List<OrderReceipt>();

@@ -135,6 +135,7 @@ public class OrderService(
             .ToList();
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await auditService.RecordAsync(AuditActions.Update, nameof(Order), id, oldValue, entity.Adapt<OrderDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
@@ -177,6 +178,7 @@ public class OrderService(
         entity.StatusId = activeStatusId;
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await auditService.RecordAsync(
             AuditActions.StatusChange, nameof(Order), id,
@@ -206,6 +208,7 @@ public class OrderService(
         entity.StatusId = targetStatus.Id;
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await auditService.RecordAsync(
             AuditActions.StatusChange, nameof(Order), id,

@@ -133,7 +133,12 @@ internal static class Lot1Seed
             SeuilAlerte = 80m,
             Commentaire = "Commande de démonstration (Lot 1).",
             CreatedAt = SeedTimestamp,
-            CreatedBy = SeedAuthor
+            CreatedBy = SeedAuthor,
+            // ConcurrencyStamp fixé explicitement (Guid.Empty, sous-lot 14.2 de l'audit du Lot 14) :
+            // le défaut Guid.NewGuid() de l'entité (destiné aux créations applicatives) romprait
+            // l'idempotence du seed d'une régénération de migration à l'autre (CLAUDE.md §11), même
+            // principe que ResourceTjmHistory/CompanyContractHistory (Lot2Seed.cs).
+            ConcurrencyStamp = Guid.Empty
         });
     }
 

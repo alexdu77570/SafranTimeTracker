@@ -22,6 +22,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.BudgetJoursAjuste).HasPrecision(9, 2);
         builder.Property(o => o.SeuilAlerte).HasPrecision(5, 2);
 
+        // Jeton de concurrence optimiste géré applicativement (CLAUDE.md §11, sous-lot 14.2 de
+        // l'audit du Lot 14), même principe que ResourceTjmHistory/CompanyContractHistory.
+        builder.Property(o => o.ConcurrencyStamp).IsConcurrencyToken();
+
         builder.HasIndex(o => o.Reference).IsUnique();
 
         builder.HasOne(o => o.Company)

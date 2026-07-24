@@ -81,6 +81,7 @@ public class OrderExtensionService(
         order.DateFinAjustee = request.NewEndDate;
         order.UpdatedAt = now;
         order.UpdatedBy = currentUser.Identifier;
+        order.ConcurrencyStamp = Guid.NewGuid();
 
         await repository.AddAsync(entity, cancellationToken);
         await auditService.RecordAsync(

@@ -85,6 +85,7 @@ public class BudgetService(
         request.Adapt(entity);
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
@@ -144,6 +145,7 @@ public class BudgetService(
         budget.AdjustedAmount = request.NewValue;
         budget.UpdatedAt = now;
         budget.UpdatedBy = currentUser.Identifier;
+        budget.ConcurrencyStamp = Guid.NewGuid();
 
         await versionRepository.AddAsync(version, cancellationToken);
         await versionRepository.SaveChangesAsync(cancellationToken);
@@ -167,6 +169,7 @@ public class BudgetService(
         entity.Status = targetStatus;
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await repository.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);

@@ -323,7 +323,10 @@ internal static class Lot10Seed
             AlertThreshold = 90m,
             StartDate = startDate,
             CreatedAt = SeedTimestamp,
-            CreatedBy = SeedAuthor
+            CreatedBy = SeedAuthor,
+            // ConcurrencyStamp fixé explicitement (sous-lot 14.2 de l'audit du Lot 14) : même
+            // principe que ResourceTjmHistory/CompanyContractHistory (Lot2Seed.cs).
+            ConcurrencyStamp = Guid.Empty
         };
     }
 }

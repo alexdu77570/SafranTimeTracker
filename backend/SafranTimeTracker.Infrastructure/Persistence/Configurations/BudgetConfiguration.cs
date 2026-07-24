@@ -19,6 +19,10 @@ public class BudgetConfiguration : IEntityTypeConfiguration<Budget>
         builder.Property(b => b.AdjustedAmount).HasPrecision(18, 2);
         builder.Property(b => b.AlertThreshold).HasPrecision(5, 2);
 
+        // Jeton de concurrence optimiste géré applicativement (CLAUDE.md §11, sous-lot 14.2 de
+        // l'audit du Lot 14), même principe que ResourceTjmHistory/CompanyContractHistory.
+        builder.Property(b => b.ConcurrencyStamp).IsConcurrencyToken();
+
         builder.HasOne(b => b.Project)
             .WithMany()
             .HasForeignKey(b => b.ProjectId)
