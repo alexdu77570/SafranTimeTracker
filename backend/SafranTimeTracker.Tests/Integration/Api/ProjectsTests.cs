@@ -462,6 +462,32 @@ public class ProjectPlanningLot10Tests(SafranTimeTrackerApiFactory factory) : IC
         notSurcharged!.Items.All(r => !r.Surcharge).Should().BeTrue();
     }
 
+    /// <summary>Sous-lot 14.4 de l'audit du Lot 14 : la pagination (sans filtre surcharge) est
+    /// désormais bornée en base sur les clés (Projet, Ressource, Semaine) distinctes plutôt que
+    /// matérialisée intégralement puis paginée en mémoire — vérifie l'absence de perte/doublon en
+    /// parcourant toutes les pages d'une seule ligne.</summary>
+    [Fact]
+    public async Task GetProjectPlanningOverview_PagedOnePerPage_CoversAllRowsWithoutDuplication()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var all = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>("/api/v1/project-planning?pageSize=200");
+        all!.TotalCount.Should().BeGreaterThan(1); // jeu de démonstration multi-projets/ressources/semaines
+
+        var seen = new List<(Guid ProjectId, Guid ResourceId, DateOnly WeekStartDate)>();
+        for (var page = 1; page <= all.TotalCount; page++)
+        {
+            var result = await client.GetFromJsonAsync<PagedResult<ProjectPlanningRowDto>>(
+                $"/api/v1/project-planning?page={page}&pageSize=1");
+            result!.TotalCount.Should().Be(all.TotalCount);
+            var row = result.Items.Should().ContainSingle().Subject;
+            seen.Add((row.ProjectId, row.ResourceId, row.WeekStartDate));
+        }
+
+        seen.Should().OnlyHaveUniqueItems();
+        seen.Should().HaveCount(all.TotalCount);
+    }
+
     private static async Task<Guid> GetProjectIdAsync(HttpClient client, string code)
     {
         var result = await client.GetFromJsonAsync<PagedResult<ProjectDto>>("/api/v1/projects?pageSize=100");

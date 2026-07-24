@@ -259,7 +259,72 @@ public class ProjectPlanningService(
         if (from is not null) query = query.Where(w => w.WeekStartDate >= from);
         if (to is not null) query = query.Where(w => w.WeekStartDate <= to);
 
+        // "Surcharge" (§29.6) est un attribut calculé (capacité réelle via AvailabilityService) non
+        // traduisible en prédicat SQL sans dupliquer le calcul (CLAUDE.md §3) : seul ce filtre exige
+        // encore une matérialisation complète des lignes candidates avant pagination (même principe
+        // que ProjectService.GetListAsync, branche alerteBudget). Sans ce filtre (cas majoritaire),
+        // les clés (Projet, Ressource, Semaine) sont triées/paginées en base ; seule la page retournée
+        // déclenche le calcul de charge réalisée/capacité (sous-lot 14.4 de l'audit du Lot 14).
+        if (surcharge is not null)
+        {
+            return await GetOverviewFilteredBySurchargeAsync(query, pagination, surcharge.Value, cancellationToken);
+        }
+
+        var keysQuery = query
+            .Select(w => new { ProjectId = w.ProjectPlanVersion.ProjectId, w.ResourceId, w.WeekStartDate })
+            .Distinct();
+
+        var totalCount = await keysQuery.CountAsync(cancellationToken);
+        var pageKeys = await keysQuery
+            .OrderBy(k => k.ProjectId).ThenBy(k => k.ResourceId).ThenBy(k => k.WeekStartDate)
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .Select(k => new WeeklyPlanKey(k.ProjectId, k.ResourceId, k.WeekStartDate))
+            .ToListAsync(cancellationToken);
+
+        var items = await BuildRowsAsync(query, pageKeys, cancellationToken);
+        return new PagedResult<ProjectPlanningRowDto> { Items = items, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = totalCount };
+    }
+
+    private async Task<PagedResult<ProjectPlanningRowDto>> GetOverviewFilteredBySurchargeAsync(
+        IQueryable<ProjectWeeklyPlan> query, PaginationQuery pagination, bool surcharge, CancellationToken cancellationToken)
+    {
+        var allKeys = await query
+            .Select(w => new { ProjectId = w.ProjectPlanVersion.ProjectId, w.ResourceId, w.WeekStartDate })
+            .Distinct()
+            .OrderBy(k => k.ProjectId).ThenBy(k => k.ResourceId).ThenBy(k => k.WeekStartDate)
+            .Select(k => new WeeklyPlanKey(k.ProjectId, k.ResourceId, k.WeekStartDate))
+            .ToListAsync(cancellationToken);
+
+        var rows = await BuildRowsAsync(query, allKeys, cancellationToken);
+        var filtered = rows.Where(r => r.Surcharge == surcharge).ToList();
+
+        var totalCount = filtered.Count;
+        var page = filtered.Skip((pagination.Page - 1) * pagination.PageSize).Take(pagination.PageSize).ToList();
+
+        return new PagedResult<ProjectPlanningRowDto> { Items = page, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = totalCount };
+    }
+
+    private readonly record struct WeeklyPlanKey(Guid ProjectId, Guid ResourceId, DateOnly WeekStartDate);
+
+    /// <summary>Calcule les lignes (charge réalisée, capacité, surcharge) pour un ensemble de clés
+    /// (Projet, Ressource, Semaine) déjà déterminé — la charge initiale/ajustée n'est relue qu'au
+    /// périmètre de ces clés (projets/ressources/semaines concernés), jamais la table entière.</summary>
+    private async Task<List<ProjectPlanningRowDto>> BuildRowsAsync(
+        IQueryable<ProjectWeeklyPlan> query, List<WeeklyPlanKey> keys, CancellationToken cancellationToken)
+    {
+        if (keys.Count == 0)
+        {
+            return [];
+        }
+
+        var projectIds = keys.Select(k => k.ProjectId).Distinct().ToList();
+        var resourceIds = keys.Select(k => k.ResourceId).Distinct().ToList();
+        var weekStarts = keys.Select(k => k.WeekStartDate).Distinct().ToList();
+
         var rawLines = await query
+            .Where(w => projectIds.Contains(w.ProjectPlanVersion.ProjectId)
+                && resourceIds.Contains(w.ResourceId) && weekStarts.Contains(w.WeekStartDate))
             .Select(w => new
             {
                 ProjectId = w.ProjectPlanVersion.ProjectId,
@@ -270,32 +335,23 @@ public class ProjectPlanningService(
             })
             .ToListAsync(cancellationToken);
 
+        var keySet = keys.ToHashSet();
+
         // Initiale et Ajustée (Active) peuvent coexister à la même clé (Projet, Ressource, Semaine) :
         // regroupées ici, jamais une troisième version "réalisé" saisie manuellement (§18.3).
-        var grouped = rawLines
-            .GroupBy(l => (l.ProjectId, l.ResourceId, l.WeekStartDate))
-            .Select(g => new
-            {
-                g.Key.ProjectId,
-                g.Key.ResourceId,
-                g.Key.WeekStartDate,
-                ChargeInitiale = g.Where(l => l.Type == ProjectPlanVersionType.Initial).Sum(l => l.ChargePlanifieeHeures),
-                ChargeAjustee = g.Any(l => l.Type == ProjectPlanVersionType.Ajuste)
-                    ? g.Where(l => l.Type == ProjectPlanVersionType.Ajuste).Sum(l => l.ChargePlanifieeHeures)
-                    : (decimal?)null
-            })
-            .OrderBy(r => r.ProjectId).ThenBy(r => r.ResourceId).ThenBy(r => r.WeekStartDate)
-            .ToList();
+        var groupedByKey = rawLines
+            .Where(l => keySet.Contains(new WeeklyPlanKey(l.ProjectId, l.ResourceId, l.WeekStartDate)))
+            .GroupBy(l => new WeeklyPlanKey(l.ProjectId, l.ResourceId, l.WeekStartDate))
+            .ToDictionary(
+                g => g.Key,
+                g => (
+                    ChargeInitiale: g.Where(l => l.Type == ProjectPlanVersionType.Initial).Sum(l => l.ChargePlanifieeHeures),
+                    ChargeAjustee: g.Any(l => l.Type == ProjectPlanVersionType.Ajuste)
+                        ? g.Where(l => l.Type == ProjectPlanVersionType.Ajuste).Sum(l => l.ChargePlanifieeHeures)
+                        : (decimal?)null));
 
-        if (grouped.Count == 0)
-        {
-            return new PagedResult<ProjectPlanningRowDto> { Items = [], Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = 0 };
-        }
-
-        var resourceIds = grouped.Select(r => r.ResourceId).Distinct().ToList();
-        var projectIds = grouped.Select(r => r.ProjectId).Distinct().ToList();
-        var minWeek = grouped.Min(r => r.WeekStartDate);
-        var maxWeekEnd = grouped.Max(r => r.WeekStartDate).AddDays(6);
+        var minWeek = weekStarts.Min();
+        var maxWeekEnd = weekStarts.Max().AddDays(6);
 
         // Réalisé (§18.1) provient exclusivement des saisies de temps, jamais saisi manuellement.
         var timeEntries = await timeEntryRepository.Query()
@@ -307,31 +363,32 @@ public class ProjectPlanningService(
 
         var capacityCache = new Dictionary<(Guid ResourceId, DateOnly WeekStart), decimal>();
 
-        var rows = new List<ProjectPlanningRowDto>(grouped.Count);
-        foreach (var g in grouped)
+        var rows = new List<ProjectPlanningRowDto>(keys.Count);
+        foreach (var key in keys)
         {
+            var (chargeInitiale, chargeAjustee) = groupedByKey[key];
             var chargeRealisee = timeEntries
-                .Where(t => t.ProjectId == g.ProjectId && t.ResourceId == g.ResourceId
-                    && t.Date >= g.WeekStartDate && t.Date <= g.WeekStartDate.AddDays(6))
+                .Where(t => t.ProjectId == key.ProjectId && t.ResourceId == key.ResourceId
+                    && t.Date >= key.WeekStartDate && t.Date <= key.WeekStartDate.AddDays(6))
                 .Sum(t => t.DureeHeures);
-            var chargePrevue = g.ChargeAjustee ?? g.ChargeInitiale;
+            var chargePrevue = chargeAjustee ?? chargeInitiale;
 
-            var capacityKey = (g.ResourceId, g.WeekStartDate);
+            var capacityKey = (key.ResourceId, key.WeekStartDate);
             if (!capacityCache.TryGetValue(capacityKey, out var capaciteReelle))
             {
                 var availability = await availabilityService.GetAvailabilityAsync(
-                    g.ResourceId, g.WeekStartDate, g.WeekStartDate.AddDays(6), cancellationToken);
+                    key.ResourceId, key.WeekStartDate, key.WeekStartDate.AddDays(6), cancellationToken);
                 capaciteReelle = availability?.CapaciteReelle ?? 0m;
                 capacityCache[capacityKey] = capaciteReelle;
             }
 
             rows.Add(new ProjectPlanningRowDto
             {
-                ProjectId = g.ProjectId,
-                ResourceId = g.ResourceId,
-                WeekStartDate = g.WeekStartDate,
-                ChargePlanifieeInitiale = g.ChargeInitiale,
-                ChargePlanifieeAjustee = g.ChargeAjustee,
+                ProjectId = key.ProjectId,
+                ResourceId = key.ResourceId,
+                WeekStartDate = key.WeekStartDate,
+                ChargePlanifieeInitiale = chargeInitiale,
+                ChargePlanifieeAjustee = chargeAjustee,
                 ChargeRealisee = chargeRealisee,
                 EcartPrevuRealise = chargeRealisee - chargePrevue,
                 CapaciteReelle = capaciteReelle,
@@ -339,15 +396,7 @@ public class ProjectPlanningService(
             });
         }
 
-        if (surcharge is not null)
-        {
-            rows = rows.Where(r => r.Surcharge == surcharge.Value).ToList();
-        }
-
-        var totalCount = rows.Count;
-        var page = rows.Skip((pagination.Page - 1) * pagination.PageSize).Take(pagination.PageSize).ToList();
-
-        return new PagedResult<ProjectPlanningRowDto> { Items = page, Page = pagination.Page, PageSize = pagination.PageSize, TotalCount = totalCount };
+        return rows;
     }
 
     /// <summary>Anciennement porté par ProjectService (Lot 4) — déplacé ici (Lot 10) pour que
