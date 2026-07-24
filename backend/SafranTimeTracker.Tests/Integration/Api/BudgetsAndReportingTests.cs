@@ -252,6 +252,30 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         reactivated.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+    /// <summary>Sous-lot 14.1 (rapport d'audit du Lot 14, constat BE-7) : avant
+    /// ReportingFilterQueryValidator, ce cas faisait fuir une ArgumentException brute (500) depuis
+    /// ReportingPeriodResolver au lieu du 400 attendu par la convention du projet (CLAUDE.md §12).</summary>
+    [Fact]
+    public async Task GetCharges_WithPersonnaliseePeriodAndNoDates_Returns400()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var response = await client.GetAsync("/api/v1/reporting/charges?periodType=Personnalisee");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetCharges_WithPersonnaliseePeriodAndCustomToBeforeCustomFrom_Returns400()
+    {
+        var client = CreateClient(BernardIdentifiant);
+
+        var response = await client.GetAsync(
+            "/api/v1/reporting/charges?periodType=Personnalisee&customFrom=2025-12-31&customTo=2024-01-01");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     [Fact]
     public async Task GetCharges_OverSeededPeriod_ReturnsExpectedTotalsAndDistinctReferenceCounts()
     {

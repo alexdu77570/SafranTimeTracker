@@ -2,60 +2,35 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { DemoTestProviders } from '../../test/testUtils'
+import { demoPermissionFixture, demoSessionFixture, demoUserFixture, pagedResult } from '../../test/fixtures'
 import { setStoredIdentifiant } from '../../auth/demoIdentityStorage'
 import { Sidebar } from './Sidebar'
 
 vi.mock('../../api/endpoints/auth', () => ({
-  createDemoSession: vi.fn(async () => ({
-    userId: 'user-1',
-    identifiant: 's636140',
-    expiresAt: '2026-01-01T00:00:00Z',
-    isPersistent: false,
-  })),
+  createDemoSession: vi.fn(async () => demoSessionFixture()),
   revokeDemoSession: vi.fn(async () => undefined),
 }))
 
 vi.mock('../../api/endpoints/users', () => ({
-  fetchUsers: vi.fn(async () => ({
-    items: [
-      {
-        id: 'user-1',
-        nom: 'Dupont',
-        prenom: 'Alice',
-        identifiant: 's636140',
-        email: 'alice.dupont@safran.com',
-        telephone: null,
-        statut: 0,
-        dateArrivee: '2024-01-01',
-        dateSortie: null,
-        commentaire: null,
-        resourceId: null,
-        roleId: 'role-1',
-        accesGlobal: false,
-        permissionIds: ['perm-financial'],
-        effectivePermissionCodes: ['FINANCIAL_DATA_VIEW'],
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchUsers: vi.fn(async () =>
+    pagedResult(
+      [
+        demoUserFixture({
+          nom: 'Dupont',
+          prenom: 'Alice',
+          email: 'alice.dupont@safran.com',
+          dateArrivee: '2024-01-01',
+          resourceId: null,
+          accesGlobal: false,
+        }),
+      ],
+      100,
+    ),
+  ),
 }))
 
 vi.mock('../../api/endpoints/permissions', () => ({
-  fetchPermissions: vi.fn(async () => ({
-    items: [
-      {
-        id: 'perm-financial',
-        code: 'FINANCIAL_DATA_VIEW',
-        libelle: 'Accès financier',
-        description: null,
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchPermissions: vi.fn(async () => pagedResult([demoPermissionFixture({ libelle: 'Accès financier' })], 100)),
 }))
 
 afterEach(() => {

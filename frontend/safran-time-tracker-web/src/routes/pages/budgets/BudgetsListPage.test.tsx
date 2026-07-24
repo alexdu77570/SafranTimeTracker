@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { setStoredIdentifiant } from '../../../auth/demoIdentityStorage'
 import { DemoTestProviders } from '../../../test/testUtils'
+import { demoPermissionFixture, demoSessionFixture, demoUserFixture, pagedResult } from '../../../test/fixtures'
 import { BudgetsListPage } from './BudgetsListPage'
 
 const { fetchDashboard, fetchFinancialReport } = vi.hoisted(() => ({
@@ -44,55 +45,15 @@ vi.mock('../../../api/endpoints/orders', () => ({
   })),
 }))
 vi.mock('../../../api/endpoints/auth', () => ({
-  createDemoSession: vi.fn(async () => ({
-    userId: 'user-1',
-    identifiant: 's636140',
-    expiresAt: '2026-01-01T00:00:00Z',
-    isPersistent: false,
-  })),
+  createDemoSession: vi.fn(async () => demoSessionFixture()),
   revokeDemoSession: vi.fn(async () => undefined),
 }))
 
 vi.mock('../../../api/endpoints/users', () => ({
-  fetchUsers: vi.fn(async () => ({
-    items: [
-      {
-        id: 'user-1',
-        nom: 'BERNARD',
-        prenom: 'Alexandre',
-        identifiant: 's636140',
-        email: 's636140@safran.local',
-        telephone: null,
-        statut: 0,
-        dateArrivee: '2021-01-01',
-        dateSortie: null,
-        commentaire: null,
-        resourceId: 'resource-1',
-        roleId: 'role-1',
-        accesGlobal: true,
-        permissionIds: ['perm-financial'],
-        effectivePermissionCodes: ['FINANCIAL_DATA_VIEW'],
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchUsers: vi.fn(async () => pagedResult([demoUserFixture()], 100)),
 }))
 vi.mock('../../../api/endpoints/permissions', () => ({
-  fetchPermissions: vi.fn(async () => ({
-    items: [
-      {
-        id: 'perm-financial',
-        code: 'FINANCIAL_DATA_VIEW',
-        libelle: 'Données financières',
-        description: null,
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchPermissions: vi.fn(async () => pagedResult([demoPermissionFixture()], 100)),
 }))
 
 const dashboard = {
@@ -173,10 +134,6 @@ const budget = {
   risqueDepassement: false,
 }
 
-function pagedResult<T>(items: T[]) {
-  return { items, page: 1, pageSize: 100, totalCount: items.length }
-}
-
 afterEach(() => {
   localStorage.clear()
   vi.clearAllMocks()
@@ -195,7 +152,7 @@ describe('BudgetsListPage', () => {
     setStoredIdentifiant('s636140')
     fetchDashboard.mockResolvedValue(dashboard)
     fetchFinancialReport.mockResolvedValue(financialReport)
-    fetchBudgets.mockResolvedValue(pagedResult([budget]))
+    fetchBudgets.mockResolvedValue(pagedResult([budget], 100))
 
     renderPage()
 
@@ -205,7 +162,7 @@ describe('BudgetsListPage', () => {
   })
 
   it('hides financial data without FINANCIAL_DATA_VIEW', async () => {
-    fetchBudgets.mockResolvedValue(pagedResult([]))
+    fetchBudgets.mockResolvedValue(pagedResult([], 100))
 
     renderPage()
 
@@ -217,7 +174,7 @@ describe('BudgetsListPage', () => {
     setStoredIdentifiant('s636140')
     fetchDashboard.mockResolvedValue(dashboard)
     fetchFinancialReport.mockResolvedValue(financialReport)
-    fetchBudgets.mockResolvedValue(pagedResult([budget]))
+    fetchBudgets.mockResolvedValue(pagedResult([budget], 100))
     closeBudget.mockResolvedValue({ ...budget, status: 1 })
     const user = userEvent.setup()
 
@@ -233,7 +190,7 @@ describe('BudgetsListPage', () => {
     setStoredIdentifiant('s636140')
     fetchDashboard.mockResolvedValue(dashboard)
     fetchFinancialReport.mockResolvedValue(financialReport)
-    fetchBudgets.mockResolvedValue(pagedResult([]))
+    fetchBudgets.mockResolvedValue(pagedResult([], 100))
     createBudget.mockResolvedValue(budget)
     const user = userEvent.setup()
 

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DemoTestProviders } from '../../../test/testUtils'
+import { demoPermissionFixture, demoSessionFixture, demoUserFixture, pagedResult as sharedPagedResult } from '../../../test/fixtures'
 import { setStoredIdentifiant } from '../../../auth/demoIdentityStorage'
 import { weekBounds } from '../../../lib/dateUtils'
 import { TimeEntriesPage } from './TimeEntriesPage'
@@ -151,50 +152,22 @@ vi.mock('../../../api/endpoints/orders', () => ({
   })),
 }))
 vi.mock('../../../api/endpoints/auth', () => ({
-  createDemoSession: vi.fn(async () => ({
-    userId: 'user-1',
-    identifiant: 's636140',
-    expiresAt: '2026-01-01T00:00:00Z',
-    isPersistent: false,
-  })),
+  createDemoSession: vi.fn(async () => demoSessionFixture()),
   revokeDemoSession: vi.fn(async () => undefined),
 }))
 
 vi.mock('../../../api/endpoints/users', () => ({
-  fetchUsers: vi.fn(async () => ({
-    items: [
-      {
-        id: 'user-1',
-        nom: 'BERNARD',
-        prenom: 'Alexandre',
-        identifiant: 's636140',
-        email: 's636140@safran.local',
-        telephone: null,
-        statut: 0,
-        dateArrivee: '2021-01-01',
-        dateSortie: null,
-        commentaire: null,
-        resourceId: 'resource-1',
-        roleId: 'role-1',
-        accesGlobal: true,
-        permissionIds: ['perm-recalc'],
-        effectivePermissionCodes: ['TIME_ENTRY_RECALCULATION'],
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchUsers: vi.fn(async () =>
+    sharedPagedResult(
+      [demoUserFixture({ permissionIds: ['perm-recalc'], effectivePermissionCodes: ['TIME_ENTRY_RECALCULATION'] })],
+      100,
+    ),
+  ),
 }))
 vi.mock('../../../api/endpoints/permissions', () => ({
   fetchPermissions: vi.fn(async () => ({
     items: [
-      {
-        id: 'perm-recalc',
-        code: 'TIME_ENTRY_RECALCULATION',
-        libelle: 'Recalcul',
-        description: null,
-      },
+      demoPermissionFixture({ id: 'perm-recalc', code: 'TIME_ENTRY_RECALCULATION', libelle: 'Recalcul' }),
     ],
     page: 1,
     pageSize: 100,
