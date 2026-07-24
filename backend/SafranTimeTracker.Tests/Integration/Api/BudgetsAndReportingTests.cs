@@ -371,6 +371,30 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         withoutFinancial.Operational.ProjetsActifs.Should().Be(5);
     }
 
+    /// <summary>Caractérisation avant refactoring (sous-lot 14.6 de l'audit du Lot 14) : verrouille
+    /// la cohérence entre GetDashboardAsync (capacité agrégée, filtrée à une seule ressource) et
+    /// GetOperationalReportAsync (capacité détaillée par ressource) avant de factoriser la boucle
+    /// "disponibilité par ressource" (aujourd'hui dupliquée dans GetDashboardAsync,
+    /// GetOperationalReportAsync et BuildWorkloadAlertsAsync) en un seul résolveur commun — les deux
+    /// endpoints doivent continuer à produire des totaux identiques pour la même ressource et la
+    /// même période après la factorisation.</summary>
+    [Fact]
+    public async Task GetDashboardAndOperationalReport_AgreeOnCapacity_ForTheSameScopedResourceAndPeriod()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var resourceId = await GetResourceIdAsync(client, "BERNARD");
+        var query = $"resourceId={resourceId}&periodType=Personnalisee&customFrom=2024-01-01&customTo=2025-12-31";
+
+        var dashboard = await client.GetFromJsonAsync<DashboardDto>($"/api/v1/reporting/dashboard?{query}");
+        var operational = await client.GetFromJsonAsync<OperationalReportDto>($"/api/v1/reporting/operational?{query}");
+
+        dashboard!.Operational.CapaciteTheorique.Should().BeGreaterThan(0);
+        var capaciteRow = operational!.CapaciteEtDisponibilite.Should().ContainSingle(c => c.ResourceId == resourceId).Subject;
+        dashboard.Operational.CapaciteTheorique.Should().Be(capaciteRow.CapaciteTheorique);
+        dashboard.Operational.CapaciteReelle.Should().Be(capaciteRow.CapaciteReelle);
+        dashboard.Operational.TauxDisponibilite.Should().Be(capaciteRow.TauxDisponibilite);
+    }
+
     [Fact]
     public async Task GetFinancialReport_WithoutPermission_Returns403()
     {
@@ -407,6 +431,46 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
         var currentMonth = report!.ConsommationMensuelle.Should().ContainSingle(m => m.Annee == today.Year && m.Mois == today.Month).Subject;
         currentMonth.CoutReel.Should().BeGreaterOrEqualTo(650.00m);
         report.ConsommationMensuelle.Select(m => (m.Annee, m.Mois)).Should().OnlyHaveUniqueItems();
+    }
+
+    /// <summary>Caractérisation avant refactoring (sous-lot 14.6 de l'audit du Lot 14) : verrouille
+    /// le comportement actuel des 4 ventilations différentielles (projet/commande/société/ressource,
+    /// aujourd'hui 4 blocs dupliqués dans GetFinancialReportAsync) avant leur factorisation en un
+    /// helper commun — aucun test existant n'asserte sur leur contenu, seulement sur
+    /// ConsommationMensuelle (calculée à partir des mêmes snapshots).</summary>
+    [Fact]
+    public async Task GetFinancialReport_ReturnsMatchingDifferentialAcrossAllFourDimensions_ForSeededTimeEntry()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var projectId = await GetProjectIdAsync(client, ProjectElmCode);
+        var orderId = await GetSeededOrderIdAsync(client);
+        var resourceId = await GetResourceIdAsync(client, "BERNARD"); // société interne, TJM 650€ (Lot2Seed)
+        var activityTypeId = await GetActivityTypeIdAsync(client, "INCIDENT");
+
+        var created = await client.PostAsJsonAsync("/api/v1/time-entries", new TimeEntryCreateRequest
+        {
+            ResourceId = resourceId,
+            ActivityTypeId = activityTypeId,
+            ProjectId = projectId,
+            OrderId = orderId,
+            Date = DateOnly.FromDateTime(DateTime.UtcNow),
+            DureeHeures = 7.75m, // = 1 jour à 7.75h/jour (HeuresParJour, Lot1Seed) -> coutReel = 650,00 €
+            Reference = "INC0009997"
+        });
+        created.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var report = await client.GetFromJsonAsync<FinancialReportDto>("/api/v1/reporting/financial");
+
+        report!.DifferentielParProjet.Should().Contain(d => d.Nom == "Migration ELM" && d.CoutReel >= 650.00m);
+        report.DifferentielParCommande.Should().Contain(d => d.Nom == "CMD-2026-0001" && d.CoutReel >= 650.00m);
+        report.DifferentielParSociete.Should().Contain(d => d.Nom == "SAFRAN" && d.CoutReel >= 650.00m);
+        report.DifferentielParRessource.Should().Contain(d => d.Nom.Contains("BERNARD") && d.CoutReel >= 650.00m);
+
+        // Chaque ventilation reste triée par |différentiel| décroissant (comportement actuel).
+        report.DifferentielParProjet.Select(d => Math.Abs(d.Differentiel)).Should().BeInDescendingOrder();
+        report.DifferentielParCommande.Select(d => Math.Abs(d.Differentiel)).Should().BeInDescendingOrder();
+        report.DifferentielParSociete.Select(d => Math.Abs(d.Differentiel)).Should().BeInDescendingOrder();
+        report.DifferentielParRessource.Select(d => Math.Abs(d.Differentiel)).Should().BeInDescendingOrder();
     }
 
     [Fact]
@@ -476,6 +540,12 @@ public class BudgetsAndReportingTests(SafranTimeTrackerApiFactory factory) : ICl
     {
         var result = await client.GetFromJsonAsync<PagedResult<OrderDto>>("/api/v1/orders?pageSize=100");
         return result!.Items.First(o => o.Reference == "CMD-2026-0001").CompanyId;
+    }
+
+    private static async Task<Guid> GetSeededOrderIdAsync(HttpClient client)
+    {
+        var result = await client.GetFromJsonAsync<PagedResult<OrderDto>>("/api/v1/orders?pageSize=100");
+        return result!.Items.First(o => o.Reference == "CMD-2026-0001").Id;
     }
 
     private static async Task<Guid> GetSeededBudgetIdAsync(HttpClient client)
