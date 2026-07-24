@@ -26,6 +26,7 @@ import { KpiBand } from '../../../components/ui/KpiBand'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline } from '../../../components/ui/Timeline'
+import { isMilestoneUpcoming } from '../../../lib/milestones'
 import { MilestoneCreateForm, MilestoneEditForm } from '../projects/MilestoneForm'
 
 const milestoneStatusLabel: Record<MilestoneStatus, string> = {
@@ -104,14 +105,7 @@ export function MilestonesListPage() {
   const editing = items.find((m) => m.id === editTarget)
 
   const today = dayjs().format('YYYY-MM-DD')
-  const in30Days = dayjs().add(30, 'day').format('YYYY-MM-DD')
-  const upcoming30 = items.filter(
-    (m) =>
-      m.datePrevue >= today &&
-      m.datePrevue <= in30Days &&
-      m.statut !== MilestoneStatus.Termine &&
-      m.statut !== MilestoneStatus.Annule,
-  ).length
+  const upcoming30 = items.filter((m) => isMilestoneUpcoming(m, today)).length
   const enRetardCount = items.filter((m) => m.estEnRetard).length
 
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: ['milestones', 'all'] })

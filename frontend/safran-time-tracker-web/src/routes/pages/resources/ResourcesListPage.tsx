@@ -1,7 +1,5 @@
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { GridColDef } from '@mui/x-data-grid'
 import { fetchResources } from '../../../api/endpoints/resources'
@@ -9,6 +7,7 @@ import type { ResourceDto } from '../../../api/types'
 import { ReferentialStatus } from '../../../api/types'
 import { DataTable } from '../../../components/ui/DataTable'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { usePagedQuery } from '../../../hooks/usePagedQuery'
 
 const columns: GridColDef<ResourceDto>[] = [
   { field: 'nom', headerName: 'Nom', width: 180 },
@@ -29,10 +28,8 @@ const columns: GridColDef<ResourceDto>[] = [
 /** Liste des ressources (§10.1) — clic sur une ligne pour ouvrir la fiche à 4 sections
  * (docs/ROADMAP.md, Lot 8). */
 export function ResourcesListPage() {
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
   const navigate = useNavigate()
-  const query = useQuery({ queryKey: ['resources', page, pageSize], queryFn: () => fetchResources({ page, pageSize }) })
+  const { page, setPage, pageSize, setPageSize, query } = usePagedQuery('resources', fetchResources)
 
   return (
     <Stack spacing={2}>

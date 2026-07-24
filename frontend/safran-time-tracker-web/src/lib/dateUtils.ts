@@ -14,3 +14,20 @@ export function weekBounds(referenceDate: string): { start: string; end: string 
     end: dayjs(referenceDate).locale('fr').endOf('week').format('YYYY-MM-DD'),
   }
 }
+
+/** Libellés mensuels abrégés (§14.3/§21.3) : partagé entre BudgetsListPage (consommation
+ * mensuelle) et ChargesPage (répartition mensuelle) pour ne pas dupliquer ce tableau (CLAUDE.md §5). */
+export const MONTH_LABELS = [
+  'janv.',
+  'févr.',
+  'mars',
+  'avr.',
+  'mai',
+  'juin',
+  'juil.',
+  'août',
+  'sept.',
+  'oct.',
+  'nov.',
+  'déc.',
+]

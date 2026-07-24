@@ -1,7 +1,5 @@
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { GridColDef } from '@mui/x-data-grid'
 import { fetchApplications } from '../../../api/endpoints/applications'
@@ -9,6 +7,7 @@ import type { ApplicationReferenceDto } from '../../../api/types'
 import { ApplicationCriticality, ReferentialStatus } from '../../../api/types'
 import { DataTable } from '../../../components/ui/DataTable'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { usePagedQuery } from '../../../hooks/usePagedQuery'
 
 const criticiteLabel: Record<ApplicationCriticality, string> = {
   [ApplicationCriticality.Faible]: 'Faible',
@@ -37,10 +36,8 @@ const columns: GridColDef<ApplicationReferenceDto>[] = [
 /** Liste des applications (§15) — clic sur une ligne pour ouvrir la fiche avec détail statistique
  * et technologies rattachées (docs/ROADMAP.md, Lot 8). */
 export function ApplicationsListPage() {
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
   const navigate = useNavigate()
-  const query = useQuery({ queryKey: ['applications', page, pageSize], queryFn: () => fetchApplications({ page, pageSize }) })
+  const { page, setPage, pageSize, setPageSize, query } = usePagedQuery('applications', fetchApplications)
 
   return (
     <Stack spacing={2}>
