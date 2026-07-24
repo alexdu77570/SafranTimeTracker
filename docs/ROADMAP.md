@@ -20,6 +20,15 @@ L'ancien **Lot 13 — Industrialisation** (tests élargis, optimisation, documen
 
 Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
 
+## Révision de la roadmap (à l'ouverture du Lot 14)
+
+Avant le démarrage du Lot 14 tel que renuméroté à l'ouverture du Lot 13 (packaging, déploiement, sauvegarde/restauration, documentation d'exploitation), une revue d'architecture complète du dépôt (Lots 0 à 13) a été menée à la demande du Product Owner, en lecture seule, pour identifier la dette technique, les incohérences et les risques accumulés avant une première mise en production. Cette revue a mis en évidence des écarts (sécurité, EF Core/performance, cohérence documentaire, tests) jugés préférables à fermer avant tout travail d'industrialisation plutôt qu'après. La roadmap est donc révisée une troisième fois, décision actée à l'ouverture du Lot 14 :
+
+- le **Lot 14** est redéfini : **Audit / Refactoring / Qualité** — fermeture des écarts constatés par la revue d'architecture, sans aucune fonctionnalité métier nouvelle ;
+- l'ancien contenu du Lot 14 (packaging, déploiement, sauvegarde/restauration, documentation d'exploitation) est conservé intégralement mais renuméroté **Lot 15**.
+
+Les Lots 0 à 13 ne sont pas modifiés par cette troisième révision.
+
 ## Règle commune à tous les lots
 
 **Un lot n'est terminé que lorsqu'il produit une version compilable, testée réellement et démontrable.** On ne démarre pas le lot suivant tant que ce critère n'est pas satisfait. Aucune fonctionnalité d'un lot ultérieur n'est anticipée dans un lot antérieur.
@@ -153,9 +162,7 @@ Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
 
 ---
 
-# Phase — Industrialisation
-
-> **Précision actée à l'ouverture du Lot 13** : périmètre redéfini par rapport à la description originale du cahier des charges §40 (voir « Révision de la roadmap » ci-dessus) — authentification/sessions/RBAC/sécurisation API/CI-CD/qualité plutôt que packaging/déploiement, repoussés au Lot 14.
+> **Précision actée à l'ouverture du Lot 13** : périmètre redéfini par rapport à la description originale du cahier des charges §40 (voir « Révision de la roadmap » ci-dessus) — authentification/sessions/RBAC/sécurisation API/CI-CD/qualité plutôt que packaging/déploiement, repoussés au Lot 14 (puis au Lot 15, voir « Révision de la roadmap » à l'ouverture du Lot 14).
 
 ## Lot 13 — Authentification, RBAC, Sécurisation API, CI/CD et Qualité
 
@@ -165,7 +172,24 @@ Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
 - Pipeline GitHub Actions (build, tests, couverture backend et frontend), sans SonarQube/SonarCloud ni Docker ce lot — structure prête à les accueillir sans refonte.
 - Périmètre organisationnel (département/service/équipe/propriété de la donnée, §6.3) : explicitement reporté à un lot dédié, non construit ici.
 
-## Lot 14 — Industrialisation (ancien Lot 13, ancien Lot 7)
+## Lot 14 — Audit, Refactoring et Qualité
+
+> Lot non fonctionnel (voir « Révision de la roadmap » à l'ouverture du Lot 14, ci-dessus) : aucune capacité métier nouvelle. Objectif unique — fermer, avant une première mise en production, les écarts constatés par la revue d'architecture menée à l'ouverture de ce lot sur les Lots 1 à 13 (sécurité, EF Core/performance, frontend, tests, documentation). Classification complète (bug / dette technique / risque d'architecture / optimisation facultative), gravité, arbitrage V1/V2 et découpage en sous-lots : rapport d'audit dédié produit à l'ouverture du lot.
+
+- Sécurité : garde de permission manquante sur les endpoints financiers de commande (rallonges, réceptions) et filtrage complet des champs financiers d'`OrderDto`, à l'identique du correctif déjà appliqué sur `UsersController.Create` (v0.13.1).
+- Base de données : jetons de concurrence optimiste sur `Budget`/`Order` (écart avec `CLAUDE.md` §11), index manquants (`TimeEntry`, `Resource`, `Budget`), index unique `ProjectParticipant(ProjectId, ResourceId)`, volumétrie du seed alignée sur `docs/DATABASE.md` §7.
+- Backend : pagination réellement bornée côté base (`ProjectService` branche `alerteBudget`, `ProjectPlanningService.GetOverviewAsync`) ; validateur manquant sur `ReportingFilterQuery`.
+- Tests : couverture des domaines backend à 0 % (périodes de capacité, calendrier des jours fériés, types de jalons, équipes, rattachements société), fabrique de fixtures frontend partagée.
+- Documentation : cohérence entre `CLAUDE.md`, `docs/ROADMAP.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/BACKLOG_METIER.md`, `docs/DATABASE.md`, purge de la terminologie proscrite.
+- Selon calendrier, repoussable au Lot 15+ sans bloquer une première mise en production : décomposition de `ReportingService`, hooks frontend partagés, découpage des composants surdimensionnés, performance/responsive frontend.
+
+---
+
+# Phase — Industrialisation
+
+> **Précision actée à l'ouverture du Lot 14** : le contenu ci-dessous occupait initialement le Lot 14 (lui-même l'ancien Lot 13, lui-même l'ancien Lot 7) ; repoussé une troisième fois au **Lot 15** pour laisser la priorité à l'audit et à la réduction de la dette technique (voir « Révision de la roadmap » ci-dessus).
+
+## Lot 15 — Industrialisation (ancien Lot 14, ancien Lot 13, ancien Lot 7)
 
 - Tests (couverture élargie, non-régression).
 - Optimisation.
