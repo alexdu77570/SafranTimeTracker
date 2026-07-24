@@ -188,8 +188,15 @@ export function OrderDetailPage() {
 
       <KpiBand
         items={[
-          { label: 'Budget initial', value: `${order.budgetFinancierInitial} €` },
-          { label: 'Budget ajusté', value: `${order.budgetFinancierAjuste} €` },
+          {
+            label: 'Budget initial',
+            value:
+              order.budgetFinancierInitial === null ? '—' : `${order.budgetFinancierInitial} €`,
+          },
+          {
+            label: 'Budget ajusté',
+            value: order.budgetFinancierAjuste === null ? '—' : `${order.budgetFinancierAjuste} €`,
+          },
           { label: 'Société', value: companyLabel ?? '—' },
           { label: 'Projet lié', value: projectLabel ?? '—' },
         ]}

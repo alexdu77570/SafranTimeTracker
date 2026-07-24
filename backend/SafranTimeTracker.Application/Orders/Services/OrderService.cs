@@ -220,6 +220,15 @@ public class OrderService(
     private async Task<OrderDto> ToDtoAsync(Order entity, bool hasFinancialAccess, CancellationToken cancellationToken)
     {
         var dto = entity.Adapt<OrderDto>();
+        if (!hasFinancialAccess)
+        {
+            // Montants financiers omis sans FINANCIAL_DATA_VIEW (sous-lot 14.3 de l'audit du Lot 14,
+            // constat SEC-3) : avant ce correctif, ces deux champs restaient toujours présents en
+            // racine du DTO, contrairement au sous-objet FinancialSummary déjà filtré ci-dessous.
+            dto.BudgetFinancierInitial = null;
+            dto.BudgetFinancierAjuste = null;
+        }
+
         dto.FinancialSummary = hasFinancialAccess ? await BuildFinancialSummaryAsync(entity, cancellationToken) : null;
         return dto;
     }
