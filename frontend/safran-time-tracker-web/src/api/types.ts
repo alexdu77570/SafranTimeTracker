@@ -245,8 +245,9 @@ export interface OrderDto {
   libelle: string
   companyId: string
   projectId: string | null
-  budgetFinancierInitial: number
-  budgetFinancierAjuste: number
+  /** Absent (null) sans FINANCIAL_DATA_VIEW, même principe que financialSummary (Lot 14, SEC-3). */
+  budgetFinancierInitial: number | null
+  budgetFinancierAjuste: number | null
   budgetJoursInitial: number | null
   budgetJoursAjuste: number | null
   dateDebut: string

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DemoTestProviders } from '../../../test/testUtils'
+import { demoSessionFixture, demoUserFixture, pagedResult } from '../../../test/fixtures'
 import { setStoredIdentifiant } from '../../../auth/demoIdentityStorage'
 import { AvailabilityPage, periodBounds } from './AvailabilityPage'
 
@@ -59,43 +60,15 @@ vi.mock('../../../api/endpoints/organisation', () => ({
   fetchTeams: vi.fn(async () => ({ items: [], page: 1, pageSize: 100, totalCount: 0 })),
 }))
 vi.mock('../../../api/endpoints/auth', () => ({
-  createDemoSession: vi.fn(async () => ({
-    userId: 'user-1',
-    identifiant: 's636140',
-    expiresAt: '2026-01-01T00:00:00Z',
-    isPersistent: false,
-  })),
+  createDemoSession: vi.fn(async () => demoSessionFixture()),
   revokeDemoSession: vi.fn(async () => undefined),
 }))
 
 vi.mock('../../../api/endpoints/users', () => ({
-  fetchUsers: vi.fn(async () => ({
-    items: [
-      {
-        id: 'user-1',
-        nom: 'BERNARD',
-        prenom: 'Alexandre',
-        identifiant: 's636140',
-        email: 's636140@safran.local',
-        telephone: null,
-        statut: 0,
-        dateArrivee: '2021-01-01',
-        dateSortie: null,
-        commentaire: null,
-        resourceId: 'resource-1',
-        roleId: 'role-1',
-        accesGlobal: true,
-        permissionIds: [],
-        effectivePermissionCodes: [],
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchUsers: vi.fn(async () => pagedResult([demoUserFixture({ permissionIds: [], effectivePermissionCodes: [] })], 100)),
 }))
 vi.mock('../../../api/endpoints/permissions', () => ({
-  fetchPermissions: vi.fn(async () => ({ items: [], page: 1, pageSize: 100, totalCount: 0 })),
+  fetchPermissions: vi.fn(async () => pagedResult([], 100)),
 }))
 
 function resource(id: string, prenom: string, nom: string) {

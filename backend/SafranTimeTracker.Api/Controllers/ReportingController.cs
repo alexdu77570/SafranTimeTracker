@@ -1,4 +1,6 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using SafranTimeTracker.Api.Extensions;
 using SafranTimeTracker.Api.Security;
 using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Application.Reporting.Dtos;
@@ -16,11 +18,18 @@ namespace SafranTimeTracker.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/reporting")]
-public class ReportingController(ReportingService reportingService, ExportService exportService) : ControllerBase
+public class ReportingController(
+    ReportingService reportingService, ExportService exportService, IValidator<ReportingFilterQuery> filterValidator) : ControllerBase
 {
     [HttpGet("charges")]
     public async Task<ActionResult<ChargesReportDto>> GetCharges([FromQuery] ReportingFilterQuery filter, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         var result = await reportingService.GetChargesReportAsync(filter, cancellationToken);
         return Ok(result);
     }
@@ -28,6 +37,12 @@ public class ReportingController(ReportingService reportingService, ExportServic
     [HttpGet("dashboard")]
     public async Task<ActionResult<DashboardDto>> GetDashboard([FromQuery] ReportingFilterQuery filter, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         var result = await reportingService.GetDashboardAsync(filter, cancellationToken);
         return Ok(result);
     }
@@ -35,6 +50,12 @@ public class ReportingController(ReportingService reportingService, ExportServic
     [HttpGet("operational")]
     public async Task<ActionResult<OperationalReportDto>> GetOperational([FromQuery] ReportingFilterQuery filter, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         var result = await reportingService.GetOperationalReportAsync(filter, cancellationToken);
         return Ok(result);
     }
@@ -43,6 +64,12 @@ public class ReportingController(ReportingService reportingService, ExportServic
     [RequirePermission(PermissionCodes.FinancialDataView)]
     public async Task<ActionResult<FinancialReportDto>> GetFinancial([FromQuery] ReportingFilterQuery filter, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         var result = await reportingService.GetFinancialReportAsync(filter, cancellationToken);
         return Ok(result);
     }
@@ -61,6 +88,12 @@ public class ReportingController(ReportingService reportingService, ExportServic
     public async Task<IActionResult> ExportCharges(
         [FromQuery] ReportingFilterQuery filter, [FromQuery] ExportFormat format, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         var table = await reportingService.GetChargesTableAsync(filter, cancellationToken);
         var result = await exportService.ExportAsync(table, format, "Charges", filter, containsFinancialData: false, cancellationToken);
         return File(result.Content, result.ContentType, result.FileName);
@@ -73,6 +106,12 @@ public class ReportingController(ReportingService reportingService, ExportServic
     public async Task<IActionResult> ExportOperational(
         [FromQuery] ReportingFilterQuery filter, [FromQuery] ExportFormat format, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         var table = await reportingService.GetOperationalTableAsync(filter, cancellationToken);
         var result = await exportService.ExportAsync(table, format, "Operationnel", filter, containsFinancialData: false, cancellationToken);
         return File(result.Content, result.ContentType, result.FileName);
@@ -83,10 +122,26 @@ public class ReportingController(ReportingService reportingService, ExportServic
     public async Task<IActionResult> ExportFinancial(
         [FromQuery] ReportingFilterQuery filter, [FromQuery] ExportFormat format, CancellationToken cancellationToken)
     {
+        var validationError = await ValidateFilterAsync(filter, cancellationToken);
+        if (validationError is not null)
+        {
+            return validationError;
+        }
+
         // RequirePermissionAttribute a déjà bloqué l'appelant sans FINANCIAL_DATA_VIEW (403) avant
         // d'atteindre ce corps de méthode ; ReportingService ne peut donc pas renvoyer null ici.
         var table = (await reportingService.GetFinancialDifferentialsTableAsync(filter, cancellationToken))!;
         var result = await exportService.ExportAsync(table, format, "Financier", filter, containsFinancialData: true, cancellationToken);
         return File(result.Content, result.ContentType, result.FileName);
+    }
+
+    /// <summary>Sous-lot 14.1 (rapport d'audit du Lot 14, constat BE-7) : centralise la validation
+    /// de <see cref="ReportingFilterQuery"/> pour les 7 actions qui la lient — sans ce contrôle,
+    /// <c>periodType=Personnalisee</c> sans dates atteignait <c>ReportingPeriodResolver</c> et
+    /// faisait fuir une <see cref="ArgumentException"/> brute (500) au lieu d'un 400.</summary>
+    private async Task<ActionResult?> ValidateFilterAsync(ReportingFilterQuery filter, CancellationToken cancellationToken)
+    {
+        var validationResult = await filterValidator.ValidateAsync(filter, cancellationToken);
+        return validationResult.IsValid ? null : ValidationProblem(new ValidationProblemDetails(validationResult.ToErrorDictionary()));
     }
 }

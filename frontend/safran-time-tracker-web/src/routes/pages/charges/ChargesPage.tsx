@@ -34,24 +34,11 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { FilterBar } from '../../../components/ui/FilterBar'
 import { KpiBand } from '../../../components/ui/KpiBand'
 import { WorkloadHeatmap } from '../../../components/ui/WorkloadHeatmap'
+import { MONTH_LABELS } from '../../../lib/dateUtils'
 import { OPERATIONAL_ROLE_OPTIONS } from '../../../lib/knownReferentials'
 
 const RUN_COLOR = '#2a78d6'
 const HORS_RUN_COLOR = '#eb6834'
-const MONTH_LABELS = [
-  'janv.',
-  'févr.',
-  'mars',
-  'avr.',
-  'mai',
-  'juin',
-  'juil.',
-  'août',
-  'sept.',
-  'oct.',
-  'nov.',
-  'déc.',
-]
 
 function TopEntriesTable({ rows }: { rows: { id: string; nom: string; chargeHeures: number }[] }) {
   return (

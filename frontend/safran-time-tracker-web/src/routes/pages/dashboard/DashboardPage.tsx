@@ -13,12 +13,12 @@ import {
   fetchDashboard,
   fetchFinancialReport,
 } from '../../../api/endpoints/reporting'
-import { MilestoneStatus } from '../../../api/types'
 import { PermissionCodes } from '../../../auth/permissionCodes'
 import { PermissionGuard } from '../../../auth/PermissionGuard'
 import { ChartCard } from '../../../components/ui/ChartCard'
 import { FinancialValue } from '../../../components/ui/FinancialValue'
 import { KpiBand } from '../../../components/ui/KpiBand'
+import { isMilestoneUpcoming } from '../../../lib/milestones'
 
 const RUN_COLOR = '#2a78d6'
 const HORS_RUN_COLOR = '#eb6834'
@@ -50,15 +50,8 @@ export function DashboardPage() {
   const charges = chargesQuery.data
   const report = financialQuery.data
 
-  const in30Days = dayjs().add(30, 'day').format('YYYY-MM-DD')
   const jalonsAVenir = (milestonesQuery.data?.items ?? [])
-    .filter(
-      (m) =>
-        m.datePrevue >= today &&
-        m.datePrevue <= in30Days &&
-        m.statut !== MilestoneStatus.Termine &&
-        m.statut !== MilestoneStatus.Annule,
-    )
+    .filter((m) => isMilestoneUpcoming(m, today))
     .sort((a, b) => a.datePrevue.localeCompare(b.datePrevue))
     .slice(0, 8)
 

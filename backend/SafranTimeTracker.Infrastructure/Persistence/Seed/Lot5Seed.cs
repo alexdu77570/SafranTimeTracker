@@ -75,7 +75,10 @@ internal static class Lot5Seed
             AlertThreshold = 90m,
             StartDate = new DateOnly(2024, 1, 1),
             CreatedAt = SeedTimestamp,
-            CreatedBy = SeedAuthor
+            CreatedBy = SeedAuthor,
+            // ConcurrencyStamp fixé explicitement (sous-lot 14.2 de l'audit du Lot 14) : même
+            // principe que ResourceTjmHistory/CompanyContractHistory (Lot2Seed.cs) et Order (Lot1Seed.cs).
+            ConcurrencyStamp = Guid.Empty
         });
 
         modelBuilder.Entity<BudgetVersion>().HasData(new BudgetVersion

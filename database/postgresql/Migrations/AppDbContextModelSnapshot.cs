@@ -610,6 +610,11 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("comment");
 
+                    b.Property<Guid>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("concurrency_stamp");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -677,6 +682,7 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             Id = new Guid("00000000-0000-0000-0061-000000000001"),
                             AdjustedAmount = 180000.00m,
                             AlertThreshold = 90m,
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
                             InitialAmount = 150000.00m,
@@ -690,6 +696,7 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             Id = new Guid("00000000-0000-0000-0095-000000000001"),
                             AdjustedAmount = 80000.00m,
                             AlertThreshold = 90m,
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
                             InitialAmount = 80000.00m,
@@ -703,6 +710,7 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             Id = new Guid("00000000-0000-0000-0095-000000000002"),
                             AdjustedAmount = 60000.00m,
                             AlertThreshold = 90m,
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
                             InitialAmount = 60000.00m,
@@ -716,6 +724,7 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             Id = new Guid("00000000-0000-0000-0095-000000000003"),
                             AdjustedAmount = 95000.00m,
                             AlertThreshold = 90m,
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
                             InitialAmount = 95000.00m,
@@ -1977,6 +1986,11 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
 
+                    b.Property<Guid>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("concurrency_stamp");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2061,6 +2075,7 @@ namespace SafranTimeTracker.Migrations.PostgreSql.Migrations
                             BudgetJoursInitial = 200m,
                             Commentaire = "Commande de démonstration (Lot 1).",
                             CompanyId = new Guid("00000000-0000-0000-0013-000000000001"),
+                            ConcurrencyStamp = new Guid("00000000-0000-0000-0000-000000000000"),
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system-seed",
                             DateDebut = new DateOnly(2026, 1, 1),

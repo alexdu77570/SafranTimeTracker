@@ -135,6 +135,7 @@ public class OrderService(
             .ToList();
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await auditService.RecordAsync(AuditActions.Update, nameof(Order), id, oldValue, entity.Adapt<OrderDto>(), cancellationToken: cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
@@ -177,6 +178,7 @@ public class OrderService(
         entity.StatusId = activeStatusId;
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await auditService.RecordAsync(
             AuditActions.StatusChange, nameof(Order), id,
@@ -206,6 +208,7 @@ public class OrderService(
         entity.StatusId = targetStatus.Id;
         entity.UpdatedAt = DateTime.UtcNow;
         entity.UpdatedBy = currentUser.Identifier;
+        entity.ConcurrencyStamp = Guid.NewGuid();
 
         await auditService.RecordAsync(
             AuditActions.StatusChange, nameof(Order), id,
@@ -217,6 +220,15 @@ public class OrderService(
     private async Task<OrderDto> ToDtoAsync(Order entity, bool hasFinancialAccess, CancellationToken cancellationToken)
     {
         var dto = entity.Adapt<OrderDto>();
+        if (!hasFinancialAccess)
+        {
+            // Montants financiers omis sans FINANCIAL_DATA_VIEW (sous-lot 14.3 de l'audit du Lot 14,
+            // constat SEC-3) : avant ce correctif, ces deux champs restaient toujours présents en
+            // racine du DTO, contrairement au sous-objet FinancialSummary déjà filtré ci-dessous.
+            dto.BudgetFinancierInitial = null;
+            dto.BudgetFinancierAjuste = null;
+        }
+
         dto.FinancialSummary = hasFinancialAccess ? await BuildFinancialSummaryAsync(entity, cancellationToken) : null;
         return dto;
     }

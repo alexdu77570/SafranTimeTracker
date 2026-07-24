@@ -42,22 +42,8 @@ import { FinancialValue } from '../../../components/ui/FinancialValue'
 import { KpiBand } from '../../../components/ui/KpiBand'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { MONTH_LABELS } from '../../../lib/dateUtils'
 import { BudgetAdjustForm, BudgetCreateForm, BudgetEditForm } from './BudgetForm'
-
-const MONTH_LABELS = [
-  'janv.',
-  'févr.',
-  'mars',
-  'avr.',
-  'mai',
-  'juin',
-  'juil.',
-  'août',
-  'sept.',
-  'oct.',
-  'nov.',
-  'déc.',
-]
 
 /** Graphique de consommation mensuelle (§14.3), Lot 11 — palette catégorielle validée (dataviz
  * skill, run le 21/07/2026) : bleu #2a78d6 / orange #eb6834, ordre fixe, 2 séries. */

@@ -2,43 +2,32 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { act } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DemoTestProviders } from '../test/testUtils'
+import { demoSessionFixture, demoUserFixture, pagedResult } from '../test/fixtures'
 import { setStoredIdentifiant } from './demoIdentityStorage'
 import { useCurrentUser } from './useCurrentUser'
 
 vi.mock('../api/endpoints/users', () => ({
-  fetchUsers: vi.fn(async () => ({
-    items: [
-      {
-        id: 'user-1',
-        nom: 'Dupont',
-        prenom: 'Alice',
-        identifiant: 's636140',
-        email: 'alice.dupont@safran.com',
-        telephone: null,
-        statut: 0,
-        dateArrivee: '2024-01-01',
-        dateSortie: null,
-        commentaire: null,
-        resourceId: null,
-        roleId: 'role-1',
-        accesGlobal: false,
-        permissionIds: ['perm-audit'],
-        effectivePermissionCodes: ['AUDIT_VIEW'],
-      },
-    ],
-    page: 1,
-    pageSize: 100,
-    totalCount: 1,
-  })),
+  fetchUsers: vi.fn(async () =>
+    pagedResult(
+      [
+        demoUserFixture({
+          nom: 'Dupont',
+          prenom: 'Alice',
+          email: 'alice.dupont@safran.com',
+          dateArrivee: '2024-01-01',
+          resourceId: null,
+          accesGlobal: false,
+          permissionIds: ['perm-audit'],
+          effectivePermissionCodes: ['AUDIT_VIEW'],
+        }),
+      ],
+      100,
+    ),
+  ),
 }))
 
 vi.mock('../api/endpoints/auth', () => ({
-  createDemoSession: vi.fn(async () => ({
-    userId: 'user-1',
-    identifiant: 's636140',
-    expiresAt: '2026-01-01T00:00:00Z',
-    isPersistent: false,
-  })),
+  createDemoSession: vi.fn(async () => demoSessionFixture()),
   revokeDemoSession: vi.fn(async () => undefined),
 }))
 

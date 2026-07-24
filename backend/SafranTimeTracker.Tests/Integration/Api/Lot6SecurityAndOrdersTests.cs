@@ -24,6 +24,7 @@ public class Lot6SecurityAndOrdersTests(SafranTimeTrackerApiFactory factory) : I
 {
     private const string BernardIdentifiant = "s636140"; // Administrateur + toutes les permissions Lot 6 (Lot6Seed)
     private const string LegrandIdentifiant = "flegrand"; // FINANCIAL_DATA_VIEW + TIME_ENTRY_CORRECTION uniquement
+    private const string MishraIdentifiant = "rmishra"; // Ingénieur, aucune permission financière (Lot1Seed)
 
     private HttpClient CreateClient(string? identifiant = null)
     {
@@ -315,6 +316,85 @@ public class Lot6SecurityAndOrdersTests(SafranTimeTrackerApiFactory factory) : I
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    /// <summary>Sous-lot 14.3 de l'audit du Lot 14 (constat SEC-2) : la création d'une réception
+    /// écrit une valeur financière (montant ou jours), même sans dépasser le reste réceptionnable.</summary>
+    [Fact]
+    public async Task CreateOrderReceipt_WithoutFinancialDataView_Returns403()
+    {
+        var adminClient = CreateClient(BernardIdentifiant);
+        var (orderId, _) = await CreateTestOrderAsync(adminClient, budgetFinancierInitial: 10000m);
+
+        var client = CreateClient(MishraIdentifiant); // aucune permission financière (Lot1Seed)
+        var response = await client.PostAsJsonAsync($"/api/v1/orders/{orderId}/receipts", new OrderReceiptCreateRequest
+        {
+            ReceiptDate = Today(), ReceivedAmount = 1000m, Reason = "Sans permission (test)."
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    /// <summary>Sous-lot 14.3 de l'audit du Lot 14 (constat SEC-2) : une rallonge augmente le
+    /// budget ajusté de la commande, même principe que les réceptions ci-dessus.</summary>
+    [Fact]
+    public async Task CreateOrderExtension_WithoutFinancialDataView_Returns403()
+    {
+        var adminClient = CreateClient(BernardIdentifiant);
+        var (orderId, _) = await CreateTestOrderAsync(adminClient, budgetFinancierInitial: 10000m);
+
+        var client = CreateClient(MishraIdentifiant); // aucune permission financière (Lot1Seed)
+        var response = await client.PostAsJsonAsync($"/api/v1/orders/{orderId}/extensions", new OrderExtensionCreateRequest
+        {
+            AmountAdded = 2000m, NewEndDate = new DateOnly(2027, 6, 30), Reason = "Sans permission (test)."
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateOrderExtension_WithFinancialDataView_Returns201()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var (orderId, _) = await CreateTestOrderAsync(client, budgetFinancierInitial: 10000m);
+
+        var response = await client.PostAsJsonAsync($"/api/v1/orders/{orderId}/extensions", new OrderExtensionCreateRequest
+        {
+            AmountAdded = 2000m, NewEndDate = new DateOnly(2027, 6, 30), Reason = "Avec permission (test)."
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    /// <summary>Sous-lot 14.3 de l'audit du Lot 14 (constat SEC-3) : BudgetFinancierInitial/
+    /// BudgetFinancierAjuste doivent être absents (null) sans FINANCIAL_DATA_VIEW, au même titre
+    /// que le sous-objet FinancialSummary déjà filtré — avant ce correctif, ils fuyaient en racine
+    /// du DTO même pour un appelant sans aucune permission financière.</summary>
+    [Fact]
+    public async Task GetOrder_WithoutFinancialDataView_OmitsFinancialAmounts()
+    {
+        var adminClient = CreateClient(BernardIdentifiant);
+        var (orderId, _) = await CreateTestOrderAsync(adminClient, budgetFinancierInitial: 10000m);
+
+        var client = CreateClient(MishraIdentifiant); // aucune permission financière (Lot1Seed)
+        var dto = await client.GetFromJsonAsync<OrderDto>($"/api/v1/orders/{orderId}");
+
+        dto!.BudgetFinancierInitial.Should().BeNull();
+        dto.BudgetFinancierAjuste.Should().BeNull();
+        dto.FinancialSummary.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetOrder_WithFinancialDataView_ReturnsFinancialAmounts()
+    {
+        var client = CreateClient(BernardIdentifiant);
+        var (orderId, _) = await CreateTestOrderAsync(client, budgetFinancierInitial: 10000m);
+
+        var dto = await client.GetFromJsonAsync<OrderDto>($"/api/v1/orders/{orderId}");
+
+        dto!.BudgetFinancierInitial.Should().Be(10000m);
+        dto.BudgetFinancierAjuste.Should().Be(10000m);
+        dto.FinancialSummary.Should().NotBeNull();
     }
 
     [Fact]

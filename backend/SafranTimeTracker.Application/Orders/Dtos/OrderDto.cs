@@ -5,6 +5,12 @@ namespace SafranTimeTracker.Application.Orders.Dtos;
 /// charges §13.2 : engagement contractuel d'origine) — seules les rallonges (<see cref="OrderExtension"/>,
 /// §13.3) font évoluer le budget/jours/date "ajusté". Le sous-objet financier est omis sans
 /// FINANCIAL_DATA_VIEW (CLAUDE.md §13), même principe que <c>ProjectDto.FinancialSummary</c>.
+///
+/// <para>Sous-lot 14.3 (rapport d'audit du Lot 14, constat SEC-3) : <see cref="BudgetFinancierInitial"/>/
+/// <see cref="BudgetFinancierAjuste"/> sont désormais nullables et omis sans FINANCIAL_DATA_VIEW au
+/// même titre que <see cref="BudgetJoursInitial"/>/<see cref="BudgetJoursAjuste"/>/<see cref="SeuilAlerte"/>
+/// — avant ce correctif, ces deux champs restaient toujours présents en racine du DTO (fuite
+/// financière complète), contrairement au sous-objet <see cref="FinancialSummary"/> déjà filtré.</para>
 /// </summary>
 public class OrderDto
 {
@@ -13,8 +19,8 @@ public class OrderDto
     public string Libelle { get; set; } = string.Empty;
     public Guid CompanyId { get; set; }
     public Guid? ProjectId { get; set; }
-    public decimal BudgetFinancierInitial { get; set; }
-    public decimal BudgetFinancierAjuste { get; set; }
+    public decimal? BudgetFinancierInitial { get; set; }
+    public decimal? BudgetFinancierAjuste { get; set; }
     public decimal? BudgetJoursInitial { get; set; }
     public decimal? BudgetJoursAjuste { get; set; }
     public DateOnly DateDebut { get; set; }

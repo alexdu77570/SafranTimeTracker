@@ -1,14 +1,18 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SafranTimeTracker.Api.Extensions;
+using SafranTimeTracker.Api.Security;
 using SafranTimeTracker.Application.Common.Dtos;
+using SafranTimeTracker.Application.Common.Security;
 using SafranTimeTracker.Application.Orders.Dtos;
 using SafranTimeTracker.Application.Orders.Services;
 
 namespace SafranTimeTracker.Api.Controllers;
 
 /// <summary>Réceptions partielles d'une commande (règle métier validée Lot 6), sous-ressource de
-/// composition forte — même principe que orders/{id}/extensions (Lot 5).</summary>
+/// composition forte — même principe que orders/{id}/extensions (Lot 5). Création gardée par
+/// FINANCIAL_DATA_VIEW (sous-lot 14.3 de l'audit du Lot 14, constat SEC-2) : écrit une réception
+/// financière (montant ou jours), même principe que OrderExtensionsController.</summary>
 [ApiController]
 [Route("api/v1/orders/{orderId:guid}/receipts")]
 public class OrderReceiptsController(OrderReceiptService service, IValidator<OrderReceiptCreateRequest> createValidator) : ControllerBase
@@ -29,6 +33,7 @@ public class OrderReceiptsController(OrderReceiptService service, IValidator<Ord
     }
 
     [HttpPost]
+    [RequirePermission(PermissionCodes.FinancialDataView)]
     public async Task<ActionResult<OrderReceiptDto>> Create(
         Guid orderId, [FromBody] OrderReceiptCreateRequest request, CancellationToken cancellationToken)
     {

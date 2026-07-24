@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SafranTimeTracker.Application.Capacity.Dtos;
 using SafranTimeTracker.Application.Capacity.Services;
 using SafranTimeTracker.Application.Common.Persistence;
 using SafranTimeTracker.Application.Common.Security;
@@ -67,7 +68,10 @@ public class ReportingService(
         var topProjets = await BuildTopProjectsAsync(entries.Select(e => (e.ProjectId, e.DureeHeures)), cancellationToken);
         var topCommandes = await BuildTopOrdersAsync(entries.Select(e => (e.OrderId, e.DureeHeures)), cancellationToken);
         var topUtilisateurs = await BuildTopResourcesAsync(entries.Select(e => (e.ResourceId, e.DureeHeures)), cancellationToken);
-        var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(filter, entries.Select(e => (e.ResourceId, e.DureeHeures)), from, to, cancellationToken);
+        var chargesScopedResourceIds = await ResolveScopedResourceIdsAsync(filter, cancellationToken);
+        var chargesAvailabilities = await ResolveAvailabilitiesAsync(chargesScopedResourceIds, from, to, cancellationToken);
+        var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(
+            chargesScopedResourceIds, chargesAvailabilities, entries.Select(e => (e.ResourceId, e.DureeHeures)), cancellationToken);
 
         var evolutionMensuelle = entries
             .GroupBy(e => new { e.Date.Year, e.Date.Month })
@@ -132,19 +136,10 @@ public class ReportingService(
     {
         var (from, to) = ResolvePeriod(filter);
         var scopedResourceIds = await ResolveScopedResourceIdsAsync(filter, cancellationToken);
+        var availabilities = await ResolveAvailabilitiesAsync(scopedResourceIds, from, to, cancellationToken);
 
-        var capaciteTheorique = 0m;
-        var capaciteReelle = 0m;
-        foreach (var resourceId in scopedResourceIds)
-        {
-            var availability = await availabilityService.GetAvailabilityAsync(resourceId, from, to, cancellationToken);
-            if (availability is null)
-            {
-                continue;
-            }
-            capaciteTheorique += availability.CapaciteTheorique;
-            capaciteReelle += availability.CapaciteReelle;
-        }
+        var capaciteTheorique = availabilities.Values.Sum(a => a.CapaciteTheorique);
+        var capaciteReelle = availabilities.Values.Sum(a => a.CapaciteReelle);
 
         var entries = await BuildFilteredQuery(filter, from, to)
             .Select(t => new { t.ResourceId, t.ActivityTypeId, t.Reference, t.DureeHeures })
@@ -153,7 +148,8 @@ public class ReportingService(
 
         var chargeRun = entries.Where(e => activityTypes.GetValueOrDefault(e.ActivityTypeId)?.IsRun == true).Sum(e => e.DureeHeures);
         var chargeTotale = entries.Sum(e => e.DureeHeures);
-        var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(filter, entries.Select(e => (e.ResourceId, e.DureeHeures)), from, to, cancellationToken);
+        var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(
+            scopedResourceIds, availabilities, entries.Select(e => (e.ResourceId, e.DureeHeures)), cancellationToken);
 
         var operational = new DashboardOperationalKpisDto
         {
@@ -216,14 +212,15 @@ public class ReportingService(
             .Select(m => new OperationalReportMilestoneDto { Id = m.Id, Nom = m.Nom, ProjectId = m.ProjectId, DatePrevue = m.DatePrevue })
             .ToList();
 
-        var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(filter, entries.Select(e => (e.ResourceId, e.DureeHeures)), from, to, cancellationToken);
-
         var scopedResourceIds = await ResolveScopedResourceIdsAsync(filter, cancellationToken);
+        var availabilities = await ResolveAvailabilitiesAsync(scopedResourceIds, from, to, cancellationToken);
+        var (surcharges, sousCharges) = await BuildWorkloadAlertsAsync(
+            scopedResourceIds, availabilities, entries.Select(e => (e.ResourceId, e.DureeHeures)), cancellationToken);
+
         var capacite = new List<OperationalReportCapacityDto>();
         foreach (var resourceId in scopedResourceIds)
         {
-            var availability = await availabilityService.GetAvailabilityAsync(resourceId, from, to, cancellationToken);
-            if (availability is null)
+            if (!availabilities.TryGetValue(resourceId, out var availability))
             {
                 continue;
             }
@@ -288,45 +285,33 @@ public class ReportingService(
             .GroupBy(s => s.ProjectId!.Value)
             .Select(g => (Id: g.Key, CoutReel: g.Sum(s => s.CoutReel), CoutContrat: g.Sum(s => s.CoutContrat), Differentiel: g.Sum(s => s.Differentiel)))
             .ToList();
-        var projectIds = projectGroups.Select(g => g.Id).ToList();
         var projectNames = await projectRepository.Query()
-            .Where(p => projectIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Nom, cancellationToken);
-        var parProjet = projectGroups
-            .Select(g => new FinancialReportDifferentialDto { Id = g.Id, Nom = projectNames.GetValueOrDefault(g.Id, g.Id.ToString()), CoutReel = g.CoutReel, CoutContractuel = g.CoutContrat, Differentiel = g.Differentiel })
-            .OrderByDescending(d => Math.Abs(d.Differentiel)).ToList();
+            .Where(p => projectGroups.Select(g => g.Id).Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Nom, cancellationToken);
+        var parProjet = BuildFinancialDifferentials(projectGroups, projectNames);
 
         var orderGroups = snapshots.Where(s => s.OrderId is not null)
             .GroupBy(s => s.OrderId!.Value)
             .Select(g => (Id: g.Key, CoutReel: g.Sum(s => s.CoutReel), CoutContrat: g.Sum(s => s.CoutContrat), Differentiel: g.Sum(s => s.Differentiel)))
             .ToList();
-        var orderIds = orderGroups.Select(g => g.Id).ToList();
         var orderNames = await orderRepository.Query()
-            .Where(o => orderIds.Contains(o.Id)).ToDictionaryAsync(o => o.Id, o => o.Reference, cancellationToken);
-        var parCommande = orderGroups
-            .Select(g => new FinancialReportDifferentialDto { Id = g.Id, Nom = orderNames.GetValueOrDefault(g.Id, g.Id.ToString()), CoutReel = g.CoutReel, CoutContractuel = g.CoutContrat, Differentiel = g.Differentiel })
-            .OrderByDescending(d => Math.Abs(d.Differentiel)).ToList();
+            .Where(o => orderGroups.Select(g => g.Id).Contains(o.Id)).ToDictionaryAsync(o => o.Id, o => o.Reference, cancellationToken);
+        var parCommande = BuildFinancialDifferentials(orderGroups, orderNames);
 
         var companyGroups = snapshots.Where(s => s.CompanyIdSnapshot is not null)
             .GroupBy(s => s.CompanyIdSnapshot!.Value)
             .Select(g => (Id: g.Key, CoutReel: g.Sum(s => s.CoutReel), CoutContrat: g.Sum(s => s.CoutContrat), Differentiel: g.Sum(s => s.Differentiel)))
             .ToList();
-        var companyIds = companyGroups.Select(g => g.Id).ToList();
         var companyNames = await companyRepository.Query()
-            .Where(c => companyIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Nom, cancellationToken);
-        var parSociete = companyGroups
-            .Select(g => new FinancialReportDifferentialDto { Id = g.Id, Nom = companyNames.GetValueOrDefault(g.Id, g.Id.ToString()), CoutReel = g.CoutReel, CoutContractuel = g.CoutContrat, Differentiel = g.Differentiel })
-            .OrderByDescending(d => Math.Abs(d.Differentiel)).ToList();
+            .Where(c => companyGroups.Select(g => g.Id).Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Nom, cancellationToken);
+        var parSociete = BuildFinancialDifferentials(companyGroups, companyNames);
 
         var resourceGroups = snapshots
             .GroupBy(s => s.ResourceId)
             .Select(g => (Id: g.Key, CoutReel: g.Sum(s => s.CoutReel), CoutContrat: g.Sum(s => s.CoutContrat), Differentiel: g.Sum(s => s.Differentiel)))
             .ToList();
-        var resourceIds = resourceGroups.Select(g => g.Id).ToList();
         var resourceNames = await resourceRepository.Query()
-            .Where(r => resourceIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, r => $"{r.Prenom} {r.Nom}", cancellationToken);
-        var parRessource = resourceGroups
-            .Select(g => new FinancialReportDifferentialDto { Id = g.Id, Nom = resourceNames.GetValueOrDefault(g.Id, g.Id.ToString()), CoutReel = g.CoutReel, CoutContractuel = g.CoutContrat, Differentiel = g.Differentiel })
-            .OrderByDescending(d => Math.Abs(d.Differentiel)).ToList();
+            .Where(r => resourceGroups.Select(g => g.Id).Contains(r.Id)).ToDictionaryAsync(r => r.Id, r => $"{r.Prenom} {r.Nom}", cancellationToken);
+        var parRessource = BuildFinancialDifferentials(resourceGroups, resourceNames);
 
         var parMois = snapshots
             .GroupBy(s => new { s.Date.Year, s.Date.Month })
@@ -471,6 +456,26 @@ public class ReportingService(
         };
     }
 
+    /// <summary>Factorise les 4 ventilations différentielles de GetFinancialReportAsync (projet,
+    /// commande, société, ressource, sous-lot 14.6 de l'audit du Lot 14) : même agrégat
+    /// (CoutReel/CoutContrat/Differentiel déjà sommés par dimension), même résolution de nom avec
+    /// repli sur l'identifiant, même tri par |différentiel| décroissant — aucune règle de calcul
+    /// nouvelle, uniquement la mise en commun d'un bloc jusque-là dupliqué 4 fois à l'identique.</summary>
+    private static List<FinancialReportDifferentialDto> BuildFinancialDifferentials(
+        IEnumerable<(Guid Id, decimal CoutReel, decimal CoutContrat, decimal Differentiel)> groups,
+        IReadOnlyDictionary<Guid, string> names) =>
+        groups
+            .Select(g => new FinancialReportDifferentialDto
+            {
+                Id = g.Id,
+                Nom = names.GetValueOrDefault(g.Id, g.Id.ToString()),
+                CoutReel = g.CoutReel,
+                CoutContractuel = g.CoutContrat,
+                Differentiel = g.Differentiel
+            })
+            .OrderByDescending(d => Math.Abs(d.Differentiel))
+            .ToList();
+
     private static (DateOnly From, DateOnly To) ResolvePeriod(ReportingFilterQuery filter) =>
         ReportingPeriodResolver.Resolve(filter.PeriodType, filter.ReferenceDate, filter.CustomFrom, filter.CustomTo);
 
@@ -524,20 +529,43 @@ public class ReportingService(
         return $"{resource.Prenom} {resource.Nom}";
     }
 
+    /// <summary>Résout la disponibilité de chaque ressource du périmètre une seule fois par appel
+    /// public (sous-lot 14.6 de l'audit du Lot 14) : GetChargesReportAsync, GetDashboardAsync et
+    /// GetOperationalReportAsync bouclaient chacun indépendamment sur AvailabilityService pour le
+    /// même ensemble de ressources et la même période — GetDashboardAsync et
+    /// GetOperationalReportAsync appellent en plus BuildWorkloadAlertsAsync, qui refaisait la même
+    /// boucle une seconde fois. Résolu ici une seule fois puis partagé ; la formule de disponibilité
+    /// elle-même (AvailabilityService) n'est pas modifiée.</summary>
+    private async Task<Dictionary<Guid, AvailabilityResultDto>> ResolveAvailabilitiesAsync(
+        IEnumerable<Guid> resourceIds, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    {
+        var result = new Dictionary<Guid, AvailabilityResultDto>();
+        foreach (var resourceId in resourceIds)
+        {
+            var availability = await availabilityService.GetAvailabilityAsync(resourceId, from, to, cancellationToken);
+            if (availability is not null)
+            {
+                result[resourceId] = availability;
+            }
+        }
+        return result;
+    }
+
     private async Task<(List<ChargesResourceAlertDto> Surcharges, List<ChargesResourceAlertDto> SousCharges)> BuildWorkloadAlertsAsync(
-        ReportingFilterQuery filter, IEnumerable<(Guid ResourceId, decimal DureeHeures)> filteredEntries, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+        IReadOnlyList<Guid> scopedResourceIds,
+        IReadOnlyDictionary<Guid, AvailabilityResultDto> availabilities,
+        IEnumerable<(Guid ResourceId, decimal DureeHeures)> filteredEntries,
+        CancellationToken cancellationToken)
     {
         var settings = await settingsRepository.Query().Select(s => new { s.SeuilSurcharge, s.SeuilSousCharge }).FirstAsync(cancellationToken);
         var chargeByResource = filteredEntries.GroupBy(e => e.ResourceId).ToDictionary(g => g.Key, g => g.Sum(e => e.DureeHeures));
 
-        var scopedResourceIds = await ResolveScopedResourceIdsAsync(filter, cancellationToken);
         var surcharges = new List<ChargesResourceAlertDto>();
         var sousCharges = new List<ChargesResourceAlertDto>();
 
         foreach (var resourceId in scopedResourceIds)
         {
-            var availability = await availabilityService.GetAvailabilityAsync(resourceId, from, to, cancellationToken);
-            if (availability is null || availability.CapaciteReelle <= 0)
+            if (!availabilities.TryGetValue(resourceId, out var availability) || availability.CapaciteReelle <= 0)
             {
                 continue;
             }
