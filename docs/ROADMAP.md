@@ -20,6 +20,15 @@ L'ancien **Lot 13 — Industrialisation** (tests élargis, optimisation, documen
 
 Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
 
+## Révision de la roadmap (à l'ouverture du Lot 14)
+
+Avant le démarrage du Lot 14 tel que renuméroté à l'ouverture du Lot 13 (packaging, déploiement, sauvegarde/restauration, documentation d'exploitation), une revue d'architecture complète du dépôt (Lots 0 à 13) a été menée à la demande du Product Owner, en lecture seule, pour identifier la dette technique, les incohérences et les risques accumulés avant une première mise en production. Cette revue a mis en évidence des écarts (sécurité, EF Core/performance, cohérence documentaire, tests) jugés préférables à fermer avant tout travail d'industrialisation plutôt qu'après. La roadmap est donc révisée une troisième fois, décision actée à l'ouverture du Lot 14 :
+
+- le **Lot 14** est redéfini : **Audit / Refactoring / Qualité** — fermeture des écarts constatés par la revue d'architecture, sans aucune fonctionnalité métier nouvelle ;
+- l'ancien contenu du Lot 14 (packaging, déploiement, sauvegarde/restauration, documentation d'exploitation) est conservé intégralement mais renuméroté **Lot 15**.
+
+Les Lots 0 à 13 ne sont pas modifiés par cette troisième révision.
+
 ## Règle commune à tous les lots
 
 **Un lot n'est terminé que lorsqu'il produit une version compilable, testée réellement et démontrable.** On ne démarre pas le lot suivant tant que ce critère n'est pas satisfait. Aucune fonctionnalité d'un lot ultérieur n'est anticipée dans un lot antérieur.
@@ -153,9 +162,7 @@ Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
 
 ---
 
-# Phase — Industrialisation
-
-> **Précision actée à l'ouverture du Lot 13** : périmètre redéfini par rapport à la description originale du cahier des charges §40 (voir « Révision de la roadmap » ci-dessus) — authentification/sessions/RBAC/sécurisation API/CI-CD/qualité plutôt que packaging/déploiement, repoussés au Lot 14.
+> **Précision actée à l'ouverture du Lot 13** : périmètre redéfini par rapport à la description originale du cahier des charges §40 (voir « Révision de la roadmap » ci-dessus) — authentification/sessions/RBAC/sécurisation API/CI-CD/qualité plutôt que packaging/déploiement, repoussés au Lot 14, puis au Lot 15, puis finalement au **Lot 17** (voir « Révision de la roadmap (figeage jusqu'à la V1) » ci-dessous).
 
 ## Lot 13 — Authentification, RBAC, Sécurisation API, CI/CD et Qualité
 
@@ -165,16 +172,85 @@ Les Lots 0 à 12 ne sont pas modifiés par cette seconde révision.
 - Pipeline GitHub Actions (build, tests, couverture backend et frontend), sans SonarQube/SonarCloud ni Docker ce lot — structure prête à les accueillir sans refonte.
 - Périmètre organisationnel (département/service/équipe/propriété de la donnée, §6.3) : explicitement reporté à un lot dédié, non construit ici.
 
-## Lot 14 — Industrialisation (ancien Lot 13, ancien Lot 7)
+## Lot 14 — Audit, Refactoring et Qualité
+
+> Lot non fonctionnel (voir « Révision de la roadmap » à l'ouverture du Lot 14, ci-dessus) : aucune capacité métier nouvelle. Objectif unique — fermer, avant une première mise en production, les écarts constatés par la revue d'architecture menée à l'ouverture de ce lot sur les Lots 1 à 13 (sécurité, EF Core/performance, frontend, tests, documentation). Classification complète (bug / dette technique / risque d'architecture / optimisation facultative), gravité, arbitrage V1/V2 et découpage en sous-lots : rapport d'audit dédié produit à l'ouverture du lot.
+
+- Sécurité : garde de permission manquante sur les endpoints financiers de commande (rallonges, réceptions) et filtrage complet des champs financiers d'`OrderDto`, à l'identique du correctif déjà appliqué sur `UsersController.Create` (v0.13.1).
+- Base de données : jetons de concurrence optimiste sur `Budget`/`Order` (écart avec `CLAUDE.md` §11), index manquants (`TimeEntry`, `Resource`, `Budget`), index unique `ProjectParticipant(ProjectId, ResourceId)`, volumétrie du seed alignée sur `docs/DATABASE.md` §7.
+- Backend : pagination réellement bornée côté base (`ProjectService` branche `alerteBudget`, `ProjectPlanningService.GetOverviewAsync`) ; validateur manquant sur `ReportingFilterQuery`.
+- Tests : couverture des domaines backend à 0 % (périodes de capacité, calendrier des jours fériés, types de jalons, équipes, rattachements société), fabrique de fixtures frontend partagée.
+- Documentation : cohérence entre `CLAUDE.md`, `docs/ROADMAP.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/BACKLOG_METIER.md`, `docs/DATABASE.md`, purge de la terminologie proscrite.
+- Selon calendrier, repoussable après la V1 sans bloquer une première mise en production (à assumer explicitement, pas par défaut) : décomposition de `ReportingService`, hooks frontend partagés, découpage des composants surdimensionnés.
+
+*Catégorie : Technique / Qualité — Complexité : ★★★★☆ (Élevée) — Charge : XL (plusieurs semaines d'effort net) — Risque : Moyen.*
+
+---
+
+## Révision de la roadmap (figeage jusqu'à la V1)
+
+L'ensemble des lots restant jusqu'à la première mise en production a été défini et validé par le Product Owner, sur la base du cahier des charges (§6.3, §14, §17.2, §27.3, §36, §37, §40), de `docs/BACKLOG_METIER.md`, des décisions actées aux Lots 1 à 13 et du rapport d'audit du Lot 14. Cette roadmap est désormais **figée jusqu'à la V1** : le Lot 15 n'est plus directement l'Industrialisation (renumérotée **Lot 17**) — cinq lots s'intercalent (15 à 19), détaillés ci-dessous. Chaque lot précise catégorie, complexité qualitative, charge approximative (ordre de grandeur, jamais un calendrier daté faute de vélocité d'équipe mesurée), dépendances, et critères d'entrée/sortie.
+
+Volontairement exclu de toute la roadmap V1 (aucun des lots 15 à 19) : le modèle budgétaire détaillé par ligne (`docs/BACKLOG_METIER.md` §2, 🕓 non implémenté, non bloquant), le Gantt avancé (backlog, jamais validé comme requis), l'assistant d'import interactif à mapping de colonnes (§27.3 étape 5, non bloquant pour la recette §37.8), le remplacement de `RequirePermissionAttribute` par les policies natives ASP.NET Core (non tranché, aucun gain fonctionnel identifié).
+
+## Lot 15 — Complétude fonctionnelle & Administration
+
+> Le nom reflète le contenu réel du lot, plus large que le seul périmètre organisationnel initialement envisagé.
+
+- Périmètre organisationnel (§6.3) : département/service/équipe/propriété de la donnée comme axe d'autorisation, appliqué où le cahier des charges le nomme explicitement — validation d'absence (§23.3, responsable hiérarchique), modification projet/jalon (pilote/responsable), transitions commande/budget/administration/import/audit. Vérification croisée `ResourceId`/appelant sur TimeEntry, Absence, ProjectParticipant, ResourceCapacityPeriod.
+- Administration : écran frontend de gestion rôle/permissions par utilisateur (API existante depuis le Lot 13, jamais câblée côté écran).
+- Référentiels : `GET` manquants (`CompanyType`, `Role`, `OperationalRole`).
+- CRUD fonctionnels : `ProjectParticipant.Update` (§17.2), formule d'« avancement » (%, §16.2).
+- Exclu : authentification réelle (LDAP/AD/OIDC — architecture prête, non implémentée ce lot), modèle budgétaire détaillé, nettoyage des sessions expirées (déplacé au Lot 17).
+
+*Catégorie : Fonctionnel — Complexité : ★★★★★ (la plus élevée de la roadmap) — Charge : XL (le plus gros lot, à cadrer précisément avant chiffrage) — Risque : Élevé — Dépend du Lot 14.*
+
+## Lot 16 — UX, Responsive et Performance frontend
+
+> Ferme une exigence explicite du cahier des charges jusqu'ici entièrement non couverte (§36.6 : « responsive desktop, tablette et mobile ») — ce n'est pas une optimisation facultative pour une V1 conforme au cahier des charges.
+
+- Responsive sur les 21 routes de l'application (priorité aux pages identifiées desktop-only par l'audit du Lot 14).
+- Découpage de code (`React.lazy` par route), mémoïsation ciblée, virtualisation des tables denses.
+- Exclu : toute refonte visuelle (identité graphique actée au Lot 7, non remise en cause), nouveaux écrans.
+
+*Catégorie : UX — Complexité : ★★★☆☆ (Moyenne) — Charge : M (1-2 semaines) — Risque : Moyen — Dépend des Lots 14 (sous-lot 14.5) et 15.*
+
+## Lot 17 — Industrialisation et packaging (ancien Lot 15, ancien Lot 14, ancien Lot 13, ancien Lot 7)
 
 - Tests (couverture élargie, non-régression).
 - Optimisation.
 - Documentation (installation, exploitation, fonctionnelle, API, guides utilisateur/administrateur).
 - Sécurité (revue complète).
 - Sauvegarde et restauration (procédures testées).
+- Nettoyage des sessions expirées (tâche planifiée).
 - Packaging portable — deux profils distincts :
   - **PortableDemo** : package ZIP autonome, API self-contained Windows x64, frontend statique servi par l'API elle-même, base SQLite locale, sans Internet ni droits administrateur.
   - **ServerIIS** : déploiement Windows Server / IIS, base SQL Server en priorité (PostgreSQL conservé comme provider compatible), scripts de déploiement/sauvegarde/restauration/rollback/health-check, chemins normalisés `E:\appl`, `E:\certificats`, `E:\CD_INSTALL`, `E:\data`.
+
+*Catégorie : Industrialisation — Complexité : ★★★★☆ (Élevée) — Charge : L (2-4 semaines) — Risque : Moyen (première exécution réelle hors SQLite) — Dépend des Lots 14, 15, 16.*
+
+## Lot 18 — Pré-production
+
+> Porte de sortie avant la mise en production : vérification, mesure et décision — aucun nouveau développement. Comprend explicitement une recette fonctionnelle complète, une validation métier, des tests utilisateurs réels, et impose un gel fonctionnel (aucune évolution fonctionnelle acceptée une fois ce lot entamé, hors correctif bloquant identifié pendant la recette).
+
+- Recette fonctionnelle complète : critères §37.1 à §37.9 du cahier des charges.
+- Validation métier : relecture et signature du Product Owner sur chaque règle sensible (financière, sécurité, workflow).
+- Tests utilisateurs réels, sur l'environnement cible du Lot 17.
+- Test de charge/performance à un volume représentatif du déploiement visé (§36.1) — jamais exécuté à ce jour.
+- Décision explicite actée : authentification de démonstration acceptée pour ce déploiement, ou authentification réelle requise (risque non tranché, voir rapport d'audit du Lot 14).
+- Revue de sécurité finale (§36.3), répétition de sauvegarde/restauration en conditions réelles.
+
+*Catégorie : Pré-production — Complexité : ★★★☆☆ (Moyenne) — Charge : M (beaucoup de vérification, peu de développement) — Risque : Moyen — Dépend du Lot 17, bloque le Lot 19 sans exception.*
+
+## Lot 19 — Mise en production V1
+
+> Lot court et procédural, jamais un lot de développement.
+
+- Séquence de déploiement documentée (`CLAUDE.md` §19) exécutée sur l'environnement de production réel, plan de rollback prêt et testé.
+- Surveillance rapprochée des premiers jours d'usage réel.
+- Tout besoin détecté ici suit le circuit correctif dédié, jamais un ajout improvisé pendant la bascule.
+
+*Catégorie : Production — Complexité : ★☆☆☆☆ (Faible) — Charge : S (quelques jours) — Risque : Faible (à condition que le Lot 18 n'ait pas été raccourci) — Dépend du Lot 18.*
 
 ---
 
