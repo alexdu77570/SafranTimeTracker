@@ -10,17 +10,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >
 > Le **cahier des charges** (`docs/Cahier_des_charges_SAFRAN_TIME_TRACKER_v2.1_Windows_Server.md`) reste la **référence fonctionnelle unique**. En cas de doute sur une règle métier, c'est ce document qui prévaut. `CLAUDE.md` ne redéfinit jamais une règle métier : il définit **comment on construit** ce que le cahier des charges **demande**.
 >
-> Documents associés : `README.md` (présentation), `docs/ARCHITECTURE.md` (architecture détaillée), `docs/DATABASE.md` (modèle de données), `docs/CONVENTIONS.md` (conventions détaillées avec exemples), `docs/ROADMAP.md` (découpage en lots), `docs/IMPLEMENTATION_STATUS.md` (avancement réel), `docs/BACKLOG_METIER.md` (référence fonctionnelle : décisions métier, workflows et règles validées avec le Product Owner/Squad Leader).
+> Documents associés : `README.md` (présentation), `docs/ARCHITECTURE.md` (architecture détaillée), `docs/DATABASE.md` (modèle de données), `docs/CONVENTIONS.md` (conventions détaillées avec exemples), `docs/ROADMAP.md` (découpage en lots), `docs/IMPLEMENTATION_STATUS.md` (avancement réel), `docs/BACKLOG_METIER.md` (référence fonctionnelle : décisions métier, workflows et règles validées avec le Product Owner).
 
 ---
 
 ## 0. Statut actuel du projet et commandes
 
-**Phase : socle documentaire.** Aucun code métier n'existe encore : ni projet .NET, ni projet React, ni solution Visual Studio, ni base de données, ni migration. Le dépôt n'est pas encore initialisé en Git.
+**Lots 0 à 13 terminés, Lot 14 (Audit, Refactoring et Qualité) en cours** — voir `docs/IMPLEMENTATION_STATUS.md` pour l'état réel détaillé et `docs/ROADMAP.md` pour la roadmap complète, figée jusqu'à la V1 (Lots 14 à 19).
 
-**Il n'existe donc aucune commande de build, de lint ou de test à ce jour.** Ne pas supposer l'existence d'un `dotnet build`, `npm run dev`, `npm test` ou équivalent, ni inventer une commande plausible : vérifier d'abord l'arborescence réelle (`backend/`, `frontend/`, `database/`, `deploy/`, `scripts/` sont actuellement vides). Ces commandes seront définies au Lot 0 (voir `docs/ROADMAP.md`) et documentées ici et dans `README.md` dès qu'elles existeront.
+Commandes réelles, vérifiées à ce jour :
+- Backend : `dotnet build` (solution complète), `dotnet test --project backend/SafranTimeTracker.Tests`, migrations via `dotnet ef migrations add <Nom> --project database/{sqlite,postgresql,sqlserver} --context AppDbContext` (sans `--startup-project`, voir §11).
+- Frontend (`frontend/safran-time-tracker-web`) : `npm run dev`, `npm run build`, `npm run test`, `npm run lint`, `npx tsc -b`.
+- CI : `.github/workflows/ci.yml` (build/tests/couverture backend et frontend sur chaque PR et push vers `main`).
 
-Avant toute génération de code, se référer à `docs/ROADMAP.md` (Lot 0 - Fondations), à `docs/IMPLEMENTATION_STATUS.md` pour connaître l'état réel d'avancement, et à `docs/BACKLOG_METIER.md` pour les règles métier déjà validées. Ne jamais supposer qu'une couche existe sans l'avoir vérifiée dans l'arborescence.
+Avant toute génération de code, se référer à `docs/ROADMAP.md` pour le lot courant et sa définition, à `docs/IMPLEMENTATION_STATUS.md` pour l'état réel d'avancement, et à `docs/BACKLOG_METIER.md` pour les règles métier déjà validées. Ne jamais supposer qu'une couche existe sans l'avoir vérifiée dans l'arborescence.
 
 ---
 
@@ -96,7 +99,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Pas de duplication des règles métier : une règle = un seul endroit dans le code.
 - Pas d'abstraction anticipée : on code ce que le lot demande, pas ce qu'un lot futur pourrait demander.
 - Le détail complet (style, imports, organisation de fichiers) est dans `docs/CONVENTIONS.md`.
-- **Toute nouvelle règle métier validée avec le Product Owner, le Squad Leader ou les experts métier doit être documentée dans `docs/BACKLOG_METIER.md` avant son implémentation.** `docs/BACKLOG_METIER.md` est la référence fonctionnelle des décisions métier, workflows et règles validées (distincte de l'architecture technique) ; il est relu avant chaque nouveau lot, au même titre que `docs/ROADMAP.md`, `CLAUDE.md` et `docs/IMPLEMENTATION_STATUS.md`.
+- **Toute nouvelle règle métier validée avec le Product Owner ou les experts métier doit être documentée dans `docs/BACKLOG_METIER.md` avant son implémentation.** `docs/BACKLOG_METIER.md` est la référence fonctionnelle des décisions métier, workflows et règles validées (distincte de l'architecture technique) ; il est relu avant chaque nouveau lot, au même titre que `docs/ROADMAP.md`, `CLAUDE.md` et `docs/IMPLEMENTATION_STATUS.md`.
 
 ## 6. Conventions de nommage
 
@@ -152,7 +155,7 @@ SAFRAN TIME TRACKER n'intègre **jamais** les fonctions de DS-EYE (documents, pr
 - Configuration via le pattern `IOptions<T>`, déclinée au minimum pour `Development`, `Qualification`, `Production`.
 - Endpoint de santé (`/health`) exposé pour les scripts de déploiement et de supervision.
 - Documentation OpenAPI générée et tenue à jour à chaque endpoint ajouté.
-- Autorisation basée sur des policies combinant rôle, permissions complémentaires et périmètre organisationnel (département/service/équipe/propriété de la donnée). Implémentation actuelle : un filtre de permission dédié (`RequirePermissionAttribute`) qui ne dépend que de l'abstraction `ICurrentUser` (§17), plutôt que le système `Authorization`/`ClaimsPrincipal` natif d'ASP.NET Core — volontairement découplé de tout mécanisme d'authentification concret. **Modèle RBAC actif depuis le Lot 13** : les axes rôle et permissions complémentaires sont désormais combinés (`RolePermission` accorde des permissions par défaut au rôle, `UserPermission.Effect` — `Grant`/`Revoke` — complète ou retire des exceptions individuelles qui priment toujours sur le rôle), calcul centralisé dans `PermissionResolutionService` (`effectives = rôle ∪ octrois − retraits`), jamais dupliqué. Le périmètre organisationnel (département/service/équipe/propriété de la donnée) reste à construire dans un lot dédié après validation avec le Product Owner (`docs/BACKLOG_METIER.md` §18, Décision 3).
+- Autorisation basée sur des policies combinant rôle, permissions complémentaires et périmètre organisationnel (département/service/équipe/propriété de la donnée). Implémentation actuelle : un filtre de permission dédié (`RequirePermissionAttribute`) qui ne dépend que de l'abstraction `ICurrentUser` (§17), plutôt que le système `Authorization`/`ClaimsPrincipal` natif d'ASP.NET Core — volontairement découplé de tout mécanisme d'authentification concret. **Modèle RBAC actif depuis le Lot 13** : les axes rôle et permissions complémentaires sont désormais combinés (`RolePermission` accorde des permissions par défaut au rôle, `UserPermission.Effect` — `Grant`/`Revoke` — complète ou retire des exceptions individuelles qui priment toujours sur le rôle), calcul centralisé dans `PermissionResolutionService` (`effectives = rôle ∪ octrois − retraits`), jamais dupliqué. Le périmètre organisationnel (département/service/équipe/propriété de la donnée) reste à construire dans un lot dédié après validation avec le Product Owner (`docs/BACKLOG_METIER.md` §17, Décision 3).
 
 ## 11. Conventions Entity Framework Core
 
@@ -288,7 +291,7 @@ Chemins physiques IIS recommandés : frontend → `E:\appl\SafranTimeTracker\web
 
 Le projet est découpé en lots (voir `docs/ROADMAP.md`, détaillé à partir de la section 40 du cahier des charges) :
 
-`Lot 0` Fondations → `Lot 1` Référentiels → `Lot 2` Modèle financier → `Lot 3` Temps et capacité → `Lot 4` Projets → `Lot 5` Budgets et reporting → `Lot 6` Imports et audit → `Lot 7` Frontend Foundation → `Lot 8` Référentiels et Administration → `Lot 9` Temps et Disponibilités → `Lot 10` Projets et Planning → `Lot 11` Commandes, Budgets et Jalons → `Lot 12` Charges, Tableau de bord, Reporting et Imports → `Lot 13` Industrialisation (voir « Révision de la roadmap » dans `docs/ROADMAP.md`, actée à la clôture du Lot 6 : l'ancien Lot 7 Industrialisation est devenu le Lot 13, six nouveaux lots frontend s'intercalent).
+`Lot 0` Fondations → `Lot 1` Référentiels → `Lot 2` Modèle financier → `Lot 3` Temps et capacité → `Lot 4` Projets → `Lot 5` Budgets et reporting → `Lot 6` Imports et audit → `Lot 7` Frontend Foundation → `Lot 8` Référentiels et Administration → `Lot 9` Temps et Disponibilités → `Lot 10` Projets et Planning → `Lot 11` Commandes, Budgets et Jalons → `Lot 12` Charges, Tableau de bord, Reporting et Imports → `Lot 13` Authentification, RBAC, Sécurisation API, CI/CD et Qualité → `Lot 14` Audit, Refactoring et Qualité → `Lot 15` Complétude fonctionnelle & Administration → `Lot 16` UX, Responsive et Performance frontend → `Lot 17` Industrialisation et packaging → `Lot 18` Pré-production → `Lot 19` Mise en production V1 (liste tenue à jour uniquement dans `docs/ROADMAP.md`, qui documente aussi l'historique complet des trois révisions actées — clôture du Lot 6, ouverture du Lot 13, figeage de la roadmap jusqu'à la V1 à l'ouverture du Lot 14 — pour ne pas dupliquer ici un chaînage qui se périme à chaque révision).
 
 Règles de méthode :
 

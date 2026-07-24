@@ -67,25 +67,25 @@ Règle : un DTO de détail avec données financières expose ces données dans u
 
 ## 8. Organisation des tests
 
+Structure réelle (réconciliée au Lot 14) :
+
 ```text
 SafranTimeTracker.Tests/
 ├── Unit/
-│   ├── Application/        (services, calculs financiers, capacité, classification RUN)
-│   └── Domain/              (règles d'entités : chevauchement, intégrité)
+│   └── Application/        (calculateurs et validateurs purs : parsing CSV, diff de champs,
+│                             chevauchement de dates, résolution de période de reporting,
+│                             capacité/disponibilité, validateur de paramètres)
 └── Integration/
-    ├── Api/                 (endpoints sensibles : financier, sécurité, import)
-    └── Persistence/         (EF Core, migrations, contraintes)
+    └── Api/                 (bout en bout via WebApplicationFactory + SQLite réel : un fichier
+                              par thématique de lot — sécurité/RBAC, référentiels, projets/planning,
+                              temps/capacité, budgets/reporting, imports)
 ```
+
+Pas de dossier `Unit/Domain/` ni `Integration/Persistence/` séparé : les règles d'entités et les contraintes EF Core sont couvertes par les tests d'intégration `Api` (qui s'exécutent contre une vraie base SQLite), l'isolation venant de tester des calculateurs/validateurs purs plutôt que de substituer des dépendances (aucun framework de mock utilisé à ce jour malgré `NSubstitute` déclaré en dépendance).
 
 Nommage : `NomMethode_Scenario_ResultatAttendu` (ex. `GetApplicableTjm_NoValidPeriodAtDate_ReturnsIncompleteValuation`).
 
-Frontend :
-
-```text
-src/
-├── features/time-entries/__tests__/    (tests unitaires Vitest colocalisés)
-e2e/                                     (scénarios Playwright, cahier des charges §38.3)
-```
+Frontend : un fichier de test colocalisé par composant/page (`NomDuComposant.test.tsx` à côté de `NomDuComposant.tsx`), pas de dossier `__tests__` séparé ni de suite `e2e/` Playwright distincte — Playwright est utilisé pour la validation visuelle de clôture de lot (captures, `CLAUDE.md` §20), pas pour une suite de tests end-to-end automatisée à ce jour.
 
 ## 9. Formatage et outillage
 

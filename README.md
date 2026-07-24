@@ -2,7 +2,7 @@
 
 Plateforme interne de pilotage des temps, charges, capacités, projets, jalons, ressources, commandes, budgets et valorisations financières, destinée à une organisation **Production Applicative / RUN / MCO / Projets**.
 
-> **Statut actuel : socle documentaire.** Aucun code métier n'a encore été généré (pas de projet .NET, pas de projet React, pas de base de données). Ce dépôt contient uniquement la documentation de cadrage nécessaire au démarrage du développement.
+> **Statut actuel : Lots 0 à 13 terminés, Lot 14 (Audit, Refactoring et Qualité) en cours.** Backend ASP.NET Core, frontend React et migrations EF Core (SQLite/PostgreSQL/SQL Server) existent et sont fonctionnels. Roadmap complète jusqu'à la V1 figée dans `docs/ROADMAP.md` — voir `docs/IMPLEMENTATION_STATUS.md` pour l'état réel détaillé.
 
 ## Présentation
 
@@ -41,11 +41,12 @@ Détails complets : `docs/ARCHITECTURE.md` et `CLAUDE.md`.
 ```text
 SafranTimeTracker/
 ├── docs/           Documentation fonctionnelle et technique
-├── backend/        (vide — réservé au code ASP.NET Core, Lot 0)
-├── frontend/       (vide — réservé au code React, Lot 0)
-├── database/       (vide — réservé aux migrations et scripts SQL, Lot 0)
-├── deploy/         (vide — réservé aux scripts PowerShell et à la configuration IIS, Lot 0)
-├── scripts/        (vide — réservé aux scripts d'outillage)
+├── backend/        SafranTimeTracker.{Domain,Application,Infrastructure,Api,Tests}
+├── frontend/       safran-time-tracker-web (React + TypeScript + Vite)
+├── database/       Migrations EF Core par provider (postgresql, sqlite, sqlserver)
+├── deploy/         Scripts PowerShell et configuration IIS (Lot 17 — Industrialisation)
+├── scripts/        Scripts d'outillage (dont scripts/ci/ pour la CI)
+├── .github/        Pipeline GitHub Actions (build/tests/couverture)
 ├── CLAUDE.md
 ├── README.md
 └── .gitignore
@@ -53,11 +54,15 @@ SafranTimeTracker/
 
 ## Méthode de travail
 
-Le projet est développé **par lots successifs** (voir `docs/ROADMAP.md`), du Lot 0 (Fondations) au Lot 7 (Industrialisation). Chaque lot ne passe au suivant que lorsqu'il produit une version **compilable, testée et démontrable**. L'avancement réel est suivi dans `docs/IMPLEMENTATION_STATUS.md`.
+Le projet est développé **par lots successifs** (voir `docs/ROADMAP.md`, figée jusqu'à la V1 : Lot 14 Audit/Refactoring/Qualité → Lot 15 Complétude fonctionnelle & Administration → Lot 16 UX/Responsive/Performance → Lot 17 Industrialisation → Lot 18 Pré-production → Lot 19 Mise en production). Chaque lot ne passe au suivant que lorsqu'il produit une version **compilable, testée et démontrable**. L'avancement réel est suivi dans `docs/IMPLEMENTATION_STATUS.md`.
 
 ## Démarrage
 
-Le code n'existant pas encore, il n'y a pas de procédure d'installation à ce stade. Elle sera documentée ici dès la fin du Lot 0 (structure de solution, configuration multi-environnements, scripts de build).
+- Backend : `dotnet build`, `dotnet test --project backend/SafranTimeTracker.Tests` depuis la racine du dépôt.
+- Frontend : `cd frontend/safran-time-tracker-web && npm install && npm run dev`.
+- Base de données de développement : SQLite (`backend/SafranTimeTracker.Api/App_Data`), migrations appliquées via `dotnet ef database update --project database/sqlite --context AppDbContext`.
+
+Procédure d'installation Windows Server/IIS complète : prévue au Lot 17 (Industrialisation).
 
 ## Usage
 

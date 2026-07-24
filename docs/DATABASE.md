@@ -44,29 +44,31 @@ Les entités C# sont nommées en `PascalCase`. Le mapping physique (tables, colo
 
 ## 4. Inventaire des entités (cahier des charges §30)
 
+> Inventaire réconcilié avec `AppDbContext` au Lot 14 (audit d'architecture) : 51 `DbSet<T>` au total, tous listés ci-dessous par catégorie fonctionnelle.
+
 ### Sécurité et organisation
-`User`, `Role`, `Permission`, `UserPermission` (porte désormais `Effect` — `Grant`/`Revoke`, Lot 13), `RolePermission` (permissions par défaut d'un rôle, Lot 13, modèle RBAC), `UserSession` (session serveur simulée, Lot 13 — `IsPersistent` distingue une session navigateur d'une session persistante, "se souvenir de moi" non exposée à l'écran), `OperationalRole`, `Department`, `Service`, `Team`.
+`User`, `Role`, `Permission`, `UserPermission` (porte désormais `Effect` — `Grant`/`Revoke`, Lot 13), `RolePermission` (permissions par défaut d'un rôle, Lot 13, modèle RBAC), `UserSession` (session serveur simulée, Lot 13 — `IsPersistent` distingue une session navigateur d'une session persistante, "se souvenir de moi" non exposée à l'écran), `OperationalRole`, `ResourceOperationalRole` (jointure `Resource` ↔ `OperationalRole`, Lot 1), `Department`, `Service`, `Team`, `CostCenter` (centre de coûts, rattaché à `Department`/`Service`, Lot 8).
 
 ### Ressources et capacité
 `Resource`, `ResourceCapacityPeriod`, `ResourceTjmHistory`.
 
 ### Sociétés et contrats
-`Company`, `CompanyType`, `ResourceCompanyAssignment`, `CompanyContractHistory`.
+`Company`, `CompanyType`, `ResourceCompanyAssignment`, `CompanyContractHistory`, `Client` (donneur d'ordre d'un projet, `Project.ClientId` nullable, Lot 8), `Currency` (référentiel de consultation, aucun impact sur `FinancialCalculationService`, Lot 8).
 
 ### Applications et projets
-`ApplicationReference` (référentiel d'applications, nommé `Application` dans le cahier des charges §30 — renommé pour éviter la collision avec le namespace de couche `SafranTimeTracker.Application`, voir `docs/ARCHITECTURE.md` §2), `Project`, `ProjectStatus`, `ProjectParticipant`, `ProjectPlanVersion`, `ProjectWeeklyPlan`.
+`ApplicationReference` (référentiel d'applications, nommé `Application` dans le cahier des charges §30 — renommé pour éviter la collision avec le namespace de couche `SafranTimeTracker.Application`, voir `docs/ARCHITECTURE.md` §2), `Project`, `ProjectStatus`, `ProjectType` (`Project.ProjectTypeId` nullable, Lot 8), `ProjectParticipant`, `ProjectPlanVersion`, `ProjectWeeklyPlan`, `Technology` (référentiel, Lot 8), `ApplicationTechnology` (jointure many-to-many `ApplicationReference` ↔ `Technology`), `ResourceTechnology` (jointure many-to-many `Resource` ↔ `Technology`).
 
 ### Temps et absences
 `TimeEntry`, `TimeEntryFinancialSnapshot`, `Absence`.
 
 ### Jalons et activités
-`Milestone`, `ActivityType`.
+`Milestone`, `MilestoneType`, `ActivityType`.
 
 ### Financier
-`Order`, `OrderStatus`, `OrderExtension`, `OrderReceipt` (Lot 6 — réceptions partielles, règle métier validée : le vocabulaire "Demande d'achat → Commande → Réceptions partielles → Clôture" se représente par la machine d'état `Order`/`OrderStatus` inchangée depuis le Lot 5, complétée par ces événements répétables), `Budget`, `BudgetVersion`.
+`Order`, `OrderStatus`, `OrderAuthorizedResource` (jointure `Order` ↔ `Resource` — ressources autorisées à saisir du temps sur la commande, Lot 1), `OrderExtension`, `OrderReceipt` (Lot 6 — réceptions partielles, règle métier validée : le vocabulaire "Demande d'achat → Commande → Réceptions partielles → Clôture" se représente par la machine d'état `Order`/`OrderStatus` inchangée depuis le Lot 5, complétée par ces événements répétables), `Budget`, `BudgetVersion`.
 
-### Imports et audit
-`ImportBatch`, `ImportDiff`, `AuditLog`.
+### Imports, exports et audit
+`ImportBatch`, `ImportDiff`, `ExportLog` (traçabilité des exports financiers, Lot 5), `AuditLog`.
 
 ### Paramétrage
 `Settings`, `HolidayCalendar`, `DashboardKpi`.

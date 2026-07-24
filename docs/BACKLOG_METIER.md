@@ -1,8 +1,8 @@
 # Backlog métier — SAFRAN TIME TRACKER
 
-> **Rôle de ce document** : référence **fonctionnelle** du projet — décisions métier, workflows et règles validées avec le Product Owner, le Squad Leader ou les experts métier. Il ne décrit **jamais** l'architecture technique (classes, entités, endpoints) : cette information vit dans `docs/ARCHITECTURE.md`, `docs/DATABASE.md` et `docs/IMPLEMENTATION_STATUS.md`. En cas de doute sur une règle métier déjà couverte par le cahier des charges, le cahier des charges (`docs/Cahier_des_charges_SAFRAN_TIME_TRACKER_v2.1_Windows_Server.md`) reste la référence fonctionnelle unique ; ce document capture les règles **complémentaires ou plus précises**, validées au fil des lots, qui ne figurent pas (ou pas assez précisément) dans le cahier des charges.
+> **Rôle de ce document** : référence **fonctionnelle** du projet — décisions métier, workflows et règles validées avec le Product Owner ou les experts métier. Il ne décrit **jamais** l'architecture technique (classes, entités, endpoints) : cette information vit dans `docs/ARCHITECTURE.md`, `docs/DATABASE.md` et `docs/IMPLEMENTATION_STATUS.md`. En cas de doute sur une règle métier déjà couverte par le cahier des charges, le cahier des charges (`docs/Cahier_des_charges_SAFRAN_TIME_TRACKER_v2.1_Windows_Server.md`) reste la référence fonctionnelle unique ; ce document capture les règles **complémentaires ou plus précises**, validées au fil des lots, qui ne figurent pas (ou pas assez précisément) dans le cahier des charges.
 >
-> **Règle d'alimentation (CLAUDE.md §5)** : toute nouvelle règle métier validée avec le Product Owner, le Squad Leader ou les experts métier est ajoutée ici **avant** son implémentation. Ce document est relu au même titre que `docs/ROADMAP.md`, `CLAUDE.md` et `docs/IMPLEMENTATION_STATUS.md` avant de démarrer un nouveau lot.
+> **Règle d'alimentation (CLAUDE.md §5)** : toute nouvelle règle métier validée avec le Product Owner ou les experts métier est ajoutée ici **avant** son implémentation. Ce document est relu au même titre que `docs/ROADMAP.md`, `CLAUDE.md` et `docs/IMPLEMENTATION_STATUS.md` avant de démarrer un nouveau lot.
 >
 > Ce document mélange volontairement deux types de contenu, distingués par un statut explicite :
 > - des règles **déjà implémentées**, documentées ici pour qu'elles restent traçables comme décisions métier et pas seulement comme code ;
@@ -10,7 +10,7 @@
 >
 > Statut employé pour chaque règle :
 > - ✅ **Implémenté** — déjà appliqué dans le code (détail technique : `docs/IMPLEMENTATION_STATUS.md`).
-> - 🕓 **Validé, non implémenté** — règle actée avec le Squad Leader/PO, en attente d'un lot.
+> - 🕓 **Validé, non implémenté** — règle actée avec le Product Owner, en attente d'un lot.
 > - 🔎 **À clarifier** — écart ou ambiguïté identifié entre la formulation métier et le modèle actuel ; nécessite une validation complémentaire avant implémentation.
 
 ---
@@ -27,7 +27,7 @@ Demande d'achat → Commande → Réceptions partielles → Clôture
 
 ### Règles validées
 
-- 🔎 **Une commande appartient à un budget.** Formulation à clarifier : le modèle actuel relie un objet de pilotage budgétaire à une commande (rattachement facultatif dans un sens), pas l'inverse structurellement. À rapprocher explicitement avec le Squad Leader avant tout lot qui construirait ce rattachement, pour savoir si la commande doit référencer un budget de façon obligatoire, ou si le rattachement optionnel existant suffit.
+- 🔎 **Une commande appartient à un budget.** Formulation à clarifier : le modèle actuel relie un objet de pilotage budgétaire à une commande (rattachement facultatif dans un sens), pas l'inverse structurellement. À rapprocher explicitement avec le Product Owner avant tout lot qui construirait ce rattachement, pour savoir si la commande doit référencer un budget de façon obligatoire, ou si le rattachement optionnel existant suffit.
 - ✅ **Une société prestataire ne peut jamais être modifiée après création** de la commande.
 - ✅ **La ressource affectée à une commande peut être remplacée en cours de vie** de la commande.
 - ✅ **Les réceptions sont représentées par des événements append-only** (« OrderReceipt » au sens métier) : une réception est un fait daté, jamais un total recalculé en place.
@@ -320,7 +320,7 @@ Nouvelle méthode `ReportingService` agrégeant `ChargePlanifieeInitiale`/`Charg
 
 **Décision explicitement révisée en cours d'analyse.** « Capacité vs réalisé » avait initialement été bundlée avec « Prévu vs réalisé » dans la même question de validation ; une vérification plus poussée demandée par l'utilisateur a montré que l'agrégat existait déjà (`DashboardOperationalKpisDto`) — la recommandation a été corrigée avant tout développement pour ne construire que ce qui est réellement nécessaire (`CLAUDE.md` §5).
 
-## 18. Authentification, RBAC, Sécurisation API, CI/CD et Qualité — décisions actées à l'ouverture du Lot 13
+## 17. Authentification, RBAC, Sécurisation API, CI/CD et Qualité — décisions actées à l'ouverture du Lot 13
 
 ### Décision 1 — Authentification simulée sessionnée (cahier des charges §6.5)
 
@@ -367,7 +367,7 @@ En-têtes de sécurité (HSTS hors Development, `X-Content-Type-Options`, `X-Fra
 
 ## Comment mettre à jour ce document
 
-1. Toute règle métier nouvellement validée avec le Product Owner, le Squad Leader ou un expert métier est ajoutée ici **avant** d'être implémentée, avec le statut 🕓 **Validé, non implémenté**.
+1. Toute règle métier nouvellement validée avec le Product Owner ou un expert métier est ajoutée ici **avant** d'être implémentée, avec le statut 🕓 **Validé, non implémenté**.
 2. Quand un lot implémente une règle listée ici, son statut passe à ✅ **Implémenté** à la clôture du lot (même étape que la mise à jour de `docs/IMPLEMENTATION_STATUS.md`).
 3. Un écart constaté entre une règle métier telle que formulée ici et le modèle technique réel est noté 🔎 **À clarifier**, jamais résolu unilatéralement dans le code sans validation.
 4. Ce document est relu avant chaque nouveau lot, au même titre que `docs/ROADMAP.md`, `CLAUDE.md` et `docs/IMPLEMENTATION_STATUS.md`.
