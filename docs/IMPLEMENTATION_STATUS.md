@@ -29,7 +29,11 @@ Cette phase n'est pas un lot numéroté du cahier des charges (§40) : elle pré
 | Lot 12 | Charges, Tableau de bord, Reporting et Imports | Terminé | 2026-07-21 |
 | Lot 13 | Authentification, RBAC, Sécurisation API, CI/CD et Qualité | Terminé | 2026-07-22 |
 | Lot 14 | Audit, Refactoring et Qualité | Non démarré | — |
-| Lot 15 | Industrialisation (ancien Lot 14, ancien Lot 13, ancien Lot 7) | Non démarré | — |
+| Lot 15 | Complétude fonctionnelle & Administration | Non démarré | — |
+| Lot 16 | UX, Responsive et Performance frontend | Non démarré | — |
+| Lot 17 | Industrialisation et packaging (ancien Lot 15, ancien Lot 14, ancien Lot 13, ancien Lot 7) | Non démarré | — |
+| Lot 18 | Pré-production | Non démarré | — |
+| Lot 19 | Mise en production V1 | Non démarré | — |
 
 ## État détaillé
 
@@ -591,6 +595,7 @@ Trois éléments listés dans la description du Lot 0 de `docs/ROADMAP.md` avaie
 | Seuils de couverture (Lot 13 Décision 4) | Mesurés réellement avant fixation (backend par projet via `dotnet test --collect`, frontend via `@vitest/coverage-v8`), jamais un chiffre inventé — fixés en dessous de la mesure avec marge de sécurité, `SafranTimeTracker.Migrations.*` exclus du calcul backend | 2026-07-22 |
 | Correctif de sécurité dédié hors lot (élévation de privilèges) | `POST /api/v1/users` créait un utilisateur (rôle, permissions) sans aucune garde de permission, seule action de sécurité non gardée du contrôleur — `[RequirePermission(UserAdministration)]` ajouté, PR #9, tag `v0.13.1` | 2026-07-23 |
 | Révision de roadmap (3ᵉ) : Lot 14 redéfini « Audit, Refactoring et Qualité » | Revue d'architecture complète du dépôt (Lots 0-13) menée en lecture seule avant l'ouverture du Lot 14, décision du Product Owner de fermer la dette/les incohérences/les risques constatés avant l'industrialisation plutôt qu'après ; ancien contenu du Lot 14 (packaging, déploiement, sauvegarde/restauration, documentation d'exploitation) renuméroté Lot 15 sans modification (`docs/ROADMAP.md`) | 2026-07-24 |
+| Roadmap figée jusqu'à la V1 (Lots 15-19) | Sur la base du cahier des charges (§6.3, §14, §17.2, §27.3, §36, §37, §40), de `docs/BACKLOG_METIER.md` et du rapport d'audit du Lot 14 : Lot 15 « Complétude fonctionnelle & Administration » (renommé pour refléter son contenu réel — périmètre organisationnel, administration, référentiels, CRUD, plus large que le seul périmètre organisationnel), Lot 16 « UX, Responsive et Performance frontend » (promu lot obligatoire, ferme l'exigence §36.6 jusqu'ici non couverte), Lot 17 « Industrialisation et packaging » (ancien Lot 15/14/13/7, contenu inchangé), Lot 18 « Pré-production » (recette fonctionnelle §37, validation métier, tests utilisateurs, gel fonctionnel), Lot 19 « Mise en production V1 ». Risque non tranché signalé explicitement, pas résolu : authentification de démonstration acceptée pour la V1 ou authentification réelle requise — décision Product Owner attendue en Lot 18 (`docs/ROADMAP.md`) | 2026-07-24 |
 
 Décisions techniques ouvertes à ce jour : restriction de la validation d'absence au seul responsable hiérarchique, restriction de la modification d'un projet/jalon au seul pilote/responsable, restriction des transitions de commande/budget/administration utilisateur/import/audit par périmètre organisationnel (Lot 13, Décision 3, différée explicitement), endpoints `GET` manquants pour `CompanyType`/`Role`/`OperationalRole`, écran de gestion des rôles/permissions par utilisateur (l'API le permet déjà), définition du domaine « Catégories » (reporté), assistant d'import interactif (mapping de colonnes, §27.3 étape 5), formule d'« avancement » (%, §16.2, Lot 10), Gantt (Lot 10, backlog), `Update` de `ProjectParticipant` (§17.2, Lot 10), migration de `RequirePermissionAttribute` vers les policies natives ASP.NET Core (Lot 13, non tranchée), nettoyage des sessions expirées (Lot 13, simplification assumée), extension de `[RequirePermission]` aux contrôleurs non gardés (Lot 13, proche du périmètre organisationnel) (voir « Écarts connus » ci-dessus).
 
